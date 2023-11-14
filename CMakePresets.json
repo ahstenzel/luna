@@ -1,0 +1,97 @@
+{
+	"version": 2,
+	"configurePresets": [
+		{
+			"name": "default-static",
+			"hidden": true,
+			"description": "Build static executable.",
+			"architecture": {
+				"value": "x64"
+			},
+			"binaryDir": "${sourceDir}/out/build/${presetName}",
+			"cacheVariables": {
+				"CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+			}
+		},
+		{
+			"name": "default-windows",
+			"hidden": true,
+			"description": "Build windows target.",
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Windows"
+					]
+				}
+			},
+			"generator": "Visual Studio 17 2022",
+			"cacheVariables": {
+				"RAYLIB_LIB_DIR": "win64"
+			}
+		},
+		{
+			"name": "default-linux",
+			"hidden": true,
+			"description": "Build linux target.",
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Linux"
+					]
+				}
+			},
+			"generator": "Ninja Multi-Config",
+			"cacheVariables": {
+				"RAYLIB_LIB_DIR": "linux_x64"
+			}
+		},
+		{
+			"name": "linux-static",
+			"displayName": "Linux Static Executable",
+			"description": "Target Linux with a Ninja Multi-Config environment.",
+			"inherits": [
+				"default-static",
+				"default-linux"
+			]
+		},
+		{
+			"name": "windows-static",
+			"displayName": "Windows Static Executable",
+			"description": "Target Windows with a Visual Studio environment.",
+			"inherits": [
+				"default-static",
+				"default-windows"
+			]
+		}
+	],
+	"buildPresets": [
+		{
+			"name": "windows-static-debug",
+			"displayName": "Windows Static Executable (Debug)",
+			"description": "Build with Debug configuration.",
+			"configurePreset": "windows-static",
+			"configuration": "Debug"
+		},
+		{
+			"name": "windows-static-release",
+			"displayName": "Windows Static Executable (Release)",
+			"description": "Build with Release configuration.",
+			"configurePreset": "windows-static",
+			"configuration": "Release"
+		},
+		{
+			"name": "linux-static-debug",
+			"displayName": "Linux Static Executable (Debug)",
+			"description": "Build with Debug configuration.",
+			"configurePreset": "linux-static",
+			"configuration": "Debug"
+		},
+		{
+			"name": "linux-static-release",
+			"displayName": "Linux Static Executable (Release)",
+			"description": "Build with Release configuration.",
+			"configurePreset": "linux-static",
+			"configuration": "Release"
+		}
+	]
+}
