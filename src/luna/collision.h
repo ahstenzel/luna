@@ -78,6 +78,9 @@ void GetCollisionsAtPlace(CollisionList* _list, CollisionID _id, CollisionID* _r
 /// @return True if overlapping
 bool CheckCollision(CollisionList* _list, CollisionID _id1, CollisionID _id2);
 
+/// @brief Get all buckets that overlap the given rectangle.
+/// @param _list Collision List pointer
+/// @param _boundingBox Collision rectangle
 vector_t* _GetBuckets(CollisionList* _list, Rectangle _boundingBox);
 
 uint32_t _HashVector2i(Vector2i _v);

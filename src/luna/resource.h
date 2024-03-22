@@ -31,11 +31,15 @@ typedef struct {
 	rresCentralDir directory;
 } ResourceList;
 
+typedef struct {
+	const char* resourceFile;
+	const char* resourcePassword;
+} ResourceListDesc;
+
 /// @brief Create a new resource list.
-/// @param _resourceFile Name of the resource file
-/// @param _resourcePassword Password for decrypting assets
+/// @param _desc Resource list descriptor
 /// @return Resource list pointer
-ResourceList* CreateResourceList(const char* _resourceFile, const char* _resourcePassword);
+ResourceList* CreateResourceList(ResourceListDesc _desc);
 
 /// @brief Deallocate a resource list.
 /// @param _list Resource list pointer

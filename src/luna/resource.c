@@ -1,6 +1,6 @@
 #include "luna/resource.h"
 
-ResourceList* CreateResourceList(const char* _resourceFile, const char* _resourcePassword) {
+ResourceList* CreateResourceList(ResourceListDesc _desc) {
 	// Create resource container
 	ResourceList* list = calloc(1, sizeof *list);
 	if (!list) { return NULL; }
@@ -17,21 +17,21 @@ ResourceList* CreateResourceList(const char* _resourceFile, const char* _resourc
 	}
 
 	// Load resource file
-	size_t fileLen = strlen(_resourceFile);
+	size_t fileLen = strlen(_desc.resourceFile);
 	list->resourceFile = calloc(fileLen + 1, 1);
 	if (!list->resourceFile) {
 		DestroyResourceList(list);
 		return NULL;
 	}
-	strcpy_s(list->resourceFile, fileLen + 1, _resourceFile);
-	if (_resourcePassword) {
-		size_t passLen = strlen(_resourcePassword);
+	strcpy_s(list->resourceFile, fileLen + 1, _desc.resourceFile);
+	if (_desc.resourcePassword) {
+		size_t passLen = strlen(_desc.resourcePassword);
 		list->resourcePassword = calloc(passLen + 1, 1);
 		if (!list->resourcePassword) {
 			DestroyResourceList(list);
 			return NULL;
 		}
-		strcpy_s(list->resourcePassword, passLen + 1, _resourcePassword);
+		strcpy_s(list->resourcePassword, passLen + 1, _desc.resourcePassword);
 	}
 	list->directory = rresLoadCentralDirectory(list->resourceFile);
 	return list;

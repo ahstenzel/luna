@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.11)
 project(luna)
 
 # Add source files
+file(GLOB ext_src
+	"src/external/ini.c"
+)
 file(GLOB raylib_src 
 	"src/raylib/raygui.c" 
 	"src/raylib/rres.c"
@@ -22,6 +25,7 @@ file(GLOB luna_src
 	"src/luna/resource.c"
 	"src/luna/scene.c"
 	"src/luna/sprite.c"
+	"src/luna/input.c"
 )
 file (GLOB game_src
 	"src/main.c"
@@ -35,7 +39,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIR}")
 
 # Build binary
-add_executable(luna ${game_src} ${luna_src} ${raylib_src})
+add_executable(luna ${game_src} ${luna_src} ${raylib_src} ${ext_src})
 
 # Add dependencies
 target_include_directories(luna PUBLIC "src")

@@ -49,22 +49,46 @@ typedef struct {
 	unordered_map_t* scenes;
 } SceneList;
 
+/// @brief Create a new scene list.
+/// @return Scene list pointer
 SceneList* CreateSceneList();
 
+/// @brief Update all scenes in the list.
+/// @param _list Scene list pointer
+/// @param _dt Delta time factor
 void UpdateSceneList(SceneList* _list, float _dt);
 
+/// @brief Draw the current scene.
+/// @param _list Scene list pointer
 void DrawSceneList(SceneList* _list);
 
+/// @brief Deallocate the scene list.
+/// @param _list Scene list pointer
 void DestroySceneList(SceneList* _list);
 
+/// @brief Create a new scene for the list.
+/// @param _list Scene list pointer
+/// @param _desc Scene descriptor
+/// @return Scene ID
 SceneID CreateScene(SceneList* _list, SceneDesc _desc);
 
+/// @brief Destroy a scene in the list.
+/// @param _list Scene list pointer
+/// @param _id Scene id
 void DestroyScene(SceneList* _list, SceneID _id);
 
+/// @brief Push a new scene onto the stack.
+/// @param _list Scene list pointer
+/// @param _id Scene id
 void PushScene(SceneList* _list, SceneID _id);
 
+/// @brief Pop the scene off the stack.
+/// @param _list Scene list pointer
 void PopScene(SceneList* _list);
 
+/// @brief Get the id of the scene on top of the stack.
+/// @param _list Scene list pointer
+/// @return Scene id
 SceneID TopScene(SceneList* _list);
 
 #endif
