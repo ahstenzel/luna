@@ -2,9 +2,9 @@
 	"version": 2,
 	"configurePresets": [
 		{
-			"name": "default-static",
+			"name": "base",
 			"hidden": true,
-			"description": "Build static executable.",
+			"description": "Build executable.",
 			"architecture": {
 				"value": "x64"
 			},
@@ -14,9 +14,8 @@
 			}
 		},
 		{
-			"name": "default-windows",
+			"name": "base-os-windows",
 			"hidden": true,
-			"description": "Build windows target.",
 			"vendor": {
 				"microsoft.com/VisualStudioSettings/CMake/1.0": {
 					"hostOS": [
@@ -24,15 +23,14 @@
 					]
 				}
 			},
-			"generator": "Visual Studio 17 2022",
 			"cacheVariables": {
-				"RAYLIB_LIB_DIR": "win64"
+				"OS": "windows",
+				"RAYLIB_LIB_DIR": "win_x64"
 			}
 		},
 		{
-			"name": "default-linux",
+			"name": "base-os-linux",
 			"hidden": true,
-			"description": "Build linux target.",
 			"vendor": {
 				"microsoft.com/VisualStudioSettings/CMake/1.0": {
 					"hostOS": [
@@ -40,57 +38,155 @@
 					]
 				}
 			},
-			"generator": "Ninja Multi-Config",
 			"cacheVariables": {
+				"OS": "linux",
 				"RAYLIB_LIB_DIR": "linux_x64"
 			}
 		},
 		{
-			"name": "linux-static",
-			"displayName": "Linux Static Executable",
+			"name": "base-gen-msvc",
+			"hidden": true,
+			"generator": "Visual Studio 17 2022",
+			"cacheVariables": {
+				"GEN": "msvc2022"
+			}
+		},
+		{
+			"name": "base-gen-mingw",
+			"hidden": true,
+			"generator": "MinGW Makefiles",
+			"cacheVariables": {
+				"GEN": "mingw"
+			}
+		},
+		{
+			"name": "base-gen-ninja",
+			"hidden": true,
+			"generator": "Ninja Multi-Config",
+			"cacheVariables": {
+				"GEN": "gcc"
+			}
+		},
+		{
+			"name": "base-cfg-debug",
+			"hidden": true,
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		},
+		{
+			"name": "base-cfg-release",
+			"hidden": true,
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
+			}
+		},
+		{
+			"name": "linux-ninja-debug",
+			"displayName": "Linux (Ninja) [Debug]",
 			"description": "Target Linux with a Ninja Multi-Config environment.",
 			"inherits": [
-				"default-static",
-				"default-linux"
+				"base",
+				"base-os-linux",
+				"base-gen-ninja",
+				"base-cfg-debug"
 			]
 		},
 		{
-			"name": "windows-static",
-			"displayName": "Windows Static Executable",
+			"name": "linux-ninja-release",
+			"displayName": "Linux (Ninja) [Release]",
+			"description": "Target Linux with a Ninja Multi-Config environment.",
+			"inherits": [
+				"base",
+				"base-os-linux",
+				"base-gen-ninja",
+				"base-cfg-release"
+			]
+		},
+		{
+			"name": "windows-mingw-debug",
+			"displayName": "Windows (MinGW) [Debug]",
+			"description": "Target Windows with a MinGW environment.",
+			"inherits": [
+				"base",
+				"base-os-windows",
+				"base-gen-mingw",
+				"base-cfg-debug"
+			]
+		},
+		{
+			"name": "windows-mingw-release",
+			"displayName": "Windows (MinGW) [Release]",
+			"description": "Target Windows with a MinGW environment.",
+			"inherits": [
+				"base",
+				"base-os-windows",
+				"base-gen-mingw",
+				"base-cfg-release"
+			]
+		},
+		{
+			"name": "windows-msvc-debug",
+			"displayName": "Windows (MSVC) [Debug]",
 			"description": "Target Windows with a Visual Studio environment.",
 			"inherits": [
-				"default-static",
-				"default-windows"
+				"base",
+				"base-os-windows",
+				"base-gen-msvc"
+			]
+		},
+		{
+			"name": "windows-msvc-release",
+			"displayName": "Windows (MSVC) [Release]",
+			"description": "Target Windows with a Visual Studio environment.",
+			"inherits": [
+				"base",
+				"base-os-windows",
+				"base-gen-msvc"
 			]
 		}
 	],
 	"buildPresets": [
 		{
-			"name": "windows-static-debug",
-			"displayName": "Windows Static Executable (Debug)",
-			"description": "Build with Debug configuration.",
-			"configurePreset": "windows-static",
+			"name": "windows-msvc-debug",
+			"displayName": "Windows Executable (Debug)",
+			"description": "Build with Debug configuration in Visual Studio environment.",
+			"configurePreset": "windows-msvc-debug",
 			"configuration": "Debug"
 		},
 		{
-			"name": "windows-static-release",
-			"displayName": "Windows Static Executable (Release)",
-			"description": "Build with Release configuration.",
-			"configurePreset": "windows-static",
+			"name": "windows-msvc-release",
+			"displayName": "Windows Executable (Release)",
+			"description": "Build with Release configuration in Visual Studio environment.",
+			"configurePreset": "windows-msvc-release",
 			"configuration": "Release"
 		},
 		{
-			"name": "linux-static-debug",
-			"displayName": "Linux Static Executable (Debug)",
-			"description": "Build with Debug configuration.",
-			"configurePreset": "linux-static",
+			"name": "windows-mingw-debug",
+			"displayName": "Windows Executable (Debug)",
+			"description": "Build with Debug configuration in MinGW environment.",
+			"configurePreset": "windows-mingw-debug",
 			"configuration": "Debug"
 		},
 		{
-			"name": "linux-static-release",
-			"displayName": "Linux Static Executable (Release)",
-			"description": "Build with Release configuration.",
-			"configurePreset": "linux-static",
+			"name": "windows-mingw-release",
+			"displayName": "Windows Executable (Release)",
+			"description": "Build with Release configuration in MinGW environment.",
+			"configurePreset": "windows-mingw-release",
+			"configuration": "Release"
+		},
+		{
+			"name": "linux-ninja-debug",
+			"displayName": "Linux Executable (Debug)",
+			"description": "Build with Debug configuration in Ninja environment.",
+			"configurePreset": "linux-ninja-debug",
+			"configuration": "Debug"
+		},
+		{
+			"name": "linux-ninja-release",
+			"displayName": "Linux Executable (Release)",
+			"description": "Build with Release configuration in Ninja environment.",
+			"configurePreset": "linux-ninja-release",
 			"configuration": "Release"
 		}
 	]
