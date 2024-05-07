@@ -30,6 +30,9 @@ file(GLOB luna_src
 file (GLOB game_src
 	"src/main.c"
 )
+file (GLOB game_rsc
+	"rsc/settings.ini"
+)
 
 # Set output
 set(OUTPUT_TREE "bin/$<IF:$<CONFIG:Debug>,Debug,Release>")
@@ -49,6 +52,11 @@ find_library(
 	PATHS "lib/${RAYLIB_LIB_DIR}"
 )
 target_link_libraries(luna PUBLIC ${RAYLIB_LIB} opengl32 gdi32 winmm)
+
+# Copy resource files
+add_custom_command(TARGET luna POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy ${game_rsc} "${OUTPUT_DIR}"
+)
 
 # Platform configuration
 if (WIN32)

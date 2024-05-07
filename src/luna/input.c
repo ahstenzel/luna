@@ -1,12 +1,12 @@
 #include "luna/input.h"
 
-InputList* CreateInputList(InputDesc* _desc, size_t _num) {
-	InputList* list = calloc(1, sizeof *list);
+InputSettingsList* CreateInputSettingsList(InputSlotDesc* _desc, size_t _num) {
+	InputSettingsList* list = calloc(1, sizeof *list);
 	if (!list || !_desc || _num > MAX_INPUT_SLOTS) { 
 #ifdef LUNA_DEBUG
-		if (!list)  { LUNA_DBG_LOG("ERROR (CreaeInputList): Failed to allocate list!"); }
-		if (!_desc) { LUNA_DBG_LOG("ERROR (CreaeInputList): Null descriptor!"); }
-		if (_num > MAX_INPUT_SLOTS) { LUNA_DBG_LOG("ERROR (CreaeInputList): Too many input descriptors!"); }
+		if (!list)  { LUNA_DBG_ERR("(CreateInputSettingsList): Failed to allocate list!"); }
+		if (!_desc) { LUNA_DBG_ERR("(CreateInputSettingsList): Null descriptor!"); }
+		if (_num > MAX_INPUT_SLOTS) { LUNA_DBG_ERR("(CreateInputSettingsList): Too many input descriptors!"); }
 #endif
 		return NULL; 
 	}
@@ -19,13 +19,13 @@ InputList* CreateInputList(InputDesc* _desc, size_t _num) {
 	return list;
 }
 
-void DestroyInputList(InputList* _list) {
+void DestroyInputSettingsList(InputSettingsList* _list) {
 	if (_list) {
 		free(_list);
 	}
 }
 
-void UpdateInputList(InputList* _list) {
+void UpdateInputSettingsList(InputSettingsList* _list) {
 	// Error check
 	if (!_list) { return; }
 
@@ -61,7 +61,7 @@ void UpdateInputList(InputList* _list) {
 	}
 }
 
-Vector2 GetDirection(InputList* _list, int _slot, bool _aligned) {
+Vector2 GetDirection(InputSettingsList* _list, int _slot, bool _aligned) {
 	// Error check
 	if (!_list || _slot >= _list->num) { return Vector2Zero(); }
 
@@ -98,7 +98,7 @@ Vector2 GetDirection(InputList* _list, int _slot, bool _aligned) {
 	return Vector2Normalize(input);
 }
 
-unsigned char GetDirectionBitfield(InputList* _list, int _slot) {
+unsigned char GetDirectionBitfield(InputSettingsList* _list, int _slot) {
 	// Error check
 	if (!_list || _slot >= _list->num) { return 0; }
 
@@ -132,7 +132,7 @@ unsigned char GetDirectionBitfield(InputList* _list, int _slot) {
 	return input;
 }
 
-bool GetInputPressed(InputList* _list, int _slot, Input _input) {
+bool GetInputPressed(InputSettingsList* _list, int _slot, Input _input) {
 	// Error check
 	if (!_list || _slot >= _list->num) { return 0; }
 
@@ -146,7 +146,7 @@ bool GetInputPressed(InputList* _list, int _slot, Input _input) {
 	}
 }
 
-bool GetInputDown(InputList* _list, int _slot, Input _input) {
+bool GetInputDown(InputSettingsList* _list, int _slot, Input _input) {
 	// Error check
 	if (!_list || _slot >= _list->num) { return 0; }
 
@@ -160,7 +160,7 @@ bool GetInputDown(InputList* _list, int _slot, Input _input) {
 	}
 }
 
-bool GetInputReleased(InputList* _list, int _slot, Input _input) {
+bool GetInputReleased(InputSettingsList* _list, int _slot, Input _input) {
 	// Error check
 	if (!_list || _slot >= _list->num) { return 0; }
 
@@ -174,7 +174,7 @@ bool GetInputReleased(InputList* _list, int _slot, Input _input) {
 	}
 }
 
-int _GetGamepadPressed(InputList* _list, int _slot, int _gamepad, bool* _axis) {
+int _GetGamepadPressed(InputSettingsList* _list, int _slot, int _gamepad, bool* _axis) {
 	if (IsGamepadAvailable(_gamepad)) {
 		for(int button=1; button<=MAX_GAMEPAD_BUTTONS; ++button ) {
 			if (IsGamepadButtonPressed(_gamepad, button)) { 
@@ -194,61 +194,61 @@ int _GetGamepadPressed(InputList* _list, int _slot, int _gamepad, bool* _axis) {
 	return -1;
 }
 
-int GetKeyboardMapping(InputList* _list, int _slot, Input _input) {
+int GetKeyboardMapping(InputSettingsList* _list, int _slot, Input _input) {
 	// Error check
 	if (!_list || _slot >= _list->num) { return -1; }
 	return _list->inputs[_slot].keyboardMapping[_input];
 }
 
-void SetKeyboardMapping(InputList* _list, int _slot, Input _input, int _mapping) {
+void SetKeyboardMapping(InputSettingsList* _list, int _slot, Input _input, int _mapping) {
 	// Error check
 	if (!_list || _slot >= _list->num) { return; }
 	_list->inputs[_slot].keyboardMapping[_input] = _mapping;
 }
 
-int GetGamepadMapping(InputList* _list, int _slot, Input _input) {
+int GetGamepadMapping(InputSettingsList* _list, int _slot, Input _input) {
 	// Error check
 	if (!_list || _slot >= _list->num) { return -1; }
 	return _list->inputs[_slot].gamepadMapping[_input];
 }
 
-void SetGamepadMapping(InputList* _list, int _slot, Input _input, int _mapping) {
+void SetGamepadMapping(InputSettingsList* _list, int _slot, Input _input, int _mapping) {
 	// Error check
 	if (!_list || _slot >= _list->num) { return; }
 	_list->inputs[_slot].gamepadMapping[_input] = _mapping;
 }
 
-float GetGamepadDeadzone(InputList* _list, int _slot) {
+float GetGamepadDeadzone(InputSettingsList* _list, int _slot) {
 	// Error check
 	if (!_list || _slot >= _list->num) { return 0.f; }
 	return _list->inputs[_slot].gamepadDeadzone;
 }
 
-void SetGamepadDeadzone(InputList* _list, int _slot, float _deadzone) {
+void SetGamepadDeadzone(InputSettingsList* _list, int _slot, float _deadzone) {
 	// Error check
 	if (!_list || _slot >= _list->num) { return; }
 	_list->inputs[_slot].gamepadDeadzone = _deadzone;
 }
 
-InputMode GetInputMode(InputList* _list, int _slot) {
+InputMode GetInputMode(InputSettingsList* _list, int _slot) {
 	// Error check
 	if (!_list || _slot >= _list->num) { return INPUT_MODE_NONE; }
 	return _list->inputs[_slot].mode;
 }
 
-void SetInputMode(InputList* _list, int _slot, InputMode _mode) {
+void SetInputMode(InputSettingsList* _list, int _slot, InputMode _mode) {
 	// Error check
 	if (!_list || _slot >= _list->num) { return; }
 	_list->inputs[_slot].mode = _mode;
 }
 
-void SetGamepadIndex(InputList* _list, int _slot, int _gamepad) {
+void SetGamepadIndex(InputSettingsList* _list, int _slot, int _gamepad) {
 	// Error check
 	if (!_list || _slot >= _list->num) { return; }
 	_list->inputs[_slot].gamepadIndex = _gamepad;
 }
 
-bool _IsGamepadTaken(InputList* _list, int _gamepad) {
+bool _IsGamepadTaken(InputSettingsList* _list, int _gamepad) {
 	for(int slot=0; slot<_list->num; ++slot) {
 		if (_list->inputs[slot].gamepadIndex == _gamepad) {
 			return true;
@@ -257,7 +257,7 @@ bool _IsGamepadTaken(InputList* _list, int _gamepad) {
 	return false;
 }
 
-bool _IsKeyboardTaken(InputList* _list) {
+bool _IsKeyboardTaken(InputSettingsList* _list) {
 	for(int slot=0; slot<_list->num; ++slot) {
 		if (_list->inputs[slot].mode == INPUT_MODE_KEYBOARD) {
 			return true;
@@ -266,7 +266,7 @@ bool _IsKeyboardTaken(InputList* _list) {
 	return false;
 }
 
-bool _ScanForGamepads(InputList* _list, int _slot) {
+bool _ScanForGamepads(InputSettingsList* _list, int _slot) {
 	for(int gamepad=0; gamepad<MAX_GAMEPADS; ++gamepad) {
 		if (IsGamepadAvailable(gamepad) && !_IsGamepadTaken(_list, gamepad)) {
 			_list->inputs[_slot].gamepadIndex = gamepad;
@@ -277,7 +277,7 @@ bool _ScanForGamepads(InputList* _list, int _slot) {
 	return false;
 }
 
-void _SetGamepadAxisLatches(InputList* _list, int _slot) {
+void _SetGamepadAxisLatches(InputSettingsList* _list, int _slot) {
 	int gamepad = _list->inputs[_slot].gamepadIndex;
 	if (IsGamepadAvailable(gamepad) && _list->inputs[_slot].mode == INPUT_MODE_GAMEPAD) {
 		for(int axis=0; axis<GetGamepadAxisCount(gamepad); ++axis) {

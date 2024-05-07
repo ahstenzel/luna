@@ -131,7 +131,7 @@ int GetData(ResourceList* _list, char* _filename, void** _data, size_t* _size) {
 		rresUnloadResourceChunk(chunk);
 	}
 	else {
-		LUNA_DBG_ERR("Failed to load data block (%s) [Error code %d]", _filename, result);
+		LUNA_DBG_ERR("(GetData): Failed to load data block (%s) [Error code %d]", _filename, result);
 		rresUnloadResourceChunk(chunk);
 		goto LoadDataFail;
 	}
@@ -176,7 +176,7 @@ int GetText(ResourceList* _list, char* _filename, char** _text, size_t* _size) {
 		rresUnloadResourceChunk(chunk);
 	}
 	else {
-		LUNA_DBG_ERR("Failed to load text block (%s) [Error code %d]", _filename, result);
+		LUNA_DBG_ERR("(GetText): Failed to load text block (%s) [Error code %d]", _filename, result);
 		rresUnloadResourceChunk(chunk);
 		goto LoadTextFail;
 	}
@@ -222,7 +222,7 @@ int GetTexture(ResourceList* _list, char* _filename, Texture2D* _texture) {
 		rresUnloadResourceChunk(chunk);
 	}
 	else {
-		LUNA_DBG_ERR("Failed to load texture (%s) [Error code %d]", _filename, result);
+		LUNA_DBG_ERR("(GetTexture): Failed to load texture (%s) [Error code %d]", _filename, result);
 		rresUnloadResourceChunk(chunk);
 		return -1;
 	}
@@ -257,7 +257,7 @@ int GetWave(ResourceList* _list, char* _filename, Wave* _wave) {
 		rresUnloadResourceChunk(chunk);
 	}
 	else {
-		LUNA_DBG_ERR("Failed to load wave (%s) [Error code %d]", _filename, result);
+		LUNA_DBG_ERR("(GetWave): Failed to load wave (%s) [Error code %d]", _filename, result);
 		rresUnloadResourceChunk(chunk);
 		return -1;
 	}
@@ -298,7 +298,7 @@ int GetFont(ResourceList* _list, char* _filename, Font* _font) {
 		rresUnloadResourceMulti(chunk);
 	}
 	else {
-		LUNA_DBG_ERR("Failed to load font (%s) [Error code %d]", _filename, result);
+		LUNA_DBG_ERR("(GetFont): Failed to load font (%s) [Error code %d]", _filename, result);
 		rresUnloadResourceMulti(chunk);
 		return -1;
 	}
@@ -339,7 +339,7 @@ int GetMesh(ResourceList* _list, char* _filename, Mesh* _mesh) {
 		rresUnloadResourceMulti(chunk);
 	}
 	else {
-		LUNA_DBG_ERR("Failed to load mesh (%s) [Error code %d]", _filename, result);
+		LUNA_DBG_ERR("(GetMesh): Failed to load mesh (%s) [Error code %d]", _filename, result);
 		rresUnloadResourceMulti(chunk);
 		return -1;
 	}

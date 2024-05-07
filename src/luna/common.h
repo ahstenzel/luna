@@ -9,8 +9,6 @@
 // Header inclusions
 //----------------------------------------------------------------------------------
 
-
-
 // Standard includes
 #include <stdlib.h>
 #include <stddef.h>
@@ -48,5 +46,8 @@
 #include "luna/std/priority_queue.h"
 #include "luna/std/free_list.h"
 #include "luna/std/deque.h"
+
+// External tools
+#include "external/ini.h"
 
 #endif

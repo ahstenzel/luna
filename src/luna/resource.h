@@ -34,6 +34,7 @@ typedef struct {
 typedef struct {
 	const char* resourceFile;
 	const char* resourcePassword;
+	const char* resourceName;
 } ResourceListDesc;
 
 /// @brief Create a new resource list.
