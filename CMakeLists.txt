@@ -29,6 +29,7 @@ file(GLOB luna_src
 )
 file (GLOB game_src
 	"src/main.c"
+	"src/scenes.c"
 )
 file (GLOB game_rsc
 	"rsc/settings.ini"

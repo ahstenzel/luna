@@ -91,4 +91,17 @@ void PopScene(SceneList* _list);
 /// @return Scene id
 SceneID TopScene(SceneList* _list);
 
+/// @brief Get the sprite list of the scene on top of the stack.
+/// @param _list Scene list pointer
+/// @return Sprite list pointer
+SpriteList* TopSceneSpriteList(SceneList* _list);
+
+/// @brief Get the collision list of the scene on top of the stack.
+/// @param _list Scene list pointer
+/// @return Collision list pointer
+CollisionList* TopSceneCollisionList(SceneList* _list);
+
+#define LUNA_CURR_SPRITES TopSceneSpriteList(LUNA_SCENES)
+#define LUNA_CURR_COLLISION TopSceneCollisionList(LUNA_SCENES)
+
 #endif

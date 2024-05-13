@@ -89,8 +89,6 @@ void UpdateGame() {
 	CloseWindow();
 }
 
-/// @brief Load a new resource file by reference name.
-/// @param _name Name field in the resource list descriptor
 void LoadResourceFileByName(const char* _name) {
 	// Error check
 	if (!LUNA_GAME) { return; }
@@ -105,8 +103,6 @@ void LoadResourceFileByName(const char* _name) {
 	LUNA_DBG_WARN("(LoadResourceFileName) Failed to find a resource list with name (%s)", _name);
 }
 
-/// @brief Load a new resource file by global index.
-/// @param _idx Index in the global array of resource list descriptors
 void LoadResourceFileByIndex(size_t _idx) {
 	// Error check
 	if (!LUNA_GAME) { return; }

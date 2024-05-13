@@ -41,6 +41,19 @@ void DrawSceneList(SceneList* _list) {
 
 void DestroySceneList(SceneList* _list) {
 	if (_list) {
+		// Clear all scenes in the stack
+		while(stack_size(_list->sceneStack) > 0) {
+			SceneID id = *(SceneID*)(stack_head(_list->sceneStack));
+			if (id != ID_NULL) {
+				Scene* scene = unordered_map_find(_list->scenes, id);
+				if (scene && scene->popFPtr) {
+					scene->popFPtr(id);
+				}
+			}
+			stack_pop(_list->sceneStack);
+		}
+
+		// Clear memory
 		stack_destroy(_list->sceneStack);
 		unordered_map_destroy(_list->scenes);
 		free(_list);
@@ -130,4 +143,22 @@ SceneID TopScene(SceneList* _list) {
 	}
 	
 	return id;
+}
+
+SpriteList* TopSceneSpriteList(SceneList* _list) {
+	if (!_list) { return NULL; }
+	SceneID id = TopScene(_list);
+	if (id == ID_NULL) { return NULL; }
+	Scene* scene = unordered_map_find(_list->scenes, id);
+	if (!scene) { return NULL; }
+	return scene->spriteList;
+}
+
+CollisionList* TopSceneCollisionList(SceneList* _list) {
+	if (!_list) { return NULL; }
+	SceneID id = TopScene(_list);
+	if (id == ID_NULL) { return NULL; }
+	Scene* scene = unordered_map_find(_list->scenes, id);
+	if (!scene) { return NULL; }
+	return scene->collisionMap;
 }

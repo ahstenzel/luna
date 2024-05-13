@@ -1,4 +1,5 @@
 #include "luna/game.h"
+#include "scenes.h"
 
 int main() {
 	// Load settings
@@ -12,8 +13,11 @@ int main() {
 		.resourceName = ""
 	};
 
-	// Game state
+	// Initialize game state
 	CreateGame(settings, &resourceLists, 1);
+	GameRegisterScenes();
+
+	// Run game
 	UpdateGame();
 	DestroyGame();
 
