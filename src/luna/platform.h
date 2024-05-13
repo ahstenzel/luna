@@ -50,12 +50,12 @@
 // Warning Suppression Definitions
 #if defined(LUNA_CMP_MSVC)
 	#define LUNA_DO_PRAGMA(X) _Pragma(#X)
-	#define LUNA_DISABLE_ALL_WARNINGS_PUSH			LUNA_DO_PRAGMA(warning(push, 0))
+	#define LUNA_DISABLE_ALL_WARNINGS_PUSH				LUNA_DO_PRAGMA(warning(push, 0))
 	#define LUNA_DISABLE_WARNING_PUSH					LUNA_DO_PRAGMA(warning(push))
 	#define LUNA_DISABLE_WARNING_POP					LUNA_DO_PRAGMA(warning(pop))
-	#define LUNA_DISABLE_WARNING(X)					LUNA_DO_PRAGMA(warning(disable : X))
+	#define LUNA_DISABLE_WARNING(X)						LUNA_DO_PRAGMA(warning(disable : X))
 
-	#define LUNA_DISABLE_WARNING_UNSECURE_FUNCTION	LUNA_DISABLE_WARNING(4996)
+	#define LUNA_DISABLE_WARNING_UNSECURE_FUNCTION		LUNA_DISABLE_WARNING(4996)
 	#define LUNA_DISABLE_WARNING_UNUSED_RESULT
 
 #elif defined(LUNA_CMP_GCC) || defined(LUNA_CMP_CLANG)
@@ -66,7 +66,7 @@
 	#define LUNA_DISABLE_WARNING(id)					LUNA_DO_PRAGMA(GCC diagnostic ignored #id)
 
 	#define LUNA_DISABLE_WARNING_UNSECURE_FUNCTION
-	#define LUNA_DISABLE_WARNING_UNUSED_RESULT		LUNA_DISABLE_WARNING(-Wunused-result)
+	#define LUNA_DISABLE_WARNING_UNUSED_RESULT			LUNA_DISABLE_WARNING(-Wunused-result)
 #else
 	#define LUNA_DO_PRAGMA(X)
 	#define LUNA_DISABLE_WARNING_PUSH
@@ -78,11 +78,7 @@
 #endif
 
 // POSIX function name resolution
-#ifdef LUNA_CMP_MSVC
-	//#include <shlwapi.h>
-	//#define strdup _strdup
-	//#define strcasecmp StrCmpIW
-#else
+#if !defined(LUNA_OS_WINDOWS) && defined(LUNA_CMP_GCC)
 	#define printf_s printf
 	#define vprintf_s vprintf
 	#define fprintf_s fprintf

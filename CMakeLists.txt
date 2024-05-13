@@ -49,8 +49,8 @@ add_executable(luna ${game_src} ${luna_src} ${raylib_src} ${ext_src})
 target_include_directories(luna PUBLIC "src")
 find_library(
 	RAYLIB_LIB NAMES 
-	"raylib"
-	PATHS "lib/${RAYLIB_LIB_DIR}"
+	"libraylib"
+	PATHS "lib/${OS}/${GEN}"
 )
 target_link_libraries(luna PUBLIC ${RAYLIB_LIB} opengl32 gdi32 winmm)
 
@@ -60,7 +60,7 @@ add_custom_command(TARGET luna POST_BUILD
 )
 
 # Platform configuration
-if (WIN32)
+if (OS STREQUAL "windows" AND GEN STREQUAL "msvc2022")
 	set_target_properties(
 		luna PROPERTIES 
 		LINK_FLAGS_DEBUG "/NODEFAULTLIB:MSVCRT /SUBSYSTEM:CONSOLE"

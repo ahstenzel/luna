@@ -24,8 +24,7 @@
 				}
 			},
 			"cacheVariables": {
-				"OS": "windows",
-				"RAYLIB_LIB_DIR": "win_x64"
+				"OS": "windows"
 			}
 		},
 		{
@@ -39,8 +38,7 @@
 				}
 			},
 			"cacheVariables": {
-				"OS": "linux",
-				"RAYLIB_LIB_DIR": "linux_x64"
+				"OS": "linux"
 			}
 		},
 		{
