@@ -1,6 +1,6 @@
 #include "luna/collision.h"
 
-CollisionList* CreateCollisionMap() {
+CollisionList* _CreateCollisionMap() {
 	CollisionList* map = malloc(sizeof *map);
 	if (!map) {
 		return NULL;
@@ -8,13 +8,13 @@ CollisionList* CreateCollisionMap() {
 	map->collisions = unordered_map_create(Collision);
 	map->buckets = unordered_map_create(CollisionBucket);
 	if (!map->collisions || !map->buckets) {
-		DestroyCollisionMap(map);
+		_DestroyCollisionMap(map);
 		return NULL;
 	}
 	return map;
 }
 
-void DestroyCollisionMap(CollisionList* _list) {
+void _DestroyCollisionMap(CollisionList* _list) {
 	if (_list) {
 		unordered_map_destroy(_list->collisions);
 		for(unordered_map_it_t* it = unordered_map_it(_list->buckets); it; unordered_map_it_next(it)) {

@@ -40,11 +40,11 @@ typedef struct {
 /// @brief Create a new resource list.
 /// @param _desc Resource list descriptor
 /// @return Resource list pointer
-ResourceList* CreateResourceList(ResourceListDesc _desc);
+ResourceList* _CreateResourceList(ResourceListDesc _desc);
 
 /// @brief Deallocate a resource list.
 /// @param _list Resource list pointer
-void DestroyResourceList(ResourceList* _list);
+void _DestroyResourceList(ResourceList* _list);
 
 /// @brief Clear all data files from the lists cache.
 /// @param _list Resource list pointer

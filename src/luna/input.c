@@ -1,12 +1,12 @@
 #include "luna/input.h"
 
-InputSettingsList* CreateInputSettingsList(InputSlotDesc* _desc, size_t _num) {
+InputSettingsList* _CreateInputSettingsList(InputSlotDesc* _desc, size_t _num) {
 	InputSettingsList* list = calloc(1, sizeof *list);
 	if (!list || !_desc || _num > MAX_INPUT_SLOTS) { 
 #ifdef LUNA_DEBUG
-		if (!list)  { LUNA_DBG_ERR("(CreateInputSettingsList): Failed to allocate list!"); }
-		if (!_desc) { LUNA_DBG_ERR("(CreateInputSettingsList): Null descriptor!"); }
-		if (_num > MAX_INPUT_SLOTS) { LUNA_DBG_ERR("(CreateInputSettingsList): Too many input descriptors!"); }
+		if (!list)  { LUNA_DBG_ERR("(_CreateInputSettingsList): Failed to allocate list!"); }
+		if (!_desc) { LUNA_DBG_ERR("(_CreateInputSettingsList): Null descriptor!"); }
+		if (_num > MAX_INPUT_SLOTS) { LUNA_DBG_ERR("(_CreateInputSettingsList): Too many input descriptors!"); }
 #endif
 		return NULL; 
 	}
@@ -15,17 +15,19 @@ InputSettingsList* CreateInputSettingsList(InputSlotDesc* _desc, size_t _num) {
 		list->inputs[slot].gamepadDeadzone = _desc[slot].gamepadDeadzone;
 		list->inputs[slot].gamepadIndex = _desc[slot].gamepadIndex;
 		list->inputs[slot].mode = _desc[slot].mode;
+		memcpy_s(&(list->inputs[slot].keyboardMapping), INPUT_NUMBER*sizeof(int), &(_desc[slot].keyboardMapping), INPUT_NUMBER*sizeof(int));
+		memcpy_s(&(list->inputs[slot].gamepadMapping), INPUT_NUMBER*sizeof(int), &(_desc[slot].gamepadMapping), INPUT_NUMBER*sizeof(int));
 	}
 	return list;
 }
 
-void DestroyInputSettingsList(InputSettingsList* _list) {
+void _DestroyInputSettingsList(InputSettingsList* _list) {
 	if (_list) {
 		free(_list);
 	}
 }
 
-void UpdateInputSettingsList(InputSettingsList* _list) {
+void _UpdateInputSettingsList(InputSettingsList* _list) {
 	// Error check
 	if (!_list) { return; }
 

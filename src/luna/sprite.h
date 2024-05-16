@@ -50,29 +50,29 @@ typedef struct {
 /// @brief Update the sprites animation.
 /// @param _sprite Sprite pointer
 /// @param _dt Frame time
-void UpdateSprite(Sprite* _sprite, float _dt);
+void _UpdateSprite(Sprite* _sprite, float _dt);
 
 /// @brief Draw the given sprite in the scene.
 /// @param _sprite Sprite pointer
-void DrawSprite(Sprite* _sprite);
+void _DrawSprite(Sprite* _sprite);
 
 /// @brief Create a new sprite list.
 /// @param _depthSorting Enable sorting sprites by depth (position z-component).
 /// @return Sprite list pointer
-SpriteList* CreateSpriteList(bool _depthSorting);
+SpriteList* _CreateSpriteList(bool _depthSorting);
 
 /// @brief Deallocate a sprite list.
 /// @param _list Sprite list pointer
-void DestroySpriteList(SpriteList* _list);
+void _DestroySpriteList(SpriteList* _list);
 
 /// @brief Update all sprites in the list.
 /// @param _list Sprite list pointer
 /// @param _dt Frame time
-void UpdateSpriteList(SpriteList* _list, float _dt);
+void _UpdateSpriteList(SpriteList* _list, float _dt);
 
 /// @brief Draw all sprites in the list.
 /// @param _list Sprite list pointer
-void DrawSpriteList(SpriteList* _list);
+void _DrawSpriteList(SpriteList* _list);
 
 /// @brief Create a new sprite and add it to the list.
 /// @param _list Sprite list pointer

@@ -1,6 +1,6 @@
 #include "luna/sprite.h"
 
-void UpdateSprite(Sprite* _sprite, float _dt) {
+void _UpdateSprite(Sprite* _sprite, float _dt) {
 	if (!_sprite) { return; }
 
 	_sprite->timer = fmodf(_sprite->timer + _dt, _sprite->imageSpeed);
@@ -9,7 +9,7 @@ void UpdateSprite(Sprite* _sprite, float _dt) {
 	}
 }
 
-void DrawSprite(Sprite* _sprite) {
+void _DrawSprite(Sprite* _sprite) {
 	if (!_sprite) { return; }
 
 	float width = _sprite->texture.width / (float)_sprite->numCols;
@@ -25,7 +25,7 @@ void DrawSprite(Sprite* _sprite) {
 	DrawTextureRec(_sprite->texture, rec, _sprite->position, _sprite->tint);
 }
 
-SpriteList* CreateSpriteList(bool _depthSorting) {
+SpriteList* _CreateSpriteList(bool _depthSorting) {
 	SpriteList* list = calloc(1, sizeof *list);
 	if (!list) { return NULL; }
 	list->depthSorting = _depthSorting;
@@ -33,13 +33,13 @@ SpriteList* CreateSpriteList(bool _depthSorting) {
 	list->sprites = free_list_create(Sprite);
 	list->spriteDepthOrder = priority_queue_create(size_t);
 	if (!list->spriteIndices || !list->sprites || !list->spriteDepthOrder) {
-		DestroySpriteList(list);
+		_DestroySpriteList(list);
 		return NULL;
 	}
 	return list;
 }
 
-void DestroySpriteList(SpriteList* _list) {
+void _DestroySpriteList(SpriteList* _list) {
 	if (_list) {
 		unordered_map_destroy(_list->spriteIndices);
 		free_list_destroy(_list->sprites);
@@ -48,16 +48,16 @@ void DestroySpriteList(SpriteList* _list) {
 	}
 }
 
-void UpdateSpriteList(SpriteList* _list, float _dt) {
+void _UpdateSpriteList(SpriteList* _list, float _dt) {
 	if (!_list) { return; }
 
 	for(free_list_it_t* it = free_list_it(_list->sprites); it; free_list_it_next(it)) {
 		Sprite* sprite = it->data;
-		UpdateSprite(sprite, _dt);
+		_UpdateSprite(sprite, _dt);
 	}
 }
 
-void DrawSpriteList(SpriteList* _list) {
+void _DrawSpriteList(SpriteList* _list) {
 	if (!_list) { return; }
 
 	if (_list->depthSorting) {
@@ -65,7 +65,7 @@ void DrawSpriteList(SpriteList* _list) {
 			size_t idx = *(size_t*)(it->data);
 			Sprite* sprite = free_list_get(_list->sprites, idx);
 			if (sprite && sprite->visible) {
-				DrawSprite(sprite);
+				_DrawSprite(sprite);
 			}
 		}
 	}
@@ -73,7 +73,7 @@ void DrawSpriteList(SpriteList* _list) {
 		for(free_list_it_t* it = free_list_it(_list->sprites); it; free_list_it_next(it)) {
 			Sprite* sprite = it->data;
 			if (sprite->visible) {
-				DrawSprite(sprite);
+				_DrawSprite(sprite);
 			}
 		}
 	}	

@@ -12,7 +12,7 @@ void CreateGame(SettingsList* _settingsList, ResourceListDesc* _resourceDesc, si
 
 	// Create scene list
 	LUNA_DBG_LOG("=Creating scene list");
-	game->sceneList = CreateSceneList();
+	game->sceneList = _CreateSceneList();
 	if (!game->sceneList) {
 		LUNA_DBG_ERR("(CreateGame): Failed to create scene list!");
 	}
@@ -39,7 +39,7 @@ void CreateGame(SettingsList* _settingsList, ResourceListDesc* _resourceDesc, si
 
 	// Create resource list
 	LUNA_DBG_LOG("=Creating resource list");
-	game->resourceList = CreateResourceList(game->resourceDesc[0]);
+	game->resourceList = _CreateResourceList(game->resourceDesc[0]);
 	if (!game->resourceList) {
 		LUNA_DBG_ERR("(CreateGame): Failed to create resource list!");
 		goto create_game_failed;
@@ -54,9 +54,9 @@ void CreateGame(SettingsList* _settingsList, ResourceListDesc* _resourceDesc, si
 
 create_game_failed:
 	if (game) {
-		DestroySceneList(game->sceneList);
-		DestroyResourceList(game->resourceList);
-		DestroyInputSettingsList(game->settingsList->inputSettingsList);
+		_DestroySceneList(game->sceneList);
+		_DestroyResourceList(game->resourceList);
+		_DestroyInputSettingsList(game->settingsList->inputSettingsList);
 	}
 	free(game);
 	return;
@@ -65,9 +65,9 @@ create_game_failed:
 void DestroyGame() {
 	if (LUNA_GAME) {
 		LUNA_DBG_LOG("===Destroying game state===");
-		DestroySceneList(LUNA_SCENES);
-		DestroyResourceList(LUNA_RESOURCES);
-		DestroyInputSettingsList(LUNA_INPUTS);
+		_DestroySceneList(LUNA_SCENES);
+		_DestroyResourceList(LUNA_RESOURCES);
+		_DestroyInputSettingsList(LUNA_INPUTS);
 		free(LUNA_GAME);
 	}
 }
@@ -77,13 +77,13 @@ void UpdateGame() {
 
 	while(!WindowShouldClose()) {
 		// Update
-		UpdateInputSettingsList(LUNA_INPUTS);
-		UpdateSceneList(LUNA_SCENES, GetFrameTime());
+		_UpdateInputSettingsList(LUNA_INPUTS);
+		_UpdateSceneList(LUNA_SCENES, GetFrameTime());
 
 		// Draw
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
-		DrawSceneList(LUNA_SCENES);
+		_DrawSceneList(LUNA_SCENES);
 		EndDrawing();
 	}
 	CloseWindow();
@@ -118,12 +118,12 @@ void _LoadResourceFile(ResourceListDesc _desc) {
 	if (!LUNA_GAME) { return; }
 
 	// Create new resource list
-	ResourceList* list = CreateResourceList(_desc);
+	ResourceList* list = _CreateResourceList(_desc);
 	if (!list) {
 		LUNA_DBG_ERR("(LoadResourceFile): Failed to load resource file (%s)", _desc.resourceFile);
 		return;
 	}
-	DestroyResourceList(LUNA_RESOURCES);
+	_DestroyResourceList(LUNA_RESOURCES);
 	LUNA_RESOURCES = list;
 	return;
 }
@@ -202,7 +202,7 @@ SettingsList* GenerateDefaultSettings() {
 		inputSlotDesc[i].keyboardMapping[INPUT_LEFT] = KEY_LEFT;
 		inputSlotDesc[i].keyboardMapping[INPUT_RIGHT] = KEY_RIGHT;
 	}
-	settings->inputSettingsList = CreateInputSettingsList(inputSlotDesc, numInputSlots);
+	settings->inputSettingsList = _CreateInputSettingsList(inputSlotDesc, numInputSlots);
 	if (!settings->inputSettingsList) {
 		LUNA_DBG_ERR("(GenerateDefaultSettings): Failed to create input settings list!");
 		goto generate_settings_fail;
@@ -213,7 +213,7 @@ SettingsList* GenerateDefaultSettings() {
 generate_settings_fail:
 	if (settings) {
 		free(settings->videoSettingsList);
-		DestroyInputSettingsList(settings->inputSettingsList);
+		_DestroyInputSettingsList(settings->inputSettingsList);
 	}
 	free(settings);
 	free(inputSlotDesc);

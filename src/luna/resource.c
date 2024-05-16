@@ -1,6 +1,6 @@
 #include "luna/resource.h"
 
-ResourceList* CreateResourceList(ResourceListDesc _desc) {
+ResourceList* _CreateResourceList(ResourceListDesc _desc) {
 	// Create resource container
 	ResourceList* list = calloc(1, sizeof *list);
 	if (!list) { return NULL; }
@@ -12,7 +12,7 @@ ResourceList* CreateResourceList(ResourceListDesc _desc) {
 	list->meshCache = unordered_map_str_create(Mesh);
 	if (!list->dataCache || !list->textCache || !list->textureCache ||
 		!list->waveCache || !list->fontCache || !list->meshCache) {
-		DestroyResourceList(list);
+		_DestroyResourceList(list);
 		return NULL;
 	}
 
@@ -20,7 +20,7 @@ ResourceList* CreateResourceList(ResourceListDesc _desc) {
 	size_t fileLen = strlen(_desc.resourceFile);
 	list->resourceFile = calloc(fileLen + 1, 1);
 	if (!list->resourceFile) {
-		DestroyResourceList(list);
+		_DestroyResourceList(list);
 		return NULL;
 	}
 	strcpy_s(list->resourceFile, fileLen + 1, _desc.resourceFile);
@@ -28,7 +28,7 @@ ResourceList* CreateResourceList(ResourceListDesc _desc) {
 		size_t passLen = strlen(_desc.resourcePassword);
 		list->resourcePassword = calloc(passLen + 1, 1);
 		if (!list->resourcePassword) {
-			DestroyResourceList(list);
+			_DestroyResourceList(list);
 			return NULL;
 		}
 		strcpy_s(list->resourcePassword, passLen + 1, _desc.resourcePassword);
@@ -37,7 +37,7 @@ ResourceList* CreateResourceList(ResourceListDesc _desc) {
 	return list;
 }
 
-void DestroyResourceList(ResourceList* _list) {
+void _DestroyResourceList(ResourceList* _list) {
 	if (_list) {
 		for(unordered_map_str_it_t* it = unordered_map_str_it(_list->textureCache); it; unordered_map_str_it_next(it)) {
 			Texture2D* rsc = it->data;

@@ -51,20 +51,20 @@ typedef struct {
 
 /// @brief Create a new scene list.
 /// @return Scene list pointer
-SceneList* CreateSceneList();
+SceneList* _CreateSceneList();
 
 /// @brief Update all scenes in the list.
 /// @param _list Scene list pointer
 /// @param _dt Delta time factor
-void UpdateSceneList(SceneList* _list, float _dt);
+void _UpdateSceneList(SceneList* _list, float _dt);
 
 /// @brief Draw the current scene.
 /// @param _list Scene list pointer
-void DrawSceneList(SceneList* _list);
+void _DrawSceneList(SceneList* _list);
 
 /// @brief Deallocate the scene list.
 /// @param _list Scene list pointer
-void DestroySceneList(SceneList* _list);
+void _DestroySceneList(SceneList* _list);
 
 /// @brief Create a new scene for the list.
 /// @param _list Scene list pointer
@@ -89,19 +89,19 @@ void PopScene(SceneList* _list);
 /// @brief Get the id of the scene on top of the stack.
 /// @param _list Scene list pointer
 /// @return Scene id
-SceneID TopScene(SceneList* _list);
+SceneID GetTopScene(SceneList* _list);
 
 /// @brief Get the sprite list of the scene on top of the stack.
 /// @param _list Scene list pointer
 /// @return Sprite list pointer
-SpriteList* TopSceneSpriteList(SceneList* _list);
+SpriteList* GetTopSceneSprites(SceneList* _list);
 
 /// @brief Get the collision list of the scene on top of the stack.
 /// @param _list Scene list pointer
 /// @return Collision list pointer
-CollisionList* TopSceneCollisionList(SceneList* _list);
+CollisionList* GetTopSceneCollisions(SceneList* _list);
 
-#define LUNA_CURR_SPRITES TopSceneSpriteList(LUNA_SCENES)
-#define LUNA_CURR_COLLISION TopSceneCollisionList(LUNA_SCENES)
+#define LUNA_SPRITES GetTopSceneSprites(LUNA_SCENES)
+#define LUNA_COLLISIONS GetTopSceneCollisions(LUNA_SCENES)
 
 #endif

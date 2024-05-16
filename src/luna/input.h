@@ -67,15 +67,15 @@ typedef struct {
 /// @param _desc Array of input slot descriptors
 /// @param _num Number of elements in the array
 /// @return Input list pointer
-InputSettingsList* CreateInputSettingsList(InputSlotDesc* _desc, size_t _num);
+InputSettingsList* _CreateInputSettingsList(InputSlotDesc* _desc, size_t _num);
 
 /// @brief Deallocate an input list.
 /// @param _list Input list pointer
-void DestroyInputSettingsList(InputSettingsList* _list);
+void _DestroyInputSettingsList(InputSettingsList* _list);
 
 /// @brief Update the state of all input slots in the list.
 /// @param _list Input list pointer
-void UpdateInputSettingsList(InputSettingsList* _list);
+void _UpdateInputSettingsList(InputSettingsList* _list);
 
 /// @brief Get the movement direction for the given input slot as a vector.
 /// @param _list Input list pointer

@@ -1,25 +1,25 @@
 #include "luna/scene.h"
 
-SceneList* CreateSceneList() {
+SceneList* _CreateSceneList() {
 	SceneList* list = calloc(1, sizeof *list);
 	if (!list) { return NULL; }
 	list->sceneStack = stack_create(SceneID);
 	list->scenes = unordered_map_create(Scene);
 	if (!list->scenes || !list->sceneStack) { 
-		DestroySceneList(list);
+		_DestroySceneList(list);
 		return NULL;
 	}
 	return list;
 }
 
-void UpdateSceneList(SceneList* _list, float _dt) {
+void _UpdateSceneList(SceneList* _list, float _dt) {
 	if (!_list) { return; }
 
-	SceneID id = TopScene(_list);
+	SceneID id = GetTopScene(_list);
 	if (id != ID_NULL) {
 		Scene* scene = unordered_map_find(_list->scenes, id);
 		if (scene) {
-			UpdateSpriteList(scene->spriteList, _dt);
+			_UpdateSpriteList(scene->spriteList, _dt);
 			if (scene->updateFPtr) {
 				scene->updateFPtr(id, _dt);
 			}
@@ -27,19 +27,19 @@ void UpdateSceneList(SceneList* _list, float _dt) {
 	}
 }
 
-void DrawSceneList(SceneList* _list) {
+void _DrawSceneList(SceneList* _list) {
 	if (!_list) { return; }
 
-	SceneID id = TopScene(_list);
+	SceneID id = GetTopScene(_list);
 	if (id != ID_NULL) {
 		Scene* scene = unordered_map_find(_list->scenes, id);
 		if (scene) {
-			DrawSpriteList(scene->spriteList);
+			_DrawSpriteList(scene->spriteList);
 		}
 	}
 }
 
-void DestroySceneList(SceneList* _list) {
+void _DestroySceneList(SceneList* _list) {
 	if (_list) {
 		// Clear all scenes in the stack
 		while(stack_size(_list->sceneStack) > 0) {
@@ -65,8 +65,8 @@ SceneID CreateScene(SceneList* _list, SceneDesc _desc) {
 
 	SceneID id = _luna_id_generate();
 	Scene scene = {
-		.spriteList = CreateSpriteList(_desc.depthSorting),
-		.collisionMap = CreateCollisionMap(),
+		.spriteList = _CreateSpriteList(_desc.depthSorting),
+		.collisionMap = _CreateCollisionMap(),
 		.pushFPtr = _desc.pushFPtr,
 		.topFPtr = _desc.topFPtr,
 		.updateFPtr = _desc.updateFPtr,
@@ -74,8 +74,8 @@ SceneID CreateScene(SceneList* _list, SceneDesc _desc) {
 		.id = id
 	};
 	if (!scene.spriteList || !scene.collisionMap) {
-		DestroySpriteList(scene.spriteList);
-		DestroyCollisionMap(scene.collisionMap);
+		_DestroySpriteList(scene.spriteList);
+		_DestroyCollisionMap(scene.collisionMap);
 		return ID_NULL;
 	}
 	if (!unordered_map_insert(_list->scenes, id, &scene)) {
@@ -89,8 +89,8 @@ void DestroyScene(SceneList* _list, SceneID _id) {
 
 	Scene* scene = unordered_map_find(_list->scenes, _id);
 	if (scene) {
-		DestroySpriteList(scene->spriteList);
-		DestroyCollisionMap(scene->collisionMap);
+		_DestroySpriteList(scene->spriteList);
+		_DestroyCollisionMap(scene->collisionMap);
 		unordered_map_delete(_list->scenes, _id);
 	}
 }
@@ -113,7 +113,7 @@ void PushScene(SceneList* _list, SceneID _id) {
 void PopScene(SceneList* _list) {
 	if (!_list) { return; }
 
-	SceneID id = TopScene(_list);
+	SceneID id = GetTopScene(_list);
 	if (id != ID_NULL) {
 		Scene* scene = unordered_map_find(_list->scenes, id);
 		if (scene && scene->popFPtr) {
@@ -122,7 +122,7 @@ void PopScene(SceneList* _list) {
 	}
 	stack_pop(_list->sceneStack);
 
-	id = TopScene(_list);
+	id = GetTopScene(_list);
 	if (id != ID_NULL) {
 		Scene* scene = unordered_map_find(_list->scenes, id);
 		if (scene && scene->topFPtr) {
@@ -131,7 +131,7 @@ void PopScene(SceneList* _list) {
 	}
 }
 
-SceneID TopScene(SceneList* _list) {
+SceneID GetTopScene(SceneList* _list) {
 	if (!_list) { return ID_NULL; }
 
 	SceneID id = ID_NULL;
@@ -139,24 +139,25 @@ SceneID TopScene(SceneList* _list) {
 		if (stack_size(_list->sceneStack) == 0) { break; }
 		id = *(SceneID*)(stack_head(_list->sceneStack));
 		if (unordered_map_find(_list->scenes, id)) { break; }
+		LUNA_DBG_WARN("(GetTopScene) Scene id (%d) does not exist! Popping the stack & using the next value...", (int)id);
 		stack_pop(_list->sceneStack);
 	}
 	
 	return id;
 }
 
-SpriteList* TopSceneSpriteList(SceneList* _list) {
+SpriteList* GetTopSceneSprites(SceneList* _list) {
 	if (!_list) { return NULL; }
-	SceneID id = TopScene(_list);
+	SceneID id = GetTopScene(_list);
 	if (id == ID_NULL) { return NULL; }
 	Scene* scene = unordered_map_find(_list->scenes, id);
 	if (!scene) { return NULL; }
 	return scene->spriteList;
 }
 
-CollisionList* TopSceneCollisionList(SceneList* _list) {
+CollisionList* GetTopSceneCollisions(SceneList* _list) {
 	if (!_list) { return NULL; }
-	SceneID id = TopScene(_list);
+	SceneID id = GetTopScene(_list);
 	if (id == ID_NULL) { return NULL; }
 	Scene* scene = unordered_map_find(_list->scenes, id);
 	if (!scene) { return NULL; }

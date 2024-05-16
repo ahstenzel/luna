@@ -41,11 +41,11 @@ typedef struct {
 
 /// @brief Create a new 2D collision list.
 /// @return Collision list pointer
-CollisionList* CreateCollisionMap();
+CollisionList* _CreateCollisionMap();
 
 /// @brief Deallocate a 2D collision list.
 /// @param _list Collision List pointer
-void DestroyCollisionMap(CollisionList* _list);
+void _DestroyCollisionMap(CollisionList* _list);
 
 /// @brief Create a collision object in the map.
 /// @param _list Collision List pointer
