@@ -3,13 +3,14 @@
 size_t _free_list_buffer_size(size_t element_size, size_t capacity) {
 	size_t c = element_size * capacity;
 	if (c / capacity != element_size) { return 0; }
-	return LUNA_MAX(sizeof(free_list_t), offsetof(free_list_t, _buffer) + c);
+	size_t o = ((capacity/8)+1);
+	return LUNA_MAX(sizeof(free_list_t), offsetof(free_list_t, _buffer) + c + o);
 }
 
 free_list_t* _free_list_factory(size_t element_size, size_t capacity) {
 	size_t buffer_size = _free_list_buffer_size(element_size, capacity);
 	if (buffer_size == 0) { return NULL; }
-	size_t object_size = offsetof(free_list_t, _buffer) + ((capacity/8)+1) + buffer_size;
+	//size_t object_size = offsetof(free_list_t, _buffer) + ((capacity/8)+1) + buffer_size;
 	free_list_t* list = calloc(buffer_size, 1);
 	if (!list) { return NULL; }
 	list->_capacity = capacity;
@@ -28,8 +29,15 @@ free_list_t* _free_list_resize(free_list_t* list, size_t new_capacity) {
 	// Create a new list & copy data over
 	free_list_t* new_list = _free_list_factory(list->_element_size, new_capacity);
 	if (!new_list) { return NULL; }
-	size_t dest_size = list->_length * list->_element_size;
-	memcpy_s(new_list->_buffer, dest_size, list->_buffer, dest_size);
+
+	size_t bit_dest_size = (list->_capacity / 8) + 1;
+	memcpy_s(&new_list->_buffer[0], bit_dest_size, &list->_buffer[0], bit_dest_size);
+	size_t data_dest_size = list->_capacity * list->_element_size;
+	memcpy_s(_free_list_pos(new_list, 0), data_dest_size, _free_list_pos(list, 0), data_dest_size);
+
+	//size_t dest_size = list->_length * list->_element_size;
+	//memcpy_s(new_list->_buffer, dest_size, list->_buffer, dest_size);
+
 	new_list->_length = list->_length;
 	new_list->_next_free = list->_next_free;
 	free(list);

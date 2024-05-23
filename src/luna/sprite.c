@@ -15,7 +15,7 @@ void _DrawSprite(Sprite* _sprite) {
 	float width = _sprite->texture.width / (float)_sprite->numCols;
 	float height = _sprite->texture.height / (float)_sprite->numRows;
 	size_t col = _sprite->imageIndex % _sprite->numCols;
-	size_t row = _sprite->imageIndex % _sprite->numRows;
+	size_t row = _sprite->imageIndex / _sprite->numCols;
 	Rectangle rec = {
 		width*col,
 		height*row,
@@ -97,17 +97,17 @@ SpriteID CreateSprite(SpriteList* _list, SpriteDesc _desc) {
 		.timer = 0.f,
 		.visible = _desc.visible
 	};
-	size_t* idxPtr = NULL;
-	if (!free_list_insert(_list->sprites, idxPtr, &spr)) {
+	size_t idx = 0;
+	if (!free_list_insert(_list->sprites, &idx, &spr)) {
 		return ID_NULL;
 	}
-	if (!unordered_map_insert(_list->spriteIndices, id, *idxPtr)) {
-		free_list_remove(_list->sprites, *idxPtr);
+	if (!unordered_map_insert(_list->spriteIndices, id, &idx)) {
+		free_list_remove(_list->sprites, idx);
 		return ID_NULL;
 	}
 	if (_list->depthSorting) {
-		if (!priority_queue_push(_list->spriteDepthOrder, spr.depth, *idxPtr)) {
-			free_list_remove(_list->sprites, *idxPtr);
+		if (!priority_queue_push(_list->spriteDepthOrder, spr.depth, &idx)) {
+			free_list_remove(_list->sprites, idx);
 			unordered_map_delete(_list->spriteIndices, id);
 			return ID_NULL;
 		}

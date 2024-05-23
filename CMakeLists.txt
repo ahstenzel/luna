@@ -33,6 +33,7 @@ file (GLOB game_src
 )
 file (GLOB game_rsc
 	"rsc/settings.ini"
+	"rsc/luna.rres"
 )
 
 # Set output

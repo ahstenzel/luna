@@ -29,10 +29,14 @@ priority_queue_t* _priority_queue_resize(priority_queue_t* qu, size_t new_capaci
 	// Create new priority queue & copy data to it
 	priority_queue_t* new_qu = _priority_queue_factory(qu->_element_size, new_capacity);
 	if (!new_qu) { return NULL; }
-	size_t dest_size = qu->_length * qu->_element_size;
-	memcpy_s(new_qu->_buffer, dest_size, qu->_buffer, dest_size);
+	size_t value_dest_size = qu->_capacity * sizeof(priority_queue_value_t);
+	memcpy_s(_priority_queue_value_pos(new_qu, 0), value_dest_size, _priority_queue_value_pos(qu, 0), value_dest_size);
+	size_t data_dest_size = qu->_capacity * qu->_element_size;
+	memcpy_s(_priority_queue_data_pos(new_qu, 0), data_dest_size, _priority_queue_data_pos(qu, 0), data_dest_size);
+
 	new_qu->_length = qu->_length;
 	free(qu);
+	_priority_queue_sort(new_qu);
 	return new_qu;
 }
 
@@ -49,15 +53,20 @@ void* _priority_queue_insert(priority_queue_t** qu, priority_queue_value_t value
 		_qu = temp;
 	}
 
-	// Copy element to end
-	void* dest = (void*)(_priority_queue_data_pos(_qu, _qu->_length));
-	size_t dest_size = _qu->_element_size;
-	memcpy_s(dest, dest_size, data, dest_size);
+	// Copy value to end
+	void* value_dest = (void*)(_priority_queue_value_pos(_qu, _qu->_length));
+	size_t value_dest_size = sizeof(priority_queue_value_t);
+	memcpy_s(value_dest, value_dest_size, &value, value_dest_size);
+
+	// Copy data to end
+	void* data_dest = (void*)(_priority_queue_data_pos(_qu, _qu->_length));
+	size_t data_dest_size = _qu->_element_size;
+	memcpy_s(data_dest, data_dest_size, data, data_dest_size);
 	_qu->_length++;
 
 	// Sort list
 	_priority_queue_sort(_qu);
-	return dest;
+	return data_dest;
 }
 
 void _priority_queue_remove(priority_queue_t* qu, size_t count) {

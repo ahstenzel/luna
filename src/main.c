@@ -8,9 +8,9 @@ int main() {
 
 	// Define resource files
 	ResourceListDesc resourceLists = {
-		.resourceFile = "",
-		.resourcePassword = "",
-		.resourceName = ""
+		.resourceFile = "luna.rres",
+		.resourcePassword = "password12345",
+		.resourceName = "default"
 	};
 
 	// Initialize game state
