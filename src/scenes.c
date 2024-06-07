@@ -2,7 +2,7 @@
 
 SceneID scene_first;
 SceneDesc scene_first_desc = {
-	.depthSorting = false,
+	.depthSorting = true,
 	.topFPtr = NULL,
 	.updateFPtr = scene_first_fn_update,
 	.popFPtr = scene_first_fn_pop,

@@ -134,4 +134,6 @@ priority_queue_it_t* _priority_queue_it_value(priority_queue_t*, priority_queue_
 
 void _priority_queue_it_next(priority_queue_it_t**);
 
+char* _priority_queue_print(priority_queue_t*);
+
 #endif	// LUNA_STD_PRIORITY_QUEUE_H

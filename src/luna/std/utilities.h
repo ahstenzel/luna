@@ -16,6 +16,8 @@
 #include <assert.h>
 #include <math.h>
 #include <memory.h>
+#include <stdio.h>
+#include <stdarg.h>
 
 //----------------------------------------------------------------------------------
 // Functional macros
