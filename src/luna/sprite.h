@@ -13,6 +13,8 @@ typedef _LUNA_ID_TYPE SpriteID;
 typedef struct {
 	Texture2D texture;
 	Vector2 position;
+	Vector2 scale;
+	Vector2 origin;
 	Color tint;
 	int depth;
 	int imageIndex;
@@ -21,6 +23,7 @@ typedef struct {
 	unsigned int numRows;
 	unsigned int numCols;
 	float imageSpeed;
+	float rotation;
 	float timer;
 	bool visible;
 } Sprite;
@@ -29,6 +32,8 @@ typedef struct {
 typedef struct {
 	Texture2D texture;
 	Vector2 position;
+	Vector2 scale;
+	Vector2 origin;
 	Color tint;
 	int depth;
 	int imageIndex;
@@ -36,6 +41,7 @@ typedef struct {
 	unsigned int numRows;
 	unsigned int numCols;
 	float imageSpeed;
+	float rotation;
 	bool visible;
 } SpriteDesc;
 

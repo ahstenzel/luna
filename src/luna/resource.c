@@ -222,7 +222,6 @@ int GetTexture(ResourceList* _list, char* _filename, Texture2D* _texture) {
 		rresUnloadResourceChunk(chunk);
 	}
 	else {
-		LUNA_DBG_ERR("(GetTexture): Failed to load texture (%s) [Error code %d]", _filename, result);
 		rresUnloadResourceChunk(chunk);
 		return -1;
 	}

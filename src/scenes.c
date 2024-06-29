@@ -10,46 +10,93 @@ SceneDesc scene_first_desc = {
 };
 
 void GameRegisterScenes() {
+	// ============================================================ First scene
+	// Create scene
 	scene_first = CreateScene(LUNA_SCENES, scene_first_desc);
 	PushScene(LUNA_SCENES, scene_first);
+	// Create tilemap
+	LUNA_DBG_LOG("(GameRegisterScenes) Loading tilemap texture");
+	Texture2D tex_tile_default; GetTexture(LUNA_RESOURCES, "tiles/default.png", &tex_tile_default);
+	LUNA_DBG_LOG("(GameRegisterScenes) Create tilemap");
+	TilemapDesc scene_first_tiles_desc = {
+		.texture = tex_tile_default,
+		.texTileSize = {16, 16},
+		.texTileSpacing = {0, 0},
+		.texOffset = {0, 0},
+		.sceneMapSize = {40, 30},
+		.sceneOffset = {0, 0},
+		.tint = WHITE
+	};
+	Tilemap* scene_first_tiles = CreateSceneTilemap(LUNA_SCENES, scene_first, scene_first_tiles_desc);
+	if (!scene_first_tiles) { LUNA_DBG_ERR("Failed to create tilemap!"); }
+	unsigned int scene_first_tiles_map[1200];
+	for(size_t i=0; i<1200; ++i) { 
+		Vector2i pos = {(int32_t)i % 40, (int32_t)i / 40};
+		if (pos.x == 0) {
+			if (pos.y == 0) { scene_first_tiles_map[i] = 1; }
+			else if (pos.y == 29) { scene_first_tiles_map[i] = 7; }
+			else { scene_first_tiles_map[i] = 4; }
+		}
+		else if (pos.x == 39) {
+			if (pos.y == 0) { scene_first_tiles_map[i] = 3; }
+			else if (pos.y == 29) { scene_first_tiles_map[i] = 9; }
+			else { scene_first_tiles_map[i] = 6; }
+		}
+		else {
+			if (pos.y == 0) { scene_first_tiles_map[i] = 2; }
+			else if (pos.y == 29) { scene_first_tiles_map[i] = 8; }
+			else { scene_first_tiles_map[i] = 5; }
+		} 
+	}
+	int ret = SetTilemapIndexAll(scene_first_tiles, scene_first_tiles_map, 1200);
+	if (ret != 0) { LUNA_DBG_ERR("Failed to set tilemap data! Error (%d)", ret); }
 }
 
 void scene_first_fn_push(SceneID _id) {
-	Texture2D tex_spr_test; GetTexture(LUNA_RESOURCES, "block.png", &tex_spr_test);
+	Texture2D tex_spr_test; GetTexture(LUNA_RESOURCES, "sprites/face.png", &tex_spr_test);
 	SpriteDesc dsc_spr_test_1 = {
 		.texture = tex_spr_test,
 		.position = {64.0f, 64.0f},
+		.scale = {2.0f, 2.0f},
+		.origin = {0.0f, 0.0f},
 		.tint = WHITE,
 		.depth = 0,
 		.imageIndex = 0,
-		.imageNum = 2,
+		.imageNum = 3,
 		.numRows = 1,
-		.numCols = 2,
+		.numCols = 3,
 		.imageSpeed = 1.0f,
+		.rotation = 0.0f,
 		.visible = true
 	};
 	SpriteDesc dsc_spr_test_2 = {
 		.texture = tex_spr_test,
 		.position = {128.0f, 64.0f},
+		.scale = {2.0f, 2.0f},
+		.origin = {0.5f, 0.5f},
 		.tint = PINK,
 		.depth = 0,
 		.imageIndex = 0,
-		.imageNum = 2,
+		.imageNum = 3,
 		.numRows = 1,
-		.numCols = 2,
+		.numCols = 3,
 		.imageSpeed = 0.5f,
+		.rotation = 10.0f,
 		.visible = true
 	};
 	SpriteDesc dsc_spr_test_3 = {
 		.texture = tex_spr_test,
 		.position = {192.0f, 64.0f},
+		.scale = {2.0f, 2.0f},
+		.origin = {1.0f, 1.0f},
 		.tint = RED,
 		.depth = 0,
 		.imageIndex = 0,
-		.imageNum = 2,
+		.imageNum = 3,
 		.numRows = 1,
-		.numCols = 2,
+		.numCols = 3,
 		.imageSpeed = 0.25f,
+		.rotation = 20.0f,
 		.visible = true
 	};
 	SpriteID test_sprite_1 = CreateSprite(LUNA_SPRITES, dsc_spr_test_1);

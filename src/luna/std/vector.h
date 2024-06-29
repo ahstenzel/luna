@@ -20,6 +20,12 @@
 /// @return Vector pointer
 #define vector_create(t) _vec_factory(sizeof(t), VECTOR_DEFAULT_CAPACITY)
 
+/// @brief Create a new vector preallocated to a certain size.
+/// @param t Vector type
+/// @param s Initial capacity
+/// @return Vector pointer
+#define vector_create_size(t, s) _vec_factory(sizeof(t), s)
+
 /// @brief Deallocate a vector.
 /// @param v Vector pointer
 #define vector_destroy(v) free(v)
@@ -44,10 +50,9 @@
 /// @param v Vector pointer
 /// @param i Index
 /// @param d Data pointer
-#define vector_set(v, i, d) \
-({ \
+#define vector_set(v, i, d) { \
 	if (i < (v)->_length && i >= 0) memcpy_s(_vec_pos(v, i), (v)->_element_size, d, (v)->_element_size); \
-})
+}
 
 /// @brief Get the number of elements in the vector.
 /// @param v Vector pointer

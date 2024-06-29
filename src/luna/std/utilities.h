@@ -177,6 +177,9 @@ Vector2i Vector2iClamp(Vector2i v, Vector2i min, Vector2i max);
 // Check whether two given vectors are almost equal
 int Vector2iEquals(Vector2i p, Vector2i q);
 
+// Cast an integer vector to a float vector.
+Vector2 Vector2iCastFloat(Vector2i v);
+
 //----------------------------------------------------------------------------------
 // Vector3i math
 //----------------------------------------------------------------------------------
@@ -257,6 +260,9 @@ Vector3i Vector3iClamp(Vector3i v, Vector3i min, Vector3i max);
 // Check whether two given vectors are almost equal
 int Vector3iEquals(Vector3i p, Vector3i q);
 
+// Cast an integer vector to a float vector.
+Vector3 Vector3iCastFloat(Vector3i v);
+
 //----------------------------------------------------------------------------------
 // Vector4i math
 //----------------------------------------------------------------------------------
@@ -293,5 +299,8 @@ Vector4i Vector4iDivideValue(Vector4i q, int32_t val);
 
 // Negate provided vector (invert direction)
 Vector4i Vector4iNegate(Vector4i q);
+
+// Cast an integer vector to a float vector.
+Vector4 Vector4iCastFloat(Vector4i v);
 
 #endif // LUNA_STD_UTILITIES_H

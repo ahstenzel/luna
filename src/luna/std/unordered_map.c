@@ -152,9 +152,10 @@ void* _umap_find(unordered_map_t* umap, _umap_key_t key) {
 	// Hash key again
 	_umap_hash_t h = _umap_hash(key);
 	size_t pos = _umap_h1(h) & (umap->_capacity - 1);
+	size_t first_pos = pos;
 
 	// Linear probe to find key
-	while (1) {
+	do {
 		uint8_t* ctrl = _umap_ctrl(umap, pos);
 		// Check if this control byte matches lower byte of hash
 		_umap_hash_t h2 = _umap_h2(h);
@@ -172,7 +173,8 @@ void* _umap_find(unordered_map_t* umap, _umap_key_t key) {
 			// Look at next control byte
 			pos = (pos + 1) & (umap->_capacity - 1);
 		}
-	}
+	} while(pos != first_pos);
+	return NULL;
 }
 
 unordered_map_it_t* _umap_it(unordered_map_t* umap) {

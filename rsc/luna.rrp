@@ -1,0 +1,10 @@
+#
+# rrp v1.0 - rres project text file generated using rrespacker
+#
+# File info expected structure:
+# f <fileFullPath@mappingFileName>,<external-link>,<force-raw>,<custom-id>,<compressor>,<cipher>
+#
+# Number of files:     2
+#
+f C:\Users\alexh\Documents\GitHub\luna\rsc\sprites\face.png@sprites/face.png,0,0,0x00000000,0,0
+f C:\Users\alexh\Documents\GitHub\luna\rsc\tiles\default.png@tiles/default.png,0,0,0x00000000,0,0

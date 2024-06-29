@@ -26,6 +26,7 @@ file(GLOB luna_src
 	"src/luna/scene.c"
 	"src/luna/sprite.c"
 	"src/luna/input.c"
+	"src/luna/tile.c"
 )
 file (GLOB game_src
 	"src/main.c"

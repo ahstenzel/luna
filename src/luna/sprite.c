@@ -16,13 +16,21 @@ void _DrawSprite(Sprite* _sprite) {
 	float height = _sprite->texture.height / (float)_sprite->numRows;
 	size_t col = _sprite->imageIndex % _sprite->numCols;
 	size_t row = _sprite->imageIndex / _sprite->numCols;
-	Rectangle rec = {
+	Rectangle source = {
 		width*col,
 		height*row,
 		width,
 		height
 	};
-	DrawTextureRec(_sprite->texture, rec, _sprite->position, _sprite->tint);
+	Rectangle dest = {
+		_sprite->position.x,
+		_sprite->position.y,
+		width * _sprite->scale.x,
+		height * _sprite->scale.y
+	};
+	Vector2 origin = {_sprite->origin.x * width * _sprite->scale.x, _sprite->origin.y * height * _sprite->scale.y};
+	DrawTexturePro(_sprite->texture, source, dest, origin, _sprite->rotation, _sprite->tint);
+	//DrawTextureRec(_sprite->texture, source, _sprite->position, _sprite->tint);
 }
 
 SpriteList* _CreateSpriteList(bool _depthSorting) {
@@ -86,6 +94,8 @@ SpriteID CreateSprite(SpriteList* _list, SpriteDesc _desc) {
 	Sprite spr = {
 		.texture = _desc.texture,
 		.position = _desc.position,
+		.scale = _desc.scale,
+		.origin = _desc.origin,
 		.tint = _desc.tint,
 		.depth = _desc.depth,
 		.imageIndex = _desc.imageIndex,
@@ -94,6 +104,7 @@ SpriteID CreateSprite(SpriteList* _list, SpriteDesc _desc) {
 		.numRows = _desc.numRows,
 		.numCols = _desc.numCols,
 		.imageSpeed = _desc.imageSpeed,
+		.rotation = _desc.rotation,
 		.timer = 0.f,
 		.visible = _desc.visible
 	};

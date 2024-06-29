@@ -136,6 +136,11 @@ int Vector2iEquals(Vector2i p, Vector2i q) {
 	return result;
 }
 
+Vector2 Vector2iCastFloat(Vector2i v) {
+	Vector2 result = { (float)(v.x), (float)(v.y) };
+	return result;
+}
+
 Vector3i Vector3iZero(void) {
 	Vector3i result = { 0, 0, 0 };
 	return result;
@@ -332,6 +337,11 @@ int Vector3iEquals(Vector3i p, Vector3i q) {
 	return result;
 }
 
+Vector3 Vector3iCastFloat(Vector3i v) {
+	Vector3 result = { (float)(v.x), (float)(v.y), (float)(v.z) };
+	return result;
+}
+
 Vector4i Vector4iAdd(Vector4i q1, Vector4i q2) {
 	Vector4i result = {q1.x + q2.x, q1.y + q2.y, q1.z + q2.z, q1.w + q2.w};
 	return result;
@@ -393,6 +403,11 @@ Vector4i Vector4iDivideValue(Vector4i q, int32_t val) {
 
 Vector4i Vector4iNegate(Vector4i q) {
 	Vector4i result = { -q.x, -q.y, -q.z, -q.w };
+	return result;
+}
+
+Vector4 Vector4iCastFloat(Vector4i v) {
+	Vector4 result = { (float)(v.x), (float)(v.y), (float)(v.z), (float)(v.w) };
 	return result;
 }
 
