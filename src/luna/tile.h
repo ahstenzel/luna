@@ -6,7 +6,13 @@
 */
 #include "luna/common.h"
 
-#define TILE_NULL 0
+/// @brief Unique tilemap identifier
+typedef _LUNA_ID_TYPE TilemapID;
+
+/// @brief Tile index type
+typedef unsigned int TileIdx;
+
+#define TILE_NULL (TileIdx)0
 
 /// @brief Check if the given grid square is within the bounds of the scenes tile map.
 /// @param t Tilemap object pointer
@@ -18,7 +24,7 @@
 /// @param i Tile index
 #define _tile_valid_idx(t, i) ((i) >= 0 && (int32_t)(i) < (((t)->texMapSize.x * (t)->texMapSize.y) + 1))
 
-/// @brief Grid of tiles
+/// @brief 2D grid of tiles
 typedef struct {
 	Texture2D texture;			/* Base texture */
 	Color tint;					/* Color tint */
@@ -29,9 +35,11 @@ typedef struct {
 	Vector2i sceneMapSize;		/* Size (in grid squares) of the tile map in the scene */
 	Vector2i texMapSize;		/* Size (in grid squares) of the tile map in the texture */
 	vector_t* _data;			/* Container of tile data */
+	int depth;					/* Draw depth */
+	bool visible;				/* Visibility flag */
 } Tilemap;
 
-/// @brief Descriptor for creating a tile object
+/// @brief Descriptor for creating a tilemap object
 typedef struct {
 	Texture2D texture;			/* Base texture */
 	Color tint;					/* Color tint */
@@ -40,50 +48,104 @@ typedef struct {
 	Vector2i texTileSize;		/* Size (in pixels) of a single tile in the texture */
 	Vector2i texTileSpacing;	/* Space (in pixels) between tiles in the texture */
 	Vector2i sceneMapSize;		/* Size (in grid squares) of the tile map in the scene */
+	int depth;					/* Draw depth */
+	bool visible;				/* Visibility flag */
 } TilemapDesc;
+
+/// @brief Organized list of tilemaps
+typedef struct {
+	unordered_map_t* tilemapIndices;		/* Map unique tilemap IDs to container indices */
+	free_list_t* tilemaps;					/* Container of tilemap data */
+	priority_queue_t* tilemapDepthOrder;	/* Sort tilemap indices by depth value */
+	bool depthSorting;						/* Enable depth sorting */
+} TilemapList;
 
 /// @brief Draw the tilemap.
 /// @param _tile Tile object pointer
 void _DrawTilemap(Tilemap* _tile);
 
-/// @brief Create a new tilemap object. If an error occurred, _errno will be set to nonzero value.
-/// @param _desc Tilemap descriptor
-/// @return Tilemap object pointer, or NULL on failure
-Tilemap* _CreateTilemap(TilemapDesc _desc);
+/// @brief Create a new tilemap list
+/// @param depthSorting Enable sorting tilemaps by depth
+/// @return Tilemap list pointer
+TilemapList* _CreateTilemapList(bool depthSorting);
 
-/// @brief Deallocate the tilemap object.
-/// @param _tile Tilemap object pointer
-void _DestroyTilemap(Tilemap* _tile);
+/// @brief Deallocate a tilemap list.
+/// @param _list Tilemap list pointer
+void _DestroyTilemapList(TilemapList* _list);
+
+/// @brief Draw all tilemaps in the list.
+/// @param _list Tilemap list pointer
+void _DrawTilemapList(TilemapList* _list);
+
+/// @brief Create a new tilemap object and add it to the list.
+/// @param _list Tilemap list pointer
+/// @param _desc Tilemap descriptor
+/// @return Tilemap id
+TilemapID CreateTilemap(TilemapList* _list, TilemapDesc _desc);
+
+/// @brief Remove the tilemap from the list.
+/// @param _list Tilemap list poitner
+/// @param _id Tilemap id
+void DestroyTilemap(TilemapList* _list, TilemapID _id);
 
 /// @brief Get the tilemap scene grid square at the given worldspace position.
-/// @param _tile Tilemap object pointer
+/// @param _list Tilemap list poitner
+/// @param _id Tilemap id
 /// @param _pos Worlspace position
 /// @return Tilemap scene grid square
-Vector2i GetTilemapGridFromPosition(Tilemap* _tile, Vector2 _pos);
+Vector2i GetTilemapGridFromPosition(TilemapList* _list, TilemapID _id, Vector2 _pos);
 
 /// @brief Get the index of the tile at the given grid square in the base texture.
-/// @param _tile Tilemap object pointer
+/// @param _list Tilemap list poitner
+/// @param _id Tilemap id
 /// @param _grid Tilemap texture grid sqaure
 /// @return Tile index
-unsigned int GetTileTextureIndex(Tilemap* _tile, Vector2i _grid);
+TileIdx GetTileTextureIndex(TilemapList* _list, TilemapID _id, Vector2i _grid);
 
 /// @brief Get the index of the tile at the given grid square in the map.
-/// @param _tile Tilemap object pointer
+/// @param _list Tilemap list poitner
+/// @param _id Tilemap id
 /// @param _grid Tilemap scene grid square
 /// @return Tile index
-unsigned int GetTilemapIndex(Tilemap* _tile, Vector2i _grid);
+TileIdx GetTilemapIndex(TilemapList* _list, TilemapID _id, Vector2i _grid);
 
 /// @brief Set the index of the tile at the given grid square in the map.
-/// @param _tile Tilemap object pointer
+/// @param _list Tilemap list poitner
+/// @param _id Tilemap id
 /// @param _grid Tilemap scene grid square
 /// @param _idx Return code (Zero if successful, nonzero otherwize)
-int SetTilemapIndex(Tilemap* _tile, Vector2i _grid, unsigned int _idx);
+int SetTilemapIndex(TilemapList* _list, TilemapID _id, Vector2i _grid, TileIdx _idx);
 
 /// @brief Set the index of every tile using the given array of indices.
-/// @param _tile Tilemap object pointer
+/// @param _list Tilemap list poitner
+/// @param _id Tilemap id
 /// @param _data Array of tile indices
 /// @param _dataSize Size of array
 /// @return Return code (Zero if successful, nonzero otherwize)
-int SetTilemapIndexAll(Tilemap* _tile, unsigned int* _data, size_t _dataSize);
+int SetTilemapIndexAll(TilemapList* _list, TilemapID _id, TileIdx* _data, size_t _dataSize);
+
+/// @brief Set the tilemaps draw depth.
+/// @param _list Tilemap list pointer
+/// @param _id Tilemap id
+/// @param _depth Depth
+void SetTilemapDepth(TilemapList* _list, TilemapID _id, int _depth);
+
+/// @brief Get the tilemaps draw depth.
+/// @param _list Tilemap list pointer
+/// @param _id Tilemap id
+/// @return Depth
+int GetTilemapDepth(TilemapList* _list, TilemapID _id);
+
+/// @brief Set whether or not the tilemap should be drawn.
+/// @param _list Tilemap list pointer
+/// @param _id Tilemap id
+/// @param _visible If true, tilemap will be drawn
+void SetTilemapVisible(TilemapList* _list, TilemapID _id, bool _visible);
+
+/// @brief Get whether or not the tilemap should be drawn.
+/// @param _list Tilemap list pointer
+/// @param _id Tilemap id
+/// @return If true, tilemap will be drawn
+bool GetTilemapVisible(TilemapList* _list, TilemapID _id);
 
 #endif

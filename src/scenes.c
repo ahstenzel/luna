@@ -14,22 +14,23 @@ void GameRegisterScenes() {
 	// Create scene
 	scene_first = CreateScene(LUNA_SCENES, scene_first_desc);
 	PushScene(LUNA_SCENES, scene_first);
+
 	// Create tilemap
-	LUNA_DBG_LOG("(GameRegisterScenes) Loading tilemap texture");
 	Texture2D tex_tile_default; GetTexture(LUNA_RESOURCES, "tiles/default.png", &tex_tile_default);
-	LUNA_DBG_LOG("(GameRegisterScenes) Create tilemap");
-	TilemapDesc scene_first_tiles_desc = {
+	TilemapDesc scene_first_tilemap_desc = {
 		.texture = tex_tile_default,
 		.texTileSize = {16, 16},
 		.texTileSpacing = {0, 0},
 		.texOffset = {0, 0},
 		.sceneMapSize = {40, 30},
 		.sceneOffset = {0, 0},
-		.tint = WHITE
+		.tint = WHITE,
+		.depth = 0,
+		.visible = true
 	};
-	Tilemap* scene_first_tiles = CreateSceneTilemap(LUNA_SCENES, scene_first, scene_first_tiles_desc);
-	if (!scene_first_tiles) { LUNA_DBG_ERR("Failed to create tilemap!"); }
-	unsigned int scene_first_tiles_map[1200];
+	TilemapList* scene_first_tilemap_list = GetSceneTilemapList(LUNA_SCENES, scene_first);
+	TilemapID scene_first_tilemap = CreateTilemap(scene_first_tilemap_list, scene_first_tilemap_desc);
+	TileIdx scene_first_tiles_map[1200];
 	for(size_t i=0; i<1200; ++i) { 
 		Vector2i pos = {(int32_t)i % 40, (int32_t)i / 40};
 		if (pos.x == 0) {
@@ -48,7 +49,7 @@ void GameRegisterScenes() {
 			else { scene_first_tiles_map[i] = 5; }
 		} 
 	}
-	int ret = SetTilemapIndexAll(scene_first_tiles, scene_first_tiles_map, 1200);
+	int ret = SetTilemapIndexAll(scene_first_tilemap_list, scene_first_tilemap, scene_first_tiles_map, 1200);
 	if (ret != 0) { LUNA_DBG_ERR("Failed to set tilemap data! Error (%d)", ret); }
 }
 

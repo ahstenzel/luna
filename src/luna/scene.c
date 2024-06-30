@@ -34,7 +34,7 @@ void _DrawSceneList(SceneList* _list) {
 	if (id != ID_NULL) {
 		Scene* scene = unordered_map_find(_list->scenes, id);
 		if (scene) {
-			_DrawTilemap(scene->tilemap);
+			_DrawTilemapList(scene->tilemapList);
 			_DrawSpriteList(scene->spriteList);
 		}
 	}
@@ -50,6 +50,7 @@ void _DestroySceneList(SceneList* _list) {
 				if (scene && scene->popFPtr) {
 					scene->popFPtr(id);
 				}
+				DestroyScene(_list, id);
 			}
 			stack_pop(_list->sceneStack);
 		}
@@ -68,16 +69,17 @@ SceneID CreateScene(SceneList* _list, SceneDesc _desc) {
 	Scene scene = {
 		.spriteList = _CreateSpriteList(_desc.depthSorting),
 		.collisionMap = _CreateCollisionMap(),
-		.tilemap = NULL,
+		.tilemapList = _CreateTilemapList(_desc.depthSorting),
 		.pushFPtr = _desc.pushFPtr,
 		.topFPtr = _desc.topFPtr,
 		.updateFPtr = _desc.updateFPtr,
 		.popFPtr = _desc.popFPtr,
 		.id = id
 	};
-	if (!scene.spriteList || !scene.collisionMap) {
+	if (!scene.spriteList || !scene.collisionMap || !scene.tilemapList) {
 		_DestroySpriteList(scene.spriteList);
 		_DestroyCollisionMap(scene.collisionMap);
+		_DestroyTilemapList(scene.tilemapList);
 		return ID_NULL;
 	}
 	if (!unordered_map_insert(_list->scenes, id, &scene)) {
@@ -93,7 +95,7 @@ void DestroyScene(SceneList* _list, SceneID _id) {
 	if (scene) {
 		_DestroySpriteList(scene->spriteList);
 		_DestroyCollisionMap(scene->collisionMap);
-		_DestroyTilemap(scene->tilemap);
+		_DestroyTilemapList(scene->tilemapList);
 		unordered_map_delete(_list->scenes, _id);
 	}
 }
@@ -149,60 +151,23 @@ SceneID GetTopScene(SceneList* _list) {
 	return id;
 }
 
-Tilemap* CreateSceneTilemap(SceneList* _list, SceneID _id, TilemapDesc _desc) {
-	if (!_list) { return NULL; }
-
+SpriteList* GetSceneSpriteList(SceneList* _list, SceneID _id) {
+	if (!_list || _id == ID_NULL) { return NULL; }
 	Scene* scene = unordered_map_find(_list->scenes, _id);
-	if (scene) {
-		// Create new tilemap
-		Tilemap* tmp = _CreateTilemap(_desc);
-		if (!tmp) {
-			LUNA_DBG_ERR("(CreateSceneTilemap) Failed to create tilemap!");
-			return NULL;
-		}
-
-		// Overwrite existing tilemap
-		if (scene->tilemap) {
-			_DestroyTilemap(scene->tilemap);
-			free(scene->tilemap);
-		}
-		scene->tilemap = tmp;
-		return scene->tilemap;
-	}
-	return NULL;
-}
-
-Tilemap* GetSceneTilemap(SceneList* _list, SceneID _id) {
-	if (!_list) { return NULL; }
-
-	Scene* scene = unordered_map_find(_list->scenes, _id);
-	if (scene) { return scene->tilemap; }
-	return NULL;
-}
-
-Tilemap* _GetTopSceneTilemap(SceneList* _list) {
-	if (!_list) { return NULL; }
-	SceneID id = GetTopScene(_list);
-	if (id == ID_NULL) { return NULL; }
-	Scene* scene = unordered_map_find(_list->scenes, id);
-	if (!scene) { return NULL; }
-	return scene->tilemap;
-}
-
-SpriteList* _GetTopSceneSprites(SceneList* _list) {
-	if (!_list) { return NULL; }
-	SceneID id = GetTopScene(_list);
-	if (id == ID_NULL) { return NULL; }
-	Scene* scene = unordered_map_find(_list->scenes, id);
 	if (!scene) { return NULL; }
 	return scene->spriteList;
 }
 
-CollisionList* _GetTopSceneCollisions(SceneList* _list) {
-	if (!_list) { return NULL; }
-	SceneID id = GetTopScene(_list);
-	if (id == ID_NULL) { return NULL; }
-	Scene* scene = unordered_map_find(_list->scenes, id);
+CollisionList* GetSceneCollisionMap(SceneList* _list, SceneID _id) {
+	if (!_list || _id == ID_NULL) { return NULL; }
+	Scene* scene = unordered_map_find(_list->scenes, _id);
 	if (!scene) { return NULL; }
 	return scene->collisionMap;
+}
+
+TilemapList* GetSceneTilemapList(SceneList* _list, SceneID _id) {
+	if (!_list || _id == ID_NULL) { return NULL; }
+	Scene* scene = unordered_map_find(_list->scenes, _id);
+	if (!scene) { return NULL; }
+	return scene->tilemapList;
 }

@@ -3,8 +3,8 @@
 void _UpdateSprite(Sprite* _sprite, float _dt) {
 	if (!_sprite) { return; }
 
-	_sprite->timer = fmodf(_sprite->timer + _dt, _sprite->imageSpeed);
-	if (_sprite->timer < _dt) {
+	_sprite->_timer = fmodf(_sprite->_timer + _dt, _sprite->imageSpeed);
+	if (_sprite->_timer < _dt) {
 		_sprite->imageIndex = (_sprite->imageIndex + 1) % _sprite->imageNum;
 	}
 }
@@ -30,7 +30,6 @@ void _DrawSprite(Sprite* _sprite) {
 	};
 	Vector2 origin = {_sprite->origin.x * width * _sprite->scale.x, _sprite->origin.y * height * _sprite->scale.y};
 	DrawTexturePro(_sprite->texture, source, dest, origin, _sprite->rotation, _sprite->tint);
-	//DrawTextureRec(_sprite->texture, source, _sprite->position, _sprite->tint);
 }
 
 SpriteList* _CreateSpriteList(bool _depthSorting) {
@@ -84,7 +83,7 @@ void _DrawSpriteList(SpriteList* _list) {
 				_DrawSprite(sprite);
 			}
 		}
-	}	
+	}
 }
 
 SpriteID CreateSprite(SpriteList* _list, SpriteDesc _desc) {
@@ -105,7 +104,7 @@ SpriteID CreateSprite(SpriteList* _list, SpriteDesc _desc) {
 		.numCols = _desc.numCols,
 		.imageSpeed = _desc.imageSpeed,
 		.rotation = _desc.rotation,
-		.timer = 0.f,
+		._timer = 0.f,
 		.visible = _desc.visible
 	};
 	size_t idx = 0;
@@ -154,6 +153,21 @@ void SetSpritePosition(SpriteList* _list, SpriteID _id, Vector2 _position) {
 	}
 }
 
+Vector2 GetSpritePosition(SpriteList* _list, SpriteID _id) {
+	Vector2 ret = { 0.f, 0.f };
+	if (!_list) { return ret; }
+
+	size_t* idxPtr = unordered_map_find(_list->spriteIndices, _id);
+	if (idxPtr) {
+		Sprite* sprite = free_list_get(_list->sprites, *idxPtr);
+
+		// Get property
+		ret.x = sprite->position.x;
+		ret.y = sprite->position.y;
+	}
+	return ret;
+}
+
 void SetSpriteDepth(SpriteList* _list, SpriteID _id, int _depth) {
 	if (!_list) { return; }
 
@@ -170,6 +184,19 @@ void SetSpriteDepth(SpriteList* _list, SpriteID _id, int _depth) {
 	}
 }
 
+int GetSpriteDepth(SpriteList* _list, SpriteID _id) {
+	if (!_list) { return 0; }
+
+	size_t* idxPtr = unordered_map_find(_list->spriteIndices, _id);
+	if (idxPtr) {
+		Sprite* sprite = free_list_get(_list->sprites, *idxPtr);
+
+		// Get property
+		return sprite->depth;
+	}
+	return 0;
+}
+
 void SetSpriteImageIndex(SpriteList* _list, SpriteID _id, int _imageIndex) {
 	if (!_list) { return; }
 
@@ -180,6 +207,19 @@ void SetSpriteImageIndex(SpriteList* _list, SpriteID _id, int _imageIndex) {
 		// Update property
 		sprite->imageIndex = _imageIndex;
 	}
+}
+
+int GetSpriteImageIndex(SpriteList* _list, SpriteID _id) {
+	if (!_list) { return 0; }
+
+	size_t* idxPtr = unordered_map_find(_list->spriteIndices, _id);
+	if (idxPtr) {
+		Sprite* sprite = free_list_get(_list->sprites, *idxPtr);
+
+		// Get property
+		return sprite->imageIndex;
+	}
+	return 0;
 }
 
 void SetSpriteImageSpeed(SpriteList* _list, SpriteID _id, float _imageSpeed) {
@@ -194,6 +234,19 @@ void SetSpriteImageSpeed(SpriteList* _list, SpriteID _id, float _imageSpeed) {
 	}
 }
 
+float GetSpriteImageSpeed(SpriteList* _list, SpriteID _id) {
+	if (!_list) { return 0.f; }
+
+	size_t* idxPtr = unordered_map_find(_list->spriteIndices, _id);
+	if (idxPtr) {
+		Sprite* sprite = free_list_get(_list->sprites, *idxPtr);
+
+		// Get property
+		return sprite->imageSpeed;
+	}
+	return 0.f;
+}
+
 void SetSpriteVisible(SpriteList* _list, SpriteID _id, bool _visible) {
 	if (!_list) { return; }
 
@@ -204,4 +257,17 @@ void SetSpriteVisible(SpriteList* _list, SpriteID _id, bool _visible) {
 		// Update property
 		sprite->visible = _visible;
 	}
+}
+
+bool GetSpriteVisible(SpriteList* _list, SpriteID _id) {
+	if (!_list) { return false; }
+
+	size_t* idxPtr = unordered_map_find(_list->spriteIndices, _id);
+	if (idxPtr) {
+		Sprite* sprite = free_list_get(_list->sprites, *idxPtr);
+
+		// Get property
+		return sprite->visible;
+	}
+	return false;
 }
