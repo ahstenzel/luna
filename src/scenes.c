@@ -51,6 +51,16 @@ void GameRegisterScenes() {
 	}
 	int ret = SetTilemapIndexAll(scene_first_tilemap_list, scene_first_tilemap, scene_first_tiles_map, 1200);
 	if (ret != 0) { LUNA_DBG_ERR("Failed to set tilemap data! Error (%d)", ret); }
+
+	// Create camera
+	CameraList* scene_first_camera_list = GetSceneCameraList(LUNA_SCENES, scene_first);
+	CameraDesc scene_first_camera_desc = {
+		.offset = { GetScreenWidth() / 2.f, GetScreenHeight() / 2.f },
+		.target = { GetScreenWidth() / 2.f, GetScreenHeight() / 2.f },
+		.rotation = 0.f,
+		.zoom = 1.f
+	};
+	CameraID scene_first_camera = CreateCamera(scene_first_camera_list, scene_first_camera_desc);
 }
 
 void scene_first_fn_push(SceneID _id) {
@@ -108,10 +118,14 @@ void scene_first_fn_push(SceneID _id) {
 void scene_first_fn_update(SceneID _id, float _dt) {
 	static float counter = 0.f;
 	counter += _dt;
-	if (counter >= 1.f) {
-		//LUNA_DBG_LOG("Tick!");
-		counter = 0.f;
+	while (counter >= 4.f) {
+		counter -= 4.f;
 	}
+	float v = sinf(2 * PI * counter / 4.f);
+	Camera2D* camera = GetActiveCamera(GetSceneCameraList(LUNA_SCENES, _id));
+	camera->target.x = roundf((GetScreenWidth() / 2.f) + (8.f * v));
+	//LUNA_DBG_LOG("(scene_first_fn_update) (%f)", v);
+
 
 	/*
 	unsigned char out[5] = "....\0";

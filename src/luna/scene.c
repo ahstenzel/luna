@@ -34,8 +34,11 @@ void _DrawSceneList(SceneList* _list) {
 	if (id != ID_NULL) {
 		Scene* scene = unordered_map_find(_list->scenes, id);
 		if (scene) {
+			Camera2D* camera = GetActiveCamera(scene->cameraList);
+			if (camera) { BeginMode2D(*camera); }
 			_DrawTilemapList(scene->tilemapList);
 			_DrawSpriteList(scene->spriteList);
+			if (camera) { EndMode2D(); }
 		}
 	}
 }
@@ -70,6 +73,7 @@ SceneID CreateScene(SceneList* _list, SceneDesc _desc) {
 		.spriteList = _CreateSpriteList(_desc.depthSorting),
 		.collisionMap = _CreateCollisionMap(),
 		.tilemapList = _CreateTilemapList(_desc.depthSorting),
+		.cameraList = _CreateCameraList(),
 		.pushFPtr = _desc.pushFPtr,
 		.topFPtr = _desc.topFPtr,
 		.updateFPtr = _desc.updateFPtr,
@@ -80,6 +84,7 @@ SceneID CreateScene(SceneList* _list, SceneDesc _desc) {
 		_DestroySpriteList(scene.spriteList);
 		_DestroyCollisionMap(scene.collisionMap);
 		_DestroyTilemapList(scene.tilemapList);
+		_DestroyCameraList(scene.cameraList);
 		return ID_NULL;
 	}
 	if (!unordered_map_insert(_list->scenes, id, &scene)) {
@@ -96,6 +101,7 @@ void DestroyScene(SceneList* _list, SceneID _id) {
 		_DestroySpriteList(scene->spriteList);
 		_DestroyCollisionMap(scene->collisionMap);
 		_DestroyTilemapList(scene->tilemapList);
+		_DestroyCameraList(scene->cameraList);
 		unordered_map_delete(_list->scenes, _id);
 	}
 }
@@ -170,4 +176,11 @@ TilemapList* GetSceneTilemapList(SceneList* _list, SceneID _id) {
 	Scene* scene = unordered_map_find(_list->scenes, _id);
 	if (!scene) { return NULL; }
 	return scene->tilemapList;
+}
+
+CameraList* GetSceneCameraList(SceneList* _list, SceneID _id) {
+	if (!_list || _id == ID_NULL) { return NULL; }
+	Scene* scene = unordered_map_find(_list->scenes, _id);
+	if (!scene) { return NULL; }
+	return scene->cameraList;
 }

@@ -8,6 +8,7 @@
 #include "luna/sprite.h"
 #include "luna/collision.h"
 #include "luna/tile.h"
+#include "luna/camera.h"
 
 /// @brief Unique scene identifier
 typedef _LUNA_ID_TYPE SceneID;
@@ -29,6 +30,7 @@ typedef struct {
 	SpriteList* spriteList;
 	CollisionList* collisionMap;
 	TilemapList* tilemapList;
+	CameraList* cameraList;
 	ScenePushFPtr pushFPtr;
 	SceneTopFPtr topFPtr;
 	SceneUpdateFPtr updateFPtr;
@@ -108,8 +110,14 @@ CollisionList* GetSceneCollisionMap(SceneList* _list, SceneID _id);
 /// @brief Get the tilemap list for the given scene.
 /// @param _list Scene list pointer
 /// @param _id Scene id
-/// @return tilemap list pointer
+/// @return Tilemap list pointer
 TilemapList* GetSceneTilemapList(SceneList* _list, SceneID _id);
+
+/// @brief Get the camera list for the given scene.
+/// @param _list Scene list pointer
+/// @param _id Scene id
+/// @return Camera list pointer
+CameraList* GetSceneCameraList(SceneList* _list, SceneID _id);
 
 /// @brief Get the sprite list for the scene on top of the stack.
 #define LUNA_SPRITES GetSceneSpriteList(LUNA_SCENES, GetTopScene(LUNA_SCENES))
@@ -119,5 +127,8 @@ TilemapList* GetSceneTilemapList(SceneList* _list, SceneID _id);
 
 /// @brief Get the tilemap list for the scene on top of the stack.
 #define LUNA_TILES GetSceneTilemapList(LUNA_SCENES, GetTopScene(LUNA_SCENES))
+
+/// @brief Get the camera list for the scene on top of the stack.
+#define LUNA_CAMERAS GetCameraTilemapList(LUNA_SCENES, GetTopScene(LUNA_SCENES))
 
 #endif

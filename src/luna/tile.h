@@ -64,7 +64,7 @@ typedef struct {
 /// @param _tile Tile object pointer
 void _DrawTilemap(Tilemap* _tile);
 
-/// @brief Create a new tilemap list
+/// @brief Create a new tilemap list.
 /// @param depthSorting Enable sorting tilemaps by depth
 /// @return Tilemap list pointer
 TilemapList* _CreateTilemapList(bool depthSorting);
