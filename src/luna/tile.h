@@ -54,7 +54,7 @@ typedef struct {
 
 /// @brief Organized list of tilemaps
 typedef struct {
-	unordered_map_t* tilemapIndices;		/* Map unique tilemap IDs to container indices */
+	unordered_map_t* tilemapIndices;		/* Map tilemap IDs to container indices */
 	free_list_t* tilemaps;					/* Container of tilemap data */
 	priority_queue_t* tilemapDepthOrder;	/* Sort tilemap indices by depth value */
 	bool depthSorting;						/* Enable depth sorting */
@@ -80,7 +80,7 @@ void _DrawTilemapList(TilemapList* _list);
 /// @brief Create a new tilemap object and add it to the list.
 /// @param _list Tilemap list pointer
 /// @param _desc Tilemap descriptor
-/// @return Tilemap id
+/// @return Tilemap id (or ID_NULL on error)
 TilemapID CreateTilemap(TilemapList* _list, TilemapDesc _desc);
 
 /// @brief Remove the tilemap from the list.
@@ -113,16 +113,14 @@ TileIdx GetTilemapIndex(TilemapList* _list, TilemapID _id, Vector2i _grid);
 /// @param _list Tilemap list poitner
 /// @param _id Tilemap id
 /// @param _grid Tilemap scene grid square
-/// @param _idx Return code (Zero if successful, nonzero otherwize)
-int SetTilemapIndex(TilemapList* _list, TilemapID _id, Vector2i _grid, TileIdx _idx);
+void SetTilemapIndex(TilemapList* _list, TilemapID _id, Vector2i _grid, TileIdx _idx);
 
 /// @brief Set the index of every tile using the given array of indices.
 /// @param _list Tilemap list poitner
 /// @param _id Tilemap id
 /// @param _data Array of tile indices
 /// @param _dataSize Size of array
-/// @return Return code (Zero if successful, nonzero otherwize)
-int SetTilemapIndexAll(TilemapList* _list, TilemapID _id, TileIdx* _data, size_t _dataSize);
+void SetTilemapIndexAll(TilemapList* _list, TilemapID _id, TileIdx* _data, size_t _dataSize);
 
 /// @brief Set the tilemaps draw depth.
 /// @param _list Tilemap list pointer

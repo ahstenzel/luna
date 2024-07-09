@@ -16,7 +16,7 @@ typedef struct {
 	Vector2 scale;			/* Scaling factor */
 	Vector2 origin;			/* Transformation origin (scaling, rotating etc.) */
 	Color tint;				/* Blending color */
-	SpriteID id;			/* Unique ID value */
+	SpriteID _id;			/* Internal reference for sprite ID */
 	int depth;				/* Draw depth */
 	int imageIndex;			/* Current animation frame */
 	unsigned int imageNum;	/* Total animation frames */
@@ -47,11 +47,27 @@ typedef struct {
 
 /// @brief Organized list of sprites
 typedef struct {
-	unordered_map_t* spriteIndices;			/* Map unique sprite IDs to container indices */
+	unordered_map_t* spriteIndices;			/* Map sprite IDs to container indices */
 	free_list_t* sprites;					/* Container of sprite data */
 	priority_queue_t* spriteDepthOrder;		/* Sort container indices by depth value */
 	bool depthSorting;						/* Enable depth sorting */
 } SpriteList;
+
+/// @brief Iterator for sprite objects
+typedef struct {
+	SpriteList* _list;
+	unordered_map_it_t* _ptr;
+	SpriteID id;	/* Unique sprite ID */
+	Sprite* data;	/* Sprite data structure */
+} SpriteListIt;
+
+/// @brief Iterator for sprite objects sorted by depth
+typedef struct {
+	SpriteList* _list;
+	priority_queue_it_t* _ptr;
+	SpriteID id;	/* Unique sprite ID */
+	Sprite* data;	/* Sprite data structure */
+} SpriteListDepthIt;
 
 /// @brief Update the sprites animation.
 /// @param _sprite Sprite pointer
@@ -80,10 +96,42 @@ void _UpdateSpriteList(SpriteList* _list, float _dt);
 /// @param _list Sprite list pointer
 void _DrawSpriteList(SpriteList* _list);
 
+/// @brief Get the number of sprites in the list.
+/// @param _list Sprite list pointer
+/// @return Number of sprites
+size_t GetSpriteListSize(SpriteList* _list);
+
+/// @brief Get an iterator for the unsorted sprite list.
+/// @param _list Sprite list pointer
+/// @return Sprite iterator
+SpriteListIt* SpriteListItBegin(SpriteList* _list);
+
+/// @brief Move the iterator to the next unsorted element.
+/// @param _it Pointer to sprite iterator
+void SpriteListItNext(SpriteListIt** _it);
+
+/// @brief Get an iterator to the beginning of the sprite list (sorted by depth order).
+/// @param _list Sprite list pointer
+/// @return Sprite iterator
+SpriteListDepthIt* SpriteListDepthItBegin(SpriteList* _list);
+
+/// @brief Get an iterator to the end of the sprite list (sorted by depth order).
+/// @param _list Sprite list pointer
+/// @return Sprite iterator
+SpriteListDepthIt* SpriteListDepthItRBegin(SpriteList* _list);
+
+/// @brief Move the iterator to the next element (sorted by depth order).
+/// @param _it Pointer to sprite iterator
+void SpriteListDepthItNext(SpriteListDepthIt** _it);
+
+/// @brief Move the iterator to the previous element (sorted by depth order).
+/// @param _it Pointer to sprite iterator
+void SpriteListDepthItPrev(SpriteListDepthIt** _it);
+
 /// @brief Create a new sprite and add it to the list.
 /// @param _list Sprite list pointer
 /// @param _desc Sprite descriptor
-/// @return Sprite id
+/// @return Sprite id (or ID_NULL on error)
 SpriteID CreateSprite(SpriteList* _list, SpriteDesc _desc);
 
 /// @brief Remove the sprite from the list.

@@ -12,7 +12,7 @@ typedef _LUNA_ID_TYPE CameraID;
 typedef struct {
 	Vector2 target;		/* Point in worldspace the camera should follow */
 	Vector2 offset;		/* Offset of cameras target in screenspace */
-	float rotation;		/* Angle of rotation */
+	float rotation;		/* Rotation angle (degrees) */
 	float zoom;			/* Zoom level */
 } CameraDesc;
 
@@ -34,7 +34,7 @@ void _DestroyCameraList(CameraList* _list);
 /// @brief Create a new 2D camera object and add it to the list.
 /// @param _list Camera list pointer
 /// @param _desc Camera descriptor
-/// @return Camera id
+/// @return Camera id (or ID_NULL on error)
 CameraID CreateCamera(CameraList* _list, CameraDesc _desc);
 
 /// @brief Remove the given camera object from the list.

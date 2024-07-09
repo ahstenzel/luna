@@ -1,4 +1,5 @@
 #include "luna/std/debug.h"
+#include "luna/platform.h"
 
 #if defined(LUNA_DEBUG) && !defined(LUNA_SUPPRESS_LOG)
 
@@ -7,7 +8,7 @@
 
 unsigned char _luna_g_dbg_log_mask = LUNA_DBG_LEVEL_ALL;
 
-void _luna_dbg_log_write(const unsigned char level, char* fmt, ...) {
+void _luna_dbg_log_write(const unsigned char level, const char* func, char* fmt, ...) {
 	if ((_luna_g_dbg_log_mask & level) != 0) {
 		// Get variadic arguments
 		va_list args;
@@ -17,14 +18,14 @@ void _luna_dbg_log_write(const unsigned char level, char* fmt, ...) {
 		char c = 'X';
 		switch (level) {
 			case (LUNA_DBG_LEVEL_STATUS):
-				printf_s("[*] ");
+				printf_s("[*] (%s) ", func);
 				vprintf_s(fmt, args);
 				printf_s("\n");
 			break;
 			case (LUNA_DBG_LEVEL_WARNING):
 				c = '!';
 			case (LUNA_DBG_LEVEL_ERROR):
-				fprintf_s(stderr, "[%c] ", c);
+				fprintf_s(stderr, "[%c] (%s) ", c, func);
 				vfprintf_s(stderr, fmt, args);
 				fprintf_s(stderr, "\n");
 			break;

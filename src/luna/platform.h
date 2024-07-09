@@ -89,4 +89,15 @@
 	#define strcpy_s(dest, dest_size, src) strcpy(dest, src)
 #endif
 
+// Function name refrencing
+#if !defined(LUNA_STR_FUNC)
+	#if defined(LUNA_CMP_MSVC)
+		#define LUNA_STR_FUNC __FUNCTION__
+	#elif defined(LUNA_CMP_GCC) || defined(LUNA_CMP_CLANG)
+		#define LUNA_STR_FUNC __func__
+	#else
+		#define LUNA_STR_FUNC "N/A"
+	#endif
+#endif
+
 #endif

@@ -6,47 +6,49 @@ void CreateGame(SettingsList* _settingsList, ResourceListDesc* _resourceDesc, si
 	LUNA_DBG_LOG("===Creating game state===");
 	Game* game = calloc(1, sizeof *game);
 	if (!game) { 
-		LUNA_DBG_ERR("(CreateGame): Failed to allocate game!");
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate game state!");
 		goto create_game_failed; 
 	}
 
 	// Create scene list
-	LUNA_DBG_LOG("=Creating scene list");
+	LUNA_DBG_LOG("Creating scene list");
 	game->sceneList = _CreateSceneList();
 	if (!game->sceneList) {
-		LUNA_DBG_ERR("(CreateGame): Failed to create scene list!");
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_GENERIC, "Failed to create scene list!");
+		goto create_game_failed;
 	}
 
 	// Copy settings list
-	LUNA_DBG_LOG("=Copying settings list");
+	LUNA_DBG_LOG("Copying settings list");
 	game->settingsList = _settingsList;
 	if (!game->settingsList) {
-		LUNA_DBG_ERR("(CreateGame): Invalid settings list!");
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_GENERIC, "Invalid settings list!");
 		goto create_game_failed;
 	}
 
 	// Copy resource list descriptors
-	LUNA_DBG_LOG("=Copying resource list descriptors");
+	LUNA_DBG_LOG("Copying resource list descriptors");
 	game->resourceDesc = _resourceDesc;
 	game->numResourceDesc = _numResourceDesc;
-	if (!game->resourceDesc || game->numResourceDesc == 0) {
-#ifdef LUNA_DEBUG
-		if (!game->resourceDesc)        { LUNA_DBG_ERR("(CreateGame): Null resource list descriptors!"); }
-		if (game->numResourceDesc == 0) { LUNA_DBG_ERR("(CreateGame): No resource list descriptors provided!"); }
-#endif
+	if (!game->resourceDesc) {
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_GENERIC, "NULL resource list descriptors!");
+		goto create_game_failed;
+	}
+	if (game->numResourceDesc == 0) {
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_GENERIC, "No resource list descriptors provided!");
 		goto create_game_failed;
 	}
 
 	// Create resource list
-	LUNA_DBG_LOG("=Creating resource list");
+	LUNA_DBG_LOG("Creating resource list");
 	game->resourceList = _CreateResourceList(game->resourceDesc[0]);
 	if (!game->resourceList) {
-		LUNA_DBG_ERR("(CreateGame): Failed to create resource list!");
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to create resource list!");
 		goto create_game_failed;
 	}
 
 	// Create window
-	LUNA_DBG_LOG("=Creating window");
+	LUNA_DBG_LOG("Creating window");
 	InitWindow((int)game->settingsList->videoSettingsList->width, (int)game->settingsList->videoSettingsList->height, "GAME");
 	SetTargetFPS(60);
 	LUNA_GAME = game;
@@ -100,7 +102,7 @@ void LoadResourceFileByName(const char* _name) {
 			return;
 		}
 	}
-	LUNA_DBG_WARN("(LoadResourceFileName) Failed to find a resource list with name (%s)", _name);
+	LUNA_DBG_WARN("Failed to find a resource list with name (%s)", _name);
 }
 
 void LoadResourceFileByIndex(size_t _idx) {
@@ -110,7 +112,7 @@ void LoadResourceFileByIndex(size_t _idx) {
 	if (_idx < LUNA_GAME->numResourceDesc) {
 		_LoadResourceFile(LUNA_GAME->resourceDesc[_idx]);
 	}
-	LUNA_DBG_WARN("(LoadResourceFileName) Resource list %d does not exist, only %d descriptors are registered", (int)_idx, (int)LUNA_GAME->numResourceDesc);
+	LUNA_DBG_WARN("Resource list %d does not exist, only %d descriptors are registered", (int)_idx, (int)LUNA_GAME->numResourceDesc);
 }
 
 void _LoadResourceFile(ResourceListDesc _desc) {
@@ -120,7 +122,7 @@ void _LoadResourceFile(ResourceListDesc _desc) {
 	// Create new resource list
 	ResourceList* list = _CreateResourceList(_desc);
 	if (!list) {
-		LUNA_DBG_ERR("(LoadResourceFile): Failed to load resource file (%s)", _desc.resourceFile);
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_FILESYS, "Failed to load resource file (%s)", _desc.resourceFile);
 		return;
 	}
 	_DestroyResourceList(LUNA_RESOURCES);
@@ -148,10 +150,10 @@ int LoadSettingsFile(char* _settingsFile, SettingsList* _targetSettingsList) {
 	int ret = ini_parse(_settingsFile, settings_ini_handler, _targetSettingsList);
 #ifdef LUNA_DEBUG
 	if (ret == -1) {
-		LUNA_DBG_WARN("(LoadSettingsFile): Failed to find settings file (%s), loading defaults", _settingsFile);
+		LUNA_DBG_WARN("Failed to find settings file (%s), loading defaults", _settingsFile);
 	}
 	else if (ret != 0) {
-		LUNA_DBG_WARN("(LoadSettingsFile): Unknown value in setting file (%s), line (%d)", _settingsFile, ret);
+		LUNA_DBG_WARN("Unknown value in setting file (%s), line (%d)", _settingsFile, ret);
 	}
 #endif
 	return ret;
@@ -164,14 +166,14 @@ SettingsList* GenerateDefaultSettings() {
 	// Top level settings structure
 	settings = calloc(1, sizeof *settings);
 	if (!settings) {
-		LUNA_DBG_ERR("(GenerateDefaultSettings): Failed to allocate settings list!");
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate settings list!");
 		goto generate_settings_fail;
 	}
 
 	// Video settings
 	settings->videoSettingsList = calloc(1, sizeof *(settings->videoSettingsList));
 	if (!settings->videoSettingsList) {
-		LUNA_DBG_ERR("(GenerateDefaultSettings): Failed to allocate video settings list!");
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate video settings list!");
 		goto generate_settings_fail;
 	}
 	settings->videoSettingsList->width = 640;
@@ -182,7 +184,7 @@ SettingsList* GenerateDefaultSettings() {
 	size_t numInputSlots = 1;
 	inputSlotDesc = calloc(numInputSlots, sizeof *inputSlotDesc);
 	if (!inputSlotDesc) {
-		LUNA_DBG_ERR("(GenerateDefaultSettings): Failed to allocate input slot descriptor array!");
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate input slot descriptor array!");
 		goto generate_settings_fail;
 	}
 	for(size_t i=0; i<numInputSlots; ++i) {
@@ -204,7 +206,7 @@ SettingsList* GenerateDefaultSettings() {
 	}
 	settings->inputSettingsList = _CreateInputSettingsList(inputSlotDesc, numInputSlots);
 	if (!settings->inputSettingsList) {
-		LUNA_DBG_ERR("(GenerateDefaultSettings): Failed to create input settings list!");
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_GENERIC, "Failed to create input settings list!");
 		goto generate_settings_fail;
 	}
 	free(inputSlotDesc);

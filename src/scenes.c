@@ -49,8 +49,7 @@ void GameRegisterScenes() {
 			else { scene_first_tiles_map[i] = 5; }
 		} 
 	}
-	int ret = SetTilemapIndexAll(scene_first_tilemap_list, scene_first_tilemap, scene_first_tiles_map, 1200);
-	if (ret != 0) { LUNA_DBG_ERR("Failed to set tilemap data! Error (%d)", ret); }
+	SetTilemapIndexAll(scene_first_tilemap_list, scene_first_tilemap, scene_first_tiles_map, 1200);
 
 	// Create camera
 	CameraList* scene_first_camera_list = GetSceneCameraList(LUNA_SCENES, scene_first);
@@ -124,8 +123,6 @@ void scene_first_fn_update(SceneID _id, float _dt) {
 	float v = sinf(2 * PI * counter / 4.f);
 	Camera2D* camera = GetActiveCamera(GetSceneCameraList(LUNA_SCENES, _id));
 	camera->target.x = roundf((GetScreenWidth() / 2.f) + (8.f * v));
-	//LUNA_DBG_LOG("(scene_first_fn_update) (%f)", v);
-
 
 	/*
 	unsigned char out[5] = "....\0";

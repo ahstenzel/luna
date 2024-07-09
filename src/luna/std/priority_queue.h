@@ -79,10 +79,15 @@ typedef int32_t priority_queue_value_t;
 /// @return Data pointer, or NULL if not found
 #define priority_queue_find(q, v, d) _priority_queue_find(q, v, d)
 
-/// @brief Create an iterator for the priority queue.
+/// @brief Create an iterator for the priority queue, starting at the beginning.
 /// @param q Priority queue pointer
 /// @return Iterator pointer
-#define priority_queue_it(q) _priority_queue_it(q)
+#define priority_queue_it_begin(q) _priority_queue_it(q, true)
+
+/// @brief Create an iterator for the priority queue, starting at the end.
+/// @param q Priority queue pointer
+/// @return Iterator pointer
+#define priority_queue_it_rbegin(q) _priority_queue_it(q, false)
 
 /// @brief Create an iterator for the priority queue starting at the given value.
 /// @param q Priority queue pointer
@@ -93,6 +98,10 @@ typedef int32_t priority_queue_value_t;
 /// @brief Move the iterator to the next element.
 /// @param i Iterator pointer
 #define priority_queue_it_next(i) _priority_queue_it_next(&i)
+
+/// @brief Move the iterator to the previous element.
+/// @param i Iterator pointer
+#define priority_queue_it_prev(i) _priority_queue_it_prev(&i)
 
 /// @brief List of elements sorted by priority.
 typedef struct {
@@ -128,11 +137,13 @@ size_t _priority_queue_find_index(priority_queue_t*, priority_queue_value_t, voi
 
 void* _priority_queue_find(priority_queue_t*, priority_queue_value_t, void*);
 
-priority_queue_it_t* _priority_queue_it(priority_queue_t*);
+priority_queue_it_t* _priority_queue_it(priority_queue_t*, bool);
 
 priority_queue_it_t* _priority_queue_it_value(priority_queue_t*, priority_queue_value_t);
 
 void _priority_queue_it_next(priority_queue_it_t**);
+
+void _priority_queue_it_prev(priority_queue_it_t**);
 
 char* _priority_queue_print(priority_queue_t*);
 

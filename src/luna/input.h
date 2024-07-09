@@ -82,92 +82,92 @@ void _UpdateInputSettingsList(InputSettingsList* _list);
 /// @param _slot Input slot
 /// @param _aligned If using a gamepad axis, snap the vector to 8-directional movement
 /// @return Movement vector
-Vector2 GetDirection(InputSettingsList* _list, int _slot, bool _aligned);
+Vector2 GetDirection(InputSettingsList* _list, unsigned int _slot, bool _aligned);
 
 /// @brief Get the movement direction for the given input slot as a bitfield of actively pressed inputs.
 /// @param _list Input list pointer
 /// @param _slot Input slot
 /// @return Bitfield
-unsigned char GetDirectionBitfield(InputSettingsList* _list, int _slot);
+unsigned char GetDirectionBitfield(InputSettingsList* _list, unsigned int _slot);
 
 /// @brief Check if the given input is pressed for the given input slot.
 /// @param _list Input list pointer
 /// @param _slot Input slot
 /// @param _input Input enum
 /// @return True if pressed on this frame
-bool GetInputPressed(InputSettingsList* _list, int _slot, Input _input);
+bool GetInputPressed(InputSettingsList* _list, unsigned int _slot, Input _input);
 
 /// @brief Check if the given input is held for the given input slot.
 /// @param _list Input list pointer
 /// @param _slot Input slot
 /// @param _input Input enum
 /// @return True if held on this frame
-bool GetInputDown(InputSettingsList* _list, int _slot, Input _input);
+bool GetInputDown(InputSettingsList* _list, unsigned int _slot, Input _input);
 
 /// @brief Check if the given input is released for the given input slot.
 /// @param _list Input list pointer
 /// @param _slot Input slot
 /// @param _input Input enum
 /// @return True if released on this frame
-bool GetInputReleased(InputSettingsList* _list, int _slot, Input _input);
+bool GetInputReleased(InputSettingsList* _list, unsigned int _slot, Input _input);
 
 /// @brief Get the keyboard mapping for the input flag in the given input slot.
 /// @param _list Input list pointer
 /// @param _slot Input slot
 /// @param _input Input enum
 /// @return Keyboard scancode
-int GetKeyboardMapping(InputSettingsList* _list, int _slot, Input _input);
+int GetKeyboardMapping(InputSettingsList* _list, unsigned int _slot, Input _input);
 
 /// @brief Set the keyboard mapping for the input flag in the given input slot.
 /// @param _list Input list pointer
 /// @param _slot Input slot
 /// @param _input Input enum
 /// @param _mapping Keyboard scancode
-void SetKeyboardMapping(InputSettingsList* _list, int _slot, Input _input, int _mapping);
+void SetKeyboardMapping(InputSettingsList* _list, unsigned int _slot, Input _input, int _mapping);
 
 /// @brief Get the gamepad mapping for the input flag in the given input slot.
 /// @param _list Input list pointer
 /// @param _slot Input slot
 /// @param _input Input enum
 /// @return Gamepad scancode
-int GetGamepadMapping(InputSettingsList* _list, int _slot, Input _input);
+int GetGamepadMapping(InputSettingsList* _list, unsigned int _slot, Input _input);
 
 /// @brief Set the gamepad mapping for the input flag in the given input slot.
 /// @param _list Input list pointer
 /// @param _slot Input slot
 /// @param _input Input enum
 /// @param _mapping Gamepad scancode
-void SetGamepadMapping(InputSettingsList* _list, int _slot, Input _input, int _mapping);
+void SetGamepadMapping(InputSettingsList* _list, unsigned int _slot, Input _input, int _mapping);
 
 /// @brief Get the axis deadzone for the given input slot.
 /// @param _list Input list pointer
 /// @param _slot Input slot
 /// @return Gamepad deadzone
-float GetGamepadDeadzone(InputSettingsList* _list, int _slot);
+float GetGamepadDeadzone(InputSettingsList* _list, unsigned int _slot);
 
 /// @brief Set the axis deadzone for the given input slot.
 /// @param _list Input list pointer
 /// @param _slot Input slot
 /// @param _deadzone Gamepad deadzone
-void SetGamepadDeadzone(InputSettingsList* _list, int _slot, float _deadzone);
+void SetGamepadDeadzone(InputSettingsList* _list, unsigned int _slot, float _deadzone);
 
 /// @brief Get the input mode for the given input slot.
 /// @param _list Input list pointer
 /// @param _slot Input slot
 /// @return Input mode enum
-InputMode GetInputMode(InputSettingsList* _list, int _slot);
+InputMode GetInputMode(InputSettingsList* _list, unsigned int _slot);
 
 /// @brief Set the input mode for the given input slot.
 /// @param _list Input list pointer
 /// @param _slot Input slot
 /// @param _mode Input mode enum
-void SetInputMode(InputSettingsList* _list, int _slot, InputMode _mode);
+void SetInputMode(InputSettingsList* _list, unsigned int _slot, InputMode _mode);
 
 /// @brief Set the gamepad index for the given input slot.
 /// @param _list Input list pointer
 /// @param _slot Input slot
 /// @param _gamepad Gamepad index
-void SetGamepadIndex(InputSettingsList* _list, int _slot, int _gamepad);
+void SetGamepadIndex(InputSettingsList* _list, unsigned int _slot, int _gamepad);
 
 /// @brief Get the most recently altered control state for the given gamepad.
 /// @param _list Input list pointer
@@ -175,7 +175,7 @@ void SetGamepadIndex(InputSettingsList* _list, int _slot, int _gamepad);
 /// @param _gamepad Gamepad index
 /// @param _axis Destination for if an axis has changed, rather than a button
 /// @return Gamepad scancode, or -1 for no change
-int _GetGamepadPressed(InputSettingsList* _list, int _slot, int _gamepad, bool* _axis);
+int _GetGamepadPressed(InputSettingsList* _list, unsigned int _slot, int _gamepad, bool* _axis);
 
 /// @brief Check if the gamepad index is assigned to any input slot.
 /// @param _list Input list pointer
@@ -192,11 +192,11 @@ bool _IsKeyboardTaken(InputSettingsList* _list);
 /// @param _list Input list pointer
 /// @param _slot Input slot
 /// @return True if a gamepad was found & assigned
-bool _ScanForGamepads(InputSettingsList* _list, int _slot);
+bool _ScanForGamepads(InputSettingsList* _list, unsigned int _slot);
 
 /// @brief Record the last known value for each axis of the gamepad in the input slot.
 /// @param _list Input list pointer
 /// @param _slot Input slot
-void _SetGamepadAxisLatches(InputSettingsList* _list, int _slot);
+void _SetGamepadAxisLatches(InputSettingsList* _list, unsigned int _slot);
 
 #endif

@@ -28,7 +28,7 @@ typedef void (*ScenePopFPtr)(SceneID);
 /// @brief Individual game scene
 typedef struct {
 	SpriteList* spriteList;
-	CollisionList* collisionMap;
+	CollisionList* collisionList;
 	TilemapList* tilemapList;
 	CameraList* cameraList;
 	ScenePushFPtr pushFPtr;
@@ -73,7 +73,7 @@ void _DestroySceneList(SceneList* _list);
 /// @brief Create a new scene for the list.
 /// @param _list Scene list pointer
 /// @param _desc Scene descriptor
-/// @return Scene ID
+/// @return Scene ID (or ID_NULL on error)
 SceneID CreateScene(SceneList* _list, SceneDesc _desc);
 
 /// @brief Destroy a scene in the list.
@@ -105,7 +105,7 @@ SpriteList* GetSceneSpriteList(SceneList* _list, SceneID _id);
 /// @param _list Scene list pointer
 /// @param _id Scene id
 /// @return Collision map pointer
-CollisionList* GetSceneCollisionMap(SceneList* _list, SceneID _id);
+CollisionList* GetSceneCollisionList(SceneList* _list, SceneID _id);
 
 /// @brief Get the tilemap list for the given scene.
 /// @param _list Scene list pointer
@@ -123,7 +123,7 @@ CameraList* GetSceneCameraList(SceneList* _list, SceneID _id);
 #define LUNA_SPRITES GetSceneSpriteList(LUNA_SCENES, GetTopScene(LUNA_SCENES))
 
 /// @brief Get the collision map for the scene on top of the stack.
-#define LUNA_COLLISIONS GetSceneCollisionMap(LUNA_SCENES, GetTopScene(LUNA_SCENES))
+#define LUNA_COLLISIONS GetSceneCollisionList(LUNA_SCENES, GetTopScene(LUNA_SCENES))
 
 /// @brief Get the tilemap list for the scene on top of the stack.
 #define LUNA_TILES GetSceneTilemapList(LUNA_SCENES, GetTopScene(LUNA_SCENES))

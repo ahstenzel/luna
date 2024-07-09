@@ -22,11 +22,6 @@
 
 // OS includes
 #include "luna/platform.h"
-#ifdef LUNA_OS_WINDOWS
-#define WIN32_LEAN_AND_MEAN
-//#include <Windows.h>
-#undef WIN32_LEAN_AND_MEAN
-#endif
 
 // Raylib includes
 #include "raylib/raylib.h"
@@ -46,6 +41,7 @@
 #include "luna/std/priority_queue.h"
 #include "luna/std/free_list.h"
 #include "luna/std/deque.h"
+#include "luna/error.h"
 
 // External tools
 #include "external/ini.h"

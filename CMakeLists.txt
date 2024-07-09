@@ -28,6 +28,7 @@ file(GLOB luna_src
 	"src/luna/input.c"
 	"src/luna/tile.c"
 	"src/luna/camera.c"
+	"src/luna/error.c"
 )
 file (GLOB game_src
 	"src/main.c"

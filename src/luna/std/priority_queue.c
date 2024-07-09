@@ -184,7 +184,7 @@ void* _priority_queue_find(priority_queue_t* qu, priority_queue_value_t value, v
 	return (it < qu->_capacity) ? _priority_queue_data_pos(qu, it) : NULL;
 }
 
-priority_queue_it_t* _priority_queue_it(priority_queue_t* qu) {
+priority_queue_it_t* _priority_queue_it(priority_queue_t* qu, bool begin) {
 	// Error check
 	if (!qu || qu->_length == 0) { return NULL; }
 
@@ -192,11 +192,14 @@ priority_queue_it_t* _priority_queue_it(priority_queue_t* qu) {
 	size_t buffer_size = sizeof(priority_queue_it_t);
 	priority_queue_it_t* it = calloc(1, buffer_size);
 	if (!it) { return NULL; }
-	it->_index = qu->_length;
-	it->_qu = qu;
-	
+
 	// Find first valid entry in map
-	_priority_queue_it_next(&it);
+	it->_qu = qu;
+	if (begin) { it->_index = (qu->_length - 1); }
+	else { it->_index = 0; }
+	it->data = _priority_queue_data_pos(qu, it->_index);
+	it->value = _priority_queue_value(qu, it->_index);
+
 	return it;
 }
 
@@ -239,6 +242,28 @@ void _priority_queue_it_next(priority_queue_it_t** it) {
 	return;
 }
 
+void _priority_queue_it_prev(priority_queue_it_t** it) {
+	// Error check
+	if (!it | !(*it)) { return; }
+
+	// Find the next valid position in the buffer
+	priority_queue_it_t* _it = *it;
+	priority_queue_t* _qu = _it->_qu;
+	if (_it->_index < _qu->_length) {
+		// Record next positions data
+		_it->_index++;
+		_it->data = _priority_queue_data_pos(_qu, _it->_index);
+		_it->value = _priority_queue_value(_qu, _it->_index);
+	}
+	else {
+		// End reached, invalidate iterator
+		free(_it);
+		(*it) = NULL;
+	}
+
+	return;
+}
+
 #define strappend(dest, dest_size, dest_len, src) \
 do { \
 	size_t _src_len_ = strlen(src); \
@@ -264,7 +289,7 @@ char* _priority_queue_print(priority_queue_t* qu) {
 	// Iterate through container
 	memcpy_s(buff, buff_size, "[", 1);
 	buff_len = 1;
-	for(priority_queue_it_t* it = priority_queue_it(qu); it; priority_queue_it_next(it)) {
+	for(priority_queue_it_t* it = priority_queue_it_begin(qu); it; priority_queue_it_next(it)) {
 		// Print value
 		char value_buff[16];
 		sprintf_s(value_buff, 16, "%d", it->value);

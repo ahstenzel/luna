@@ -1,12 +1,13 @@
 #include "luna/tile.h"
 
 void _DrawTilemap(Tilemap* _tile) {
-	if (!_tile) { return; }
-	//LUNA_DBG_LOG("(_DrawTilemap) Drawing (%d) tiles", (int)vector_size(_tile->_data));
+	if (!_tile) { 
+		LUNA_DBG_WARN("Invalid tilemap reference!");
+		return; 
+	}
 	for(size_t i=0; i<vector_size(_tile->_data); ++i) {
 		// Get tile id
 		unsigned int idx = *(unsigned int*)(vector_get(_tile->_data, i));
-		//LUNA_DBG_LOG("(_DrawTilemap) Drawing tile index (%d)", (int)idx);
 		if (idx != ID_NULL && _tile_valid_idx(_tile, idx)) {
 			// Get position of tile id within base texture
 			idx--;
@@ -32,12 +33,17 @@ void _DrawTilemap(Tilemap* _tile) {
 
 TilemapList* _CreateTilemapList(bool _depthSorting) {
 	TilemapList* list = calloc(1, sizeof *list);
-	if (!list) { return NULL; }
+	if (!list) { 
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate tilemap list!");
+		return NULL; 
+	}
+
 	list->depthSorting = _depthSorting;
 	list->tilemapIndices = unordered_map_create(size_t);
 	list->tilemaps = free_list_create(Tilemap);
 	list->tilemapDepthOrder = priority_queue_create(size_t);
 	if (!list->tilemapIndices || !list->tilemaps || !list->tilemapDepthOrder) {
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate tilemap list containers!");
 		_DestroyTilemapList(list);
 		return NULL;
 	}
@@ -54,13 +60,19 @@ void _DestroyTilemapList(TilemapList* _list) {
 }
 
 void _DrawTilemapList(TilemapList* _list) {
-	if (!_list) { return; }
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid tilemap list reference!");
+		return; 
+	}
 
 	if (_list->depthSorting) {
-		for(priority_queue_it_t* it = priority_queue_it(_list->tilemapDepthOrder); it; priority_queue_it_next(it)) {
+		for(priority_queue_it_t* it = priority_queue_it_begin(_list->tilemapDepthOrder); it; priority_queue_it_next(it)) {
 			size_t idx = *(size_t*)(it->data);
 			Tilemap* tilemap = free_list_get(_list->tilemaps, idx);
-			if (tilemap && tilemap->visible) {
+			if (!tilemap) {
+				LUNA_DBG_WARN("Invalid tilemap reference!");
+			}
+			else if (tilemap->visible) {
 				_DrawTilemap(tilemap);
 			}
 		}
@@ -68,7 +80,10 @@ void _DrawTilemapList(TilemapList* _list) {
 	else {
 		for(free_list_it_t* it = free_list_it(_list->tilemaps); it; free_list_it_next(it)) {
 			Tilemap* tilemap = it->data;
-			if (tilemap->visible) {
+			if (!tilemap) {
+				LUNA_DBG_WARN("Invalid tilemap reference!");
+			}
+			else if (tilemap->visible) {
 				_DrawTilemap(tilemap);
 			}
 		}
@@ -77,8 +92,14 @@ void _DrawTilemapList(TilemapList* _list) {
 
 TilemapID CreateTilemap(TilemapList* _list, TilemapDesc _desc) {
 	// Error check
-	if (!_list) { return ID_NULL; }
-	if (_desc.texTileSize.x == 0 || _desc.texTileSize.y == 0) { return ID_NULL; }
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid tilemap list reference!");
+		return ID_NULL; 
+	}
+	if (_desc.texTileSize.x == 0 || _desc.texTileSize.y == 0) { 
+		LUNA_DBG_WARN("Invalid tilemap texture tile size, width or height must be nonzero!");
+		return ID_NULL; 
+	}
 
 	// Create data array
 	TilemapID id = _luna_id_generate();
@@ -98,21 +119,27 @@ TilemapID CreateTilemap(TilemapList* _list, TilemapDesc _desc) {
 		.visible = _desc.visible,
 		.depth = _desc.depth
 	};
-	if (!tile._data) { return ID_NULL; }
+	if (!tile._data) { 
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate tilemap data buffer!");
+		return ID_NULL; 
+	}
 
 	// Add to list
 	size_t idx = 0;
 	if (!free_list_insert(_list->tilemaps, &idx, &tile)) {
+		LUNA_DBG_WARN("Failed to add tilemap to list!");
 		vector_destroy(tile._data);
 		return ID_NULL;
 	}
 	if (!unordered_map_insert(_list->tilemapIndices, id, &idx)) {
+		LUNA_DBG_WARN("Failed to add tilemap to index map!");
 		vector_destroy(tile._data);
 		free_list_remove(_list->tilemaps, idx);
 		return ID_NULL;
 	}
 	if (_list->depthSorting) {
 		if (!priority_queue_push(_list->tilemapDepthOrder, tile.depth, &idx)) {
+			LUNA_DBG_WARN("Failed to add tilemap to depth queue!");
 			vector_destroy(tile._data);
 			free_list_remove(_list->tilemaps, idx);
 			unordered_map_delete(_list->tilemapIndices, id);
@@ -123,7 +150,10 @@ TilemapID CreateTilemap(TilemapList* _list, TilemapDesc _desc) {
 }
 
 void DestroyTilemap(TilemapList* _list, TilemapID _id) {
-	if (!_list) { return; }
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid tilemap list reference!");
+		return; 
+	}
 
 	size_t* idxPtr = unordered_map_find(_list->tilemapIndices, _id);
 	if (idxPtr) {
@@ -136,11 +166,17 @@ void DestroyTilemap(TilemapList* _list, TilemapID _id) {
 		free_list_remove(_list->tilemaps, *idxPtr);
 		unordered_map_delete(_list->tilemapIndices, _id);
 	}
+	else {
+		LUNA_DBG_WARN("Invalid tilemap id (%d)!", (int)_id);
+	}
 }
 
 Vector2i GetTilemapGridFromPosition(TilemapList* _list, TilemapID _id, Vector2 _pos) {
 	Vector2i ret = { -1, -1 };
-	if (!_list) { return ret; }
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid tilemap list reference!");
+		return ret; 
+	}
 
 	size_t* idxPtr = unordered_map_find(_list->tilemapIndices, _id);
 	if (idxPtr) {
@@ -152,11 +188,17 @@ Vector2i GetTilemapGridFromPosition(TilemapList* _list, TilemapID _id, Vector2 _
 		ret = Vector2iSubtract(ret, tilemap->sceneOffset);
 		ret = Vector2iDivide(ret, tilemap->texTileSize);
 	}
+	else {
+		LUNA_DBG_WARN("Invalid tilemap id (%d)!", (int)_id);
+	}
 	return ret;
 }
 
 TileIdx GetTileTextureIndex(TilemapList* _list, TilemapID _id, Vector2i _grid) {
-	if (!_list) { return TILE_NULL; }
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid tilemap list reference!");
+		return TILE_NULL; 
+	}
 
 	size_t* idxPtr = unordered_map_find(_list->tilemapIndices, _id);
 	if (idxPtr) {
@@ -165,11 +207,17 @@ TileIdx GetTileTextureIndex(TilemapList* _list, TilemapID _id, Vector2i _grid) {
 		// Get property
 		return ((_grid.y * tilemap->sceneMapSize.x) + _grid.x) + 1;
 	}
+	else {
+		LUNA_DBG_WARN("Invalid tilemap id (%d)!", (int)_id);
+	}
 	return TILE_NULL;
 }
 
 TileIdx GetTilemapIndex(TilemapList* _list, TilemapID _id, Vector2i _grid) {
-	if (!_list) { return TILE_NULL; }
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid tilemap list reference!");
+		return TILE_NULL; 
+	}
 
 	size_t* idxPtr = unordered_map_find(_list->tilemapIndices, _id);
 	if (idxPtr) {
@@ -181,36 +229,53 @@ TileIdx GetTilemapIndex(TilemapList* _list, TilemapID _id, Vector2i _grid) {
 		if (!get) { return TILE_NULL; }
 		else { return *(TileIdx*)(get); }
 	}
+	else {
+		LUNA_DBG_WARN("Invalid tilemap id (%d)!", (int)_id);
+	}
 	return TILE_NULL;
 }
 
-int SetTilemapIndex(TilemapList* _list, TilemapID _id, Vector2i _grid, TileIdx _idx) {
-	if (!_list) { return -1; }
+void SetTilemapIndex(TilemapList* _list, TilemapID _id, Vector2i _grid, TileIdx _idx) {
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid tilemap list reference!");
+		return; 
+	}
 
 	size_t* idxPtr = unordered_map_find(_list->tilemapIndices, _id);
 	if (idxPtr) {
 		Tilemap* tilemap = free_list_get(_list->tilemaps, *idxPtr);
 
 		// Set property
-		if (!_tile_valid_grid(tilemap, _grid)) { return -2; }
-		if (!_tile_valid_idx(tilemap, _idx)) { return -3; }
+		if (!_tile_valid_grid(tilemap, _grid)) { 
+			LUNA_DBG_WARN("Invalid tile position! pos: (%d, %d), tilemap: (%d)", (int)_grid.x, (int)_grid.y, (int)_id);
+			return; 
+		}
+		if (!_tile_valid_idx(tilemap, _idx)) { 
+			LUNA_DBG_WARN("Invalid tile index! idx: (%d), tilemap: (%d)", (int)_idx, (int)_id);
+			return; 
+		}
 		uint32_t _dataGrid = (_grid.y * tilemap->sceneMapSize.x) + _grid.x;
-		if (_dataGrid >= vector_size(tilemap->_data)) { return -4; }
+		if (_dataGrid >= vector_size(tilemap->_data)) { 
+			LUNA_DBG_WARN("Undersized tilemap data buffer! tilemap: (%d)", (int)_id);
+			return; 
+		}
 		vector_set(tilemap->_data, _dataGrid, &_idx);
 	}
-	return 0;
+	else {
+		LUNA_DBG_WARN("Invalid tilemap id (%d)!", (int)_id);
+	}
+	return;
 }
 
-int SetTilemapIndexAll(TilemapList* _list, TilemapID _id, TileIdx* _data, size_t _dataSize) {
-	int ret = 0;
+void SetTilemapIndexAll(TilemapList* _list, TilemapID _id, TileIdx* _data, size_t _dataSize) {
 	vector_t* tmp_data = NULL;
 
 	if (!_list) { 
-		ret = -1;
+		LUNA_DBG_WARN("Invalid tilemap list reference!");
 		goto set_tilemap_index_all_fail; 
 	}
 	if (!_data) {
-		ret = -2;
+		LUNA_DBG_WARN("Invalid tilemap data buffer!");
 		goto set_tilemap_index_all_fail; 
 	}
 
@@ -220,14 +285,14 @@ int SetTilemapIndexAll(TilemapList* _list, TilemapID _id, TileIdx* _data, size_t
 
 		// Error check
 		if (_dataSize != (tilemap->sceneMapSize.x * tilemap->sceneMapSize.y)) { 
-			ret = -3;
+			LUNA_DBG_WARN("Tilemap data buffer size mismatch!");
 			goto set_tilemap_index_all_fail;
 		}
 
 		// Verify indices & copy into temp array
 		tmp_data = vector_create_size(TileIdx, _dataSize);
 		if (!tmp_data) { 
-			ret = -4;
+			LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate tilemap temp data buffer!");
 			goto set_tilemap_index_all_fail;
 		}
 		for(size_t i=0; i<_dataSize; ++i) {
@@ -239,15 +304,20 @@ int SetTilemapIndexAll(TilemapList* _list, TilemapID _id, TileIdx* _data, size_t
 		vector_destroy(tilemap->_data);
 		tilemap->_data = tmp_data;
 	}
-	return 0;
+	else {
+		LUNA_DBG_WARN("Invalid tilemap id (%d)!", (int)_id);
+	}
+	return;
 
 set_tilemap_index_all_fail:
 	vector_destroy(tmp_data);
-	return ret;
 }
 
 void SetTilemapDepth(TilemapList* _list, TilemapID _id, int _depth) {
-	if (!_list) { return; }
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid tilemap list reference!");
+		return; 
+	}
 
 	size_t* idxPtr = unordered_map_find(_list->tilemapIndices, _id);
 	if (idxPtr) {
@@ -260,10 +330,16 @@ void SetTilemapDepth(TilemapList* _list, TilemapID _id, int _depth) {
 		}
 		tilemap->depth = _depth;
 	}
+	else {
+		LUNA_DBG_WARN("Invalid tilemap id (%d)!", (int)_id);
+	}
 }
 
 int GetTilemapDepth(TilemapList* _list, TilemapID _id) {
-	if (!_list) { return 0; }
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid tilemap list reference!");
+		return 0; 
+	}
 
 	size_t* idxPtr = unordered_map_find(_list->tilemapIndices, _id);
 	if (idxPtr) {
@@ -272,11 +348,17 @@ int GetTilemapDepth(TilemapList* _list, TilemapID _id) {
 		// Get property
 		return tilemap->depth;
 	}
+	else {
+		LUNA_DBG_WARN("Invalid tilemap id (%d)!", (int)_id);
+	}
 	return 0;
 }
 
 void SetTilemapVisible(TilemapList* _list, TilemapID _id, bool _visible) {
-	if (!_list) { return; }
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid tilemap list reference!");
+		return; 
+	}
 
 	size_t* idxPtr = unordered_map_find(_list->tilemapIndices, _id);
 	if (idxPtr) {
@@ -285,10 +367,16 @@ void SetTilemapVisible(TilemapList* _list, TilemapID _id, bool _visible) {
 		// Get property
 		tilemap->visible = _visible;
 	}
+	else {
+		LUNA_DBG_WARN("Invalid tilemap id (%d)!", (int)_id);
+	}
 }
 
 bool GetTilemapVisible(TilemapList* _list, TilemapID _id) {
-	if (!_list) { return false; }
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid tilemap list reference!");
+		return false; 
+	}
 
 	size_t* idxPtr = unordered_map_find(_list->tilemapIndices, _id);
 	if (idxPtr) {
@@ -296,6 +384,9 @@ bool GetTilemapVisible(TilemapList* _list, TilemapID _id) {
 
 		// Get property
 		return tilemap->visible;
+	}
+	else {
+		LUNA_DBG_WARN("Invalid tilemap id (%d)!", (int)_id);
 	}
 	return false;
 }

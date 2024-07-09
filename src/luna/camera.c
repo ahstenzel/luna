@@ -2,11 +2,15 @@
 
 CameraList* _CreateCameraList() {
 	CameraList* list = calloc(1, sizeof *list);
-	if (!list) { return NULL; }
+	if (!list) { 
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate camera list!");
+		return NULL; 
+	}
 	list->cameraIndices = unordered_map_create(size_t);
 	list->cameras = free_list_create(Camera2D);
 	list->active = ID_NULL;
 	if (!list->cameras || !list->cameraIndices) {
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate camera list containers!");
 		_DestroyCameraList(list);
 		return NULL;
 	}
@@ -22,7 +26,10 @@ void _DestroyCameraList(CameraList* _list) {
 }
 
 CameraID CreateCamera(CameraList* _list, CameraDesc _desc) {
-	if (!_list) { return -1; }
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid camera list reference!");
+		return ID_NULL; 
+	}
 
 	// Create object
 	CameraID id = _luna_id_generate();
@@ -36,9 +43,11 @@ CameraID CreateCamera(CameraList* _list, CameraDesc _desc) {
 	// Add to list
 	size_t idx = 0;
 	if (!free_list_insert(_list->cameras, &idx, &camera)) {
+		LUNA_DBG_WARN("Failed to add camera to list!");
 		return ID_NULL;
 	}
 	if (!unordered_map_insert(_list->cameraIndices, id, &idx)) {
+		LUNA_DBG_WARN("Failed to add camera to index map!");
 		free_list_remove(_list->cameras, idx);
 		return ID_NULL;
 	}
@@ -51,7 +60,10 @@ CameraID CreateCamera(CameraList* _list, CameraDesc _desc) {
 }
 
 void DestroyCamera(CameraList* _list, CameraID _id) {
-	if (!_list) { return; }
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid camera list reference!");
+		return; 
+	}
 
 	size_t* idxPtr = unordered_map_find(_list->cameraIndices, _id);
 	if (idxPtr) {
@@ -61,40 +73,64 @@ void DestroyCamera(CameraList* _list, CameraID _id) {
 			_list->active = ID_NULL;
 		}
 	}
+	else {
+		LUNA_DBG_WARN("Invalid camera id (%d)!", (int)_id);
+	}
 }
 
 void SetActiveCamera(CameraList* _list, CameraID _id) {
-	if (!_list) { return; }
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid camera list reference!");
+		return; 
+	}
 
 	size_t* idxPtr = unordered_map_find(_list->cameraIndices, _id);
 	if (idxPtr) {
 		_list->active = _id;
 	}
+	else {
+		LUNA_DBG_WARN("Invalid camera id (%d)!", (int)_id);
+	}
 }
 
 Camera2D* GetCamera(CameraList* _list, CameraID _id) {
-	if (!_list) { return NULL; }
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid camera list reference!");
+		return NULL; 
+	}
 
 	size_t* idxPtr = unordered_map_find(_list->cameraIndices, _id);
 	if (idxPtr) {
 		Camera2D* camera = free_list_get(_list->cameras, *idxPtr);
 		return camera;
 	}
+	else {
+		LUNA_DBG_WARN("Invalid camera id (%d)!", (int)_id);
+	}
 	return NULL;
 }
 
 Camera2D* GetActiveCamera(CameraList* _list) {
-	if (!_list) { return NULL; }
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid camera list reference!");
+		return NULL; 
+	}
 
 	size_t* idxPtr = unordered_map_find(_list->cameraIndices, GetActiveCameraID(_list));
 	if (idxPtr) {
 		Camera2D* camera = free_list_get(_list->cameras, *idxPtr);
 		return camera;
 	}
+	else {
+		LUNA_DBG_WARN("Invalid camera id!");
+	}
 	return NULL;
 }
 
 CameraID GetActiveCameraID(CameraList* _list) {
-	if (!_list) { return ID_NULL; }
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid camera list reference!");
+		return ID_NULL; 
+	}
 	return _list->active;
 }

@@ -3,7 +3,10 @@
 ResourceList* _CreateResourceList(ResourceListDesc _desc) {
 	// Create resource container
 	ResourceList* list = calloc(1, sizeof *list);
-	if (!list) { return NULL; }
+	if (!list) { 
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate resource list!");
+		return NULL; 
+	}
 	list->dataCache = unordered_map_str_create(_lunaDataResource);
 	list->textCache = unordered_map_str_create(char*);
 	list->textureCache = unordered_map_str_create(Texture2D);
@@ -12,6 +15,7 @@ ResourceList* _CreateResourceList(ResourceListDesc _desc) {
 	list->meshCache = unordered_map_str_create(Mesh);
 	if (!list->dataCache || !list->textCache || !list->textureCache ||
 		!list->waveCache || !list->fontCache || !list->meshCache) {
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate resource list containers!");
 		_DestroyResourceList(list);
 		return NULL;
 	}
@@ -20,6 +24,7 @@ ResourceList* _CreateResourceList(ResourceListDesc _desc) {
 	size_t fileLen = strlen(_desc.resourceFile);
 	list->resourceFile = calloc(fileLen + 1, 1);
 	if (!list->resourceFile) {
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate resource list name buffer!");
 		_DestroyResourceList(list);
 		return NULL;
 	}
@@ -28,6 +33,7 @@ ResourceList* _CreateResourceList(ResourceListDesc _desc) {
 		size_t passLen = strlen(_desc.resourcePassword);
 		list->resourcePassword = calloc(passLen + 1, 1);
 		if (!list->resourcePassword) {
+			LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate resource list password buffer!");
 			_DestroyResourceList(list);
 			return NULL;
 		}
@@ -70,44 +76,63 @@ void _DestroyResourceList(ResourceList* _list) {
 }
 
 void ClearDataCache(ResourceList* _list) {
-	if (_list) {
-		unordered_map_str_clear(_list->dataCache);
+	if (!_list) {
+		LUNA_DBG_WARN("Invalid resource list reference!");
+		return;
 	}
+	unordered_map_str_clear(_list->dataCache);
 }
 
 void ClearTextCache(ResourceList* _list) {
-	if (_list) {
-		unordered_map_str_clear(_list->textCache);
+	if (!_list) {
+		LUNA_DBG_WARN("Invalid resource list reference!");
+		return;
 	}
+	unordered_map_str_clear(_list->textCache);
 }
 
 void ClearTextureCache(ResourceList* _list) {
-	if (_list) {
-		unordered_map_str_clear(_list->textureCache);
+	if (!_list) {
+		LUNA_DBG_WARN("Invalid resource list reference!");
+		return;
 	}
+	unordered_map_str_clear(_list->textureCache);
 }
 
 void ClearWaveCache(ResourceList* _list) {
-	if (_list) {
-		unordered_map_str_clear(_list->waveCache);
+	if (!_list) {
+		LUNA_DBG_WARN("Invalid resource list reference!");
+		return;
 	}
+	unordered_map_str_clear(_list->waveCache);
 }
 
 void ClearFontCache(ResourceList* _list) {
-	if (_list) {
-		unordered_map_str_clear(_list->fontCache);
+	if (!_list) {
+		LUNA_DBG_WARN("Invalid resource list reference!");
+		return;
 	}
+	unordered_map_str_clear(_list->fontCache);
 }
 
 void ClearMeshCache(ResourceList* _list) {
-	if (_list) {
-		unordered_map_str_clear(_list->meshCache);
+	if (!_list) {
+		LUNA_DBG_WARN("Invalid resource list reference!");
+		return;
 	}
+	unordered_map_str_clear(_list->meshCache);
 }
 
 int GetData(ResourceList* _list, char* _filename, void** _data, size_t* _size) {
 	// Error check
-	if (!_list || !_filename) { goto LoadDataFail; }
+	if (!_list) {
+		LUNA_DBG_WARN("Invalid resource list reference!");
+		goto get_data_fail;
+	}
+	if (!_filename) {
+		LUNA_DBG_WARN("Invalid filename!");
+		goto get_data_fail;
+	}
 
 	// Check cache
 	_lunaDataResource* rsc = unordered_map_str_find(_list->dataCache, _filename);
@@ -131,9 +156,9 @@ int GetData(ResourceList* _list, char* _filename, void** _data, size_t* _size) {
 		rresUnloadResourceChunk(chunk);
 	}
 	else {
-		LUNA_DBG_ERR("(GetData): Failed to load data block (%s) [Error code %d]", _filename, result);
+		LUNA_DBG_WARN("Failed to load data block (%s)! [Error code %d]", _filename, result);
 		rresUnloadResourceChunk(chunk);
-		goto LoadDataFail;
+		goto get_data_fail;
 	}
 
 	// Save to cache
@@ -142,11 +167,12 @@ int GetData(ResourceList* _list, char* _filename, void** _data, size_t* _size) {
 		.size = *_size
 	};
 	if (!unordered_map_str_insert(_list->dataCache, _filename, &cache)) {
-		goto LoadDataFail;
+		LUNA_DBG_WARN("Failed to cache data block (%s)!", _filename);
+		goto get_data_fail;
 	}
 	return 0;
 
-LoadDataFail:
+get_data_fail:
 	*_size = 0;
 	*_data = NULL;
 	return -1;
@@ -154,7 +180,7 @@ LoadDataFail:
 
 int GetText(ResourceList* _list, char* _filename, char** _text, size_t* _size) {
 	// Error check
-	if (!_list || !_filename) { goto LoadTextFail; }
+	if (!_list || !_filename) { goto get_text_fail; }
 
 	// Check cache
 	_lunaTextResource* rsc = unordered_map_str_find(_list->textCache, _filename);
@@ -176,9 +202,9 @@ int GetText(ResourceList* _list, char* _filename, char** _text, size_t* _size) {
 		rresUnloadResourceChunk(chunk);
 	}
 	else {
-		LUNA_DBG_ERR("(GetText): Failed to load text block (%s) [Error code %d]", _filename, result);
+		LUNA_DBG_WARN("Failed to load text block (%s)! [Error code %d]", _filename, result);
 		rresUnloadResourceChunk(chunk);
-		goto LoadTextFail;
+		goto get_text_fail;
 	}
 
 	// Save to cache
@@ -187,11 +213,12 @@ int GetText(ResourceList* _list, char* _filename, char** _text, size_t* _size) {
 		.size = *_size
 	};
 	if (!unordered_map_str_insert(_list->textCache, _filename, &cache)) {
-		goto LoadTextFail;
+		LUNA_DBG_WARN("Failed to cache text block (%s)!", _filename);
+		goto get_text_fail;
 	}
 	return 0;
 
-LoadTextFail:
+get_text_fail:
 	*_size = 0;
 	*_text = NULL;
 	return -1;
@@ -222,12 +249,14 @@ int GetTexture(ResourceList* _list, char* _filename, Texture2D* _texture) {
 		rresUnloadResourceChunk(chunk);
 	}
 	else {
+		LUNA_DBG_WARN("Failed to load texture (%s)! [Error code %d]", _filename, result);
 		rresUnloadResourceChunk(chunk);
 		return -1;
 	}
 
 	// Save to cache
 	if (!unordered_map_str_insert(_list->textureCache, _filename, _texture)) {
+		LUNA_DBG_WARN("Failed to cache texture (%s)!", _filename);
 		return -1;
 	}
 	return 0;
@@ -256,13 +285,14 @@ int GetWave(ResourceList* _list, char* _filename, Wave* _wave) {
 		rresUnloadResourceChunk(chunk);
 	}
 	else {
-		LUNA_DBG_ERR("(GetWave): Failed to load wave (%s) [Error code %d]", _filename, result);
+		LUNA_DBG_WARN("Failed to load wave (%s)! [Error code %d]", _filename, result);
 		rresUnloadResourceChunk(chunk);
 		return -1;
 	}
 
 	// Save to cache
 	if (!unordered_map_str_insert(_list->waveCache, _filename, _wave)) {
+		LUNA_DBG_WARN("Failed to cache wave (%s)!", _filename);
 		return -1;
 	}
 	return 0;
@@ -297,13 +327,14 @@ int GetFont(ResourceList* _list, char* _filename, Font* _font) {
 		rresUnloadResourceMulti(chunk);
 	}
 	else {
-		LUNA_DBG_ERR("(GetFont): Failed to load font (%s) [Error code %d]", _filename, result);
+		LUNA_DBG_WARN("Failed to load font (%s)! [Error code %d]", _filename, result);
 		rresUnloadResourceMulti(chunk);
 		return -1;
 	}
 
 	// Save to cache
 	if (!unordered_map_str_insert(_list->fontCache, _filename, _font)) {
+		LUNA_DBG_WARN("Failed to cache font (%s)!", _filename);
 		return -1;
 	}
 	return 0;
@@ -338,13 +369,14 @@ int GetMesh(ResourceList* _list, char* _filename, Mesh* _mesh) {
 		rresUnloadResourceMulti(chunk);
 	}
 	else {
-		LUNA_DBG_ERR("(GetMesh): Failed to load mesh (%s) [Error code %d]", _filename, result);
+		LUNA_DBG_WARN("Failed to load mesh (%s)! [Error code %d]", _filename, result);
 		rresUnloadResourceMulti(chunk);
 		return -1;
 	}
 
 	// Save to cache
 	if (!unordered_map_str_insert(_list->meshCache, _filename, _mesh)) {
+		LUNA_DBG_WARN("Failed to cache mesh (%s)!", _filename);
 		return -1;
 	}
 	return 0;
