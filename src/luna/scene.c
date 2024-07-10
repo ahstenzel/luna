@@ -76,6 +76,90 @@ void _DestroySceneList(SceneList* _list) {
 	}
 }
 
+size_t GetSceneListSize(SceneList* _list) {
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid scene list reference!");
+		return 0; 
+	}
+	return unordered_map_size(_list->scenes);
+}
+
+size_t GetSceneStackSize(SceneList* _list) {
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid scene list reference!");
+		return 0; 
+	}
+	return stack_size(_list->sceneStack);
+}
+
+SceneListIt* SceneListItBegin(SceneList* _list) {
+	// Error check
+	SceneListIt* it = NULL;
+	if (!_list) {
+		LUNA_DBG_WARN("Invalid scene list reference!");
+		goto scene_list_it_begin_fail;
+	}
+	if (unordered_map_size(_list->scenes) == 0) { 
+		goto scene_list_it_begin_fail; 
+	}
+
+	// Create map iterator
+	it = calloc(1, sizeof *it);
+	if (!it) { 
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to scene sprite list iterator!");
+		goto scene_list_it_begin_fail; 
+	}
+	it->_list = _list;
+	it->_ptr = unordered_map_it(_list->scenes);
+	if (!it->_ptr) { 
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate scene list index map iterator!");
+		goto scene_list_it_begin_fail; 
+	}
+	if (!it->_ptr->data) { 
+		LUNA_DBG_WARN("Scene list index map iterator points to invalid data!");
+		goto scene_list_it_begin_fail; 
+	}
+
+	// Retrieve scene data from list
+	it->data = (Scene*)it->_ptr->data;
+	it->id = (SceneID)it->_ptr->key;
+	if (!it->data) { 
+		LUNA_DBG_WARN("Scene list iterator points to invalid data!");
+		goto scene_list_it_begin_fail; 
+	}
+
+	return it;
+scene_list_it_begin_fail:
+	free(it);
+	return NULL;
+}
+
+void SceneListItNext(SceneListIt** _it) {
+	// Error check
+	if (!_it || !(*_it)) { return; }
+
+	// Advance to next valid element
+	SceneListIt* it = *_it;
+	unordered_map_it_next(it->_ptr);
+	if (it->_ptr) {
+		// Update iterator contents
+		it->data = (Scene*)it->_ptr->data;
+		it->id = (SceneID)it->_ptr->key;
+		if (!it->data) { 
+			LUNA_DBG_WARN("Next iterator position yielded invalid scene data!");
+			free(it);
+			(*_it) = NULL;
+			return;
+		}
+	}
+	else {
+		// Deallocate iterator
+		free(it);
+		(*_it) = NULL;
+		return;
+	}
+}
+
 SceneID CreateScene(SceneList* _list, SceneDesc _desc) {
 	if (!_list) { 
 		LUNA_DBG_WARN("Invalid scene list reference!");

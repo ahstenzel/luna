@@ -125,7 +125,6 @@ SpriteListIt* SpriteListItBegin(SpriteList* _list) {
 		goto sprite_list_it_begin_fail;
 	}
 	if (free_list_size(_list->sprites) == 0) { 
-		LUNA_DBG_WARN("Sprite list is empty!");
 		goto sprite_list_it_begin_fail; 
 	}
 
@@ -196,7 +195,6 @@ SpriteListDepthIt* SpriteListDepthItBegin(SpriteList* _list) {
 		goto sprite_list_depth_it_begin_fail;
 	}
 	if (free_list_size(_list->sprites) == 0) { 
-		LUNA_DBG_WARN("Sprite list is empty!");
 		goto sprite_list_depth_it_begin_fail; 
 	}
 
@@ -224,7 +222,7 @@ SpriteListDepthIt* SpriteListDepthItBegin(SpriteList* _list) {
 		LUNA_DBG_WARN("Sprite list iterator points to invalid data!");
 		goto sprite_list_depth_it_begin_fail; 
 	}
-	it->id = (SpriteID)it->data->_id;
+	it->id = (SpriteID)it->data->id;
 
 	return it;
 sprite_list_depth_it_begin_fail:
@@ -240,7 +238,6 @@ SpriteListDepthIt* SpriteListDepthItRBegin(SpriteList* _list) {
 		goto sprite_list_depth_rbegin_fail;
 	}
 	if (free_list_size(_list->sprites) == 0) { 
-		LUNA_DBG_WARN("Sprite list is empty!");
 		goto sprite_list_depth_rbegin_fail; 
 	}
 
@@ -265,7 +262,7 @@ SpriteListDepthIt* SpriteListDepthItRBegin(SpriteList* _list) {
 		LUNA_DBG_WARN("Sprite list iterator points to invalid data!");
 		goto sprite_list_depth_rbegin_fail; 
 	}
-	it->id = (SpriteID)it->data->_id;
+	it->id = (SpriteID)it->data->id;
 
 	return it;
 sprite_list_depth_rbegin_fail:
@@ -290,7 +287,7 @@ void SpriteListDepthItNext(SpriteListDepthIt** _it) {
 			(*_it) = NULL;
 			return;
 		}
-		it->id = (SpriteID)it->data->_id;
+		it->id = (SpriteID)it->data->id;
 	}
 	else {
 		// Deallocate iterator
@@ -317,7 +314,7 @@ void SpriteListDepthItPrev(SpriteListDepthIt** _it) {
 			(*_it) = NULL;
 			return;
 		}
-		it->id = (SpriteID)it->data->_id;
+		it->id = (SpriteID)it->data->id;
 	}
 	else {
 		// Deallocate iterator
@@ -340,7 +337,7 @@ SpriteID CreateSprite(SpriteList* _list, SpriteDesc _desc) {
 		.scale = _desc.scale,
 		.origin = _desc.origin,
 		.tint = _desc.tint,
-		._id = id,
+		.id = id,
 		.depth = _desc.depth,
 		.imageIndex = _desc.imageIndex,
 		.imageNum = _desc.imageNum,

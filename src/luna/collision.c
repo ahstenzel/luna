@@ -29,6 +29,82 @@ void _DestroyCollisionList(CollisionList* _list) {
 	}
 }
 
+size_t GetCollisionListSize(CollisionList* _list) {
+	if (!_list) { 
+		LUNA_DBG_WARN("Invalid collision list reference!");
+		return 0; 
+	}
+	return unordered_map_size(_list->collisions);
+}
+
+CollisionListIt* CollisionListItBegin(CollisionList* _list) {
+	// Error check
+	CollisionListIt* it = NULL;
+	if (!_list) {
+		LUNA_DBG_WARN("Invalid collision list reference!");
+		goto collision_list_it_begin_fail;
+	}
+	if (unordered_map_size(_list->collisions) == 0) { 
+		goto collision_list_it_begin_fail; 
+	}
+
+	// Create map iterator
+	it = calloc(1, sizeof *it);
+	if (!it) { 
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate collision list iterator!");
+		goto collision_list_it_begin_fail; 
+	}
+	it->_list = _list;
+	it->_ptr = unordered_map_it(_list->collisions);
+	if (!it->_ptr) { 
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate collision list index map iterator!");
+		goto collision_list_it_begin_fail; 
+	}
+	if (!it->_ptr->data) { 
+		LUNA_DBG_WARN("Collision list index map iterator points to invalid data!");
+		goto collision_list_it_begin_fail; 
+	}
+
+	// Retrieve collision data from list
+	it->data = (Collision*)it->_ptr->data;
+	it->id = (CollisionID)it->_ptr->key;
+	if (!it->data) { 
+		LUNA_DBG_WARN("Collision list iterator points to invalid data!");
+		goto collision_list_it_begin_fail; 
+	}
+
+	return it;
+collision_list_it_begin_fail:
+	free(it);
+	return NULL;
+}
+
+void CollisionListItNext(CollisionListIt** _it) {
+	// Error check
+	if (!_it || !(*_it)) { return; }
+
+	// Advance to next valid element
+	CollisionListIt* it = *_it;
+	unordered_map_it_next(it->_ptr);
+	if (it->_ptr) {
+		// Update iterator contents
+		it->data = (Collision*)it->_ptr->data;
+		it->id = (CollisionID)it->_ptr->key;
+		if (!it->data) { 
+			LUNA_DBG_WARN("Next iterator position yielded invalid collision data!");
+			free(it);
+			(*_it) = NULL;
+			return;
+		}
+	}
+	else {
+		// Deallocate iterator
+		free(it);
+		(*_it) = NULL;
+		return;
+	}
+}
+
 CollisionID CreateCollision(CollisionList* _list, CollisionDesc _desc) {
 	// Error check
 	if (!_list) { 

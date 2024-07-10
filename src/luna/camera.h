@@ -10,10 +10,10 @@ typedef _LUNA_ID_TYPE CameraID;
 
 /// @brief Descriptor for creating a 2D camera object
 typedef struct {
-	Vector2 target;		/* Point in worldspace the camera should follow */
-	Vector2 offset;		/* Offset of cameras target in screenspace */
-	float rotation;		/* Rotation angle (degrees) */
-	float zoom;			/* Zoom level */
+	Vector2 target;		// Point in worldspace the camera should follow
+	Vector2 offset;		// Offset of cameras target in screenspace
+	float rotation;		// Rotation angle (degrees)
+	float zoom;			// Zoom level
 } CameraDesc;
 
 /// @brief Organized list of camera objects
@@ -23,6 +23,14 @@ typedef struct {
 	CameraID active;
 } CameraList;
 
+/// @brief Iterator for camera objects
+typedef struct {
+	CameraList* _list;
+	unordered_map_it_t* _ptr;
+	CameraID id;				// Unique camera ID
+	Camera2D* data;				// Camera data structure
+} CameraListIt;
+
 /// @brief Create a new camera list.
 /// @return Camera list pointer
 CameraList* _CreateCameraList();
@@ -30,6 +38,20 @@ CameraList* _CreateCameraList();
 /// @brief Deallocate a camera list.
 /// @param _list Camera list pointer
 void _DestroyCameraList(CameraList* _list);
+
+/// @brief Get the number of cameras in the list.
+/// @param _list Camera list pointer
+/// @return Number of cameras
+size_t GetCameraListSize(CameraList* _list);
+
+/// @brief Get an iterator for the list of cameras.
+/// @param _list Camera list pointer
+/// @return Camera iterator
+CameraListIt* CameraListItBegin(CameraList* _list);
+
+/// @brief Move the iterator to the next element.
+/// @param _it Pointer to camera iterator
+void CameraListItNext(CameraListIt** _it);
 
 /// @brief Create a new 2D camera object and add it to the list.
 /// @param _list Camera list pointer

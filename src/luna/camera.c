@@ -25,6 +25,84 @@ void _DestroyCameraList(CameraList* _list) {
 	}
 }
 
+size_t GetCameraListSize(CameraList* _list) {
+	if (!_list) {
+		LUNA_DBG_WARN("Invalid camera list reference!");
+		return 0;
+	}
+	return free_list_size(_list->cameras);
+}
+
+CameraListIt* CameraListItBegin(CameraList* _list) {
+	// Error check
+	CameraListIt* it = NULL;
+	if (!_list) {
+		LUNA_DBG_WARN("Invalid camera list reference!");
+		goto camera_list_it_begin_fail;
+	}
+	if (free_list_size(_list->cameras) == 0) { 
+		goto camera_list_it_begin_fail; 
+	}
+
+	// Create map iterator
+	it = calloc(1, sizeof *it);
+	if (!it) { 
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate camera list iterator!");
+		goto camera_list_it_begin_fail; 
+	}
+	it->_list = _list;
+	it->_ptr = unordered_map_it(_list->cameraIndices);
+	if (!it->_ptr) { 
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate camera list index map iterator!");
+		goto camera_list_it_begin_fail; 
+	}
+	if (!it->_ptr->data) { 
+		LUNA_DBG_WARN("Camera list index map iterator points to invalid data!");
+		goto camera_list_it_begin_fail; 
+	}
+
+	// Retrieve camera data from list
+	size_t* idx = it->_ptr->data;
+	it->data = free_list_get(_list->cameras, *idx);
+	it->id = (CameraID)it->_ptr->key;
+	if (!it->data) { 
+		LUNA_DBG_WARN("Camera list iterator points to invalid data!");
+		goto camera_list_it_begin_fail; 
+	}
+
+	return it;
+camera_list_it_begin_fail:
+	free(it);
+	return NULL;
+}
+
+void CameraListItNext(CameraListIt** _it) {
+	// Error check
+	if (!_it || !(*_it)) { return; }
+
+	// Advance to next valid element
+	CameraListIt* it = *_it;
+	unordered_map_it_next(it->_ptr);
+	if (it->_ptr) {
+		// Update iterator contents
+		size_t* idx = it->_ptr->data;
+		it->data = free_list_get(it->_list->cameras, *idx);
+		it->id = (CameraID)it->_ptr->key;
+		if (!it->data) { 
+			LUNA_DBG_WARN("Next iterator position yielded invalid camera data!");
+			free(it);
+			(*_it) = NULL;
+			return;
+		}
+	}
+	else {
+		// Deallocate iterator
+		free(it);
+		(*_it) = NULL;
+		return;
+	}
+}
+
 CameraID CreateCamera(CameraList* _list, CameraDesc _desc) {
 	if (!_list) { 
 		LUNA_DBG_WARN("Invalid camera list reference!");

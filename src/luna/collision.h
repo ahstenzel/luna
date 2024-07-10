@@ -17,15 +17,15 @@ typedef _LUNA_ID_TYPE CollisionID;
 
 /// @brief Single collision object
 typedef struct {
-	Rectangle boundingBox;
-	CollisionID id;
-	bool rounded;
+	Rectangle boundingBox;	// Position & size of collision box
+	CollisionID id;			// Unique collision ID
+	bool rounded;			// If true, use a circular (or elliptical) collision boundary
 } Collision;
 
 /// @brief Descriptor for creating a collision object
 typedef struct {
-	Rectangle boundingBox;
-	bool rounded;
+	Rectangle boundingBox;	// Position & size of collision box
+	bool rounded;			// If true, use a circular (or elliptical) collision boundary
 } CollisionDesc;
 
 /// @brief Single cell in space containing collision objects
@@ -39,6 +39,14 @@ typedef struct {
 	unordered_map_t* buckets;
 } CollisionList;
 
+/// @brief Iterator for collision objects
+typedef struct {
+	CollisionList* _list;
+	unordered_map_it_t* _ptr;
+	CollisionID id;				// Unique collision ID
+	Collision* data;			// Collision data structure
+} CollisionListIt;
+
 /// @brief Create a new 2D collision list.
 /// @return Collision list pointer
 CollisionList* _CreateCollisionList();
@@ -46,6 +54,12 @@ CollisionList* _CreateCollisionList();
 /// @brief Deallocate a 2D collision list.
 /// @param _list Collision List pointer
 void _DestroyCollisionList(CollisionList* _list);
+
+size_t GetCollisionListSize(CollisionList* _list);
+
+CollisionListIt* CollisionListItBegin(CollisionList* _list);
+
+void CollisionListItNext(CollisionListIt** _it);
 
 /// @brief Create a collision object in the map.
 /// @param _list Collision List pointer

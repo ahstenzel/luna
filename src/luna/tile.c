@@ -90,6 +90,224 @@ void _DrawTilemapList(TilemapList* _list) {
 	}
 }
 
+size_t GetTilemapSize(TilemapList* _list) {
+	if (!_list) {
+		LUNA_DBG_WARN("Invalid tilemap list reference!");
+		return 0; 
+	}
+	return free_list_size(_list->tilemaps);
+}
+
+TilemapListIt* TilemapListItBegin(TilemapList* _list) {
+	// Error check
+	TilemapListIt* it = NULL;
+	if (!_list) {
+		LUNA_DBG_WARN("Invalid sprite list reference!");
+		goto tilemap_list_it_begin_fail;
+	}
+	if (free_list_size(_list->tilemaps) == 0) { 
+		goto tilemap_list_it_begin_fail; 
+	}
+
+	// Create map iterator
+	it = calloc(1, sizeof *it);
+	if (!it) { 
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate tilemap list iterator!");
+		goto tilemap_list_it_begin_fail; 
+	}
+	it->_list = _list;
+	it->_ptr = unordered_map_it(_list->tilemapIndices);
+	if (!it->_ptr) { 
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate tilemap list index map iterator!");
+		goto tilemap_list_it_begin_fail; 
+	}
+	if (!it->_ptr->data) { 
+		LUNA_DBG_WARN("Tilemap list index map iterator points to invalid data!");
+		goto tilemap_list_it_begin_fail; 
+	}
+
+	// Retrieve tilemap data from list
+	size_t* idx = it->_ptr->data;
+	it->data = free_list_get(_list->tilemaps, *idx);
+	it->id = (TilemapID)it->_ptr->key;
+	if (!it->data) { 
+		LUNA_DBG_WARN("Tilemap list iterator points to invalid data!");
+		goto tilemap_list_it_begin_fail; 
+	}
+
+	return it;
+tilemap_list_it_begin_fail:
+	free(it);
+	return NULL;
+}
+
+void TilemapListItNext(TilemapListIt** _it) {
+	// Error check
+	if (!_it || !(*_it)) { return; }
+
+	// Advance to next valid element
+	TilemapListIt* it = *_it;
+	unordered_map_it_next(it->_ptr);
+	if (it->_ptr) {
+		// Update iterator contents
+		size_t* idx = it->_ptr->data;
+		it->data = free_list_get(it->_list->tilemaps, *idx);
+		it->id = (TilemapID)it->_ptr->key;
+		if (!it->data) { 
+			LUNA_DBG_WARN("Next iterator position yielded invalid tilemap data!");
+			free(it);
+			(*_it) = NULL;
+			return;
+		}
+	}
+	else {
+		// Deallocate iterator
+		free(it);
+		(*_it) = NULL;
+		return;
+	}
+}
+
+TilemapListDepthIt* TilemapListDepthItBegin(TilemapList* _list) {
+	// Error check
+	TilemapListDepthIt* it = NULL;
+	if (!_list) {
+		LUNA_DBG_WARN("Invalid tilemap list reference!");
+		goto tilemap_list_depth_it_begin_fail;
+	}
+	if (free_list_size(_list->tilemaps) == 0) { 
+		goto tilemap_list_depth_it_begin_fail; 
+	}
+
+	// Create queue iterator
+	it = calloc(1, sizeof *it);
+	if (!it) { 
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate tilemap list iterator!");
+		goto tilemap_list_depth_it_begin_fail; 
+	}
+	it->_list = _list;
+	it->_ptr = priority_queue_it_begin(_list->tilemapDepthOrder);
+	if (!it->_ptr) { 
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate tilemap list depth queue iterator!");
+		goto tilemap_list_depth_it_begin_fail; 
+	}
+	if (!it->_ptr->data) { 
+		LUNA_DBG_WARN("Tilemap list depth queue iterator points to invalid data!");
+		goto tilemap_list_depth_it_begin_fail; 
+	}
+
+	// Retrieve tilemap data from list
+	size_t* idx = it->_ptr->data;
+	it->data = free_list_get(_list->tilemaps, *idx);
+	if (!it->data) { 
+		LUNA_DBG_WARN("Tilemap list iterator points to invalid data!");
+		goto tilemap_list_depth_it_begin_fail; 
+	}
+	it->id = (TilemapID)it->data->_id;
+
+	return it;
+tilemap_list_depth_it_begin_fail:
+	free(it);
+	return NULL;
+}
+
+TilemapListDepthIt* TilemapListDepthItRBegin(TilemapList* _list) {
+		// Error check
+	TilemapListDepthIt* it = NULL;
+	if (!_list) {
+		LUNA_DBG_WARN("Invalid tilemap list reference!");
+		goto tilemap_list_depth_it_begin_fail;
+	}
+	if (free_list_size(_list->tilemaps) == 0) { 
+		goto tilemap_list_depth_it_begin_fail; 
+	}
+
+	// Create queue iterator
+	it = calloc(1, sizeof *it);
+	if (!it) { 
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate tilemap list iterator!");
+		goto tilemap_list_depth_it_begin_fail; 
+	}
+	it->_list = _list;
+	it->_ptr = priority_queue_it_rbegin(_list->tilemapDepthOrder);
+	if (!it->_ptr) { 
+		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate tilemap list depth queue iterator!");
+		goto tilemap_list_depth_it_begin_fail; 
+	}
+	if (!it->_ptr->data) { 
+		LUNA_DBG_WARN("Tilemap list depth queue iterator points to invalid data!");
+		goto tilemap_list_depth_it_begin_fail; 
+	}
+
+	// Retrieve tilemap data from list
+	size_t* idx = it->_ptr->data;
+	it->data = free_list_get(_list->tilemaps, *idx);
+	if (!it->data) { 
+		LUNA_DBG_WARN("Tilemap list iterator points to invalid data!");
+		goto tilemap_list_depth_it_begin_fail; 
+	}
+	it->id = (TilemapID)it->data->_id;
+
+	return it;
+tilemap_list_depth_it_begin_fail:
+	free(it);
+	return NULL;
+}
+
+void TilemapListDepthItNext(TilemapListDepthIt** _it) {
+	// Error check
+	if (!_it || !(*_it)) { return; }
+
+	// Advance to next valid element
+	TilemapListDepthIt* it = *_it;
+	priority_queue_it_next(it->_ptr);
+	if (it->_ptr) {
+		// Update iterator contents
+		size_t* idx = it->_ptr->data;
+		it->data = free_list_get(it->_list->tilemaps, *idx);
+		if (!it->data) { 
+			LUNA_DBG_WARN("Next iterator position yielded invalid tilemap data!");
+			free(it);
+			(*_it) = NULL;
+			return;
+		}
+		it->id = (TilemapID)it->data->_id;
+	}
+	else {
+		// Deallocate iterator
+		free(it);
+		(*_it) = NULL;
+		return;
+	}
+}
+
+void TilemapListDepthItPrev(TilemapListDepthIt** _it) {
+	// Error check
+	if (!_it || !(*_it)) { return; }
+
+	// Advance to next valid element
+	TilemapListDepthIt* it = *_it;
+	priority_queue_it_prev(it->_ptr);
+	if (it->_ptr) {
+		// Update iterator contents
+		size_t* idx = it->_ptr->data;
+		it->data = free_list_get(it->_list->tilemaps, *idx);
+		if (!it->data) { 
+			LUNA_DBG_WARN("Next iterator position yielded invalid tilemap data!");
+			free(it);
+			(*_it) = NULL;
+			return;
+		}
+		it->id = (TilemapID)it->data->_id;
+	}
+	else {
+		// Deallocate iterator
+		free(it);
+		(*_it) = NULL;
+		return;
+	}
+}
+
 TilemapID CreateTilemap(TilemapList* _list, TilemapDesc _desc) {
 	// Error check
 	if (!_list) { 

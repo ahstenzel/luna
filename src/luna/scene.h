@@ -27,24 +27,24 @@ typedef void (*ScenePopFPtr)(SceneID);
 
 /// @brief Individual game scene
 typedef struct {
-	SpriteList* spriteList;
-	CollisionList* collisionList;
-	TilemapList* tilemapList;
-	CameraList* cameraList;
-	ScenePushFPtr pushFPtr;
-	SceneTopFPtr topFPtr;
-	SceneUpdateFPtr updateFPtr;
-	ScenePopFPtr popFPtr;
-	SceneID id;
+	SpriteList* spriteList;			// List of sprites
+	CollisionList* collisionList;	// List of collisions
+	TilemapList* tilemapList;		// List of tilemaps
+	CameraList* cameraList;			// List of cameras
+	ScenePushFPtr pushFPtr;			// Stack push callback
+	SceneTopFPtr topFPtr;			// Stack top callback
+	SceneUpdateFPtr updateFPtr;		// Stack update callback
+	ScenePopFPtr popFPtr;			// Stack pop callback
+	SceneID id;						// Unique scene ID
 } Scene;
 
 /// @brief Descriptor for creating a scene
 typedef struct {
-	ScenePushFPtr pushFPtr;
-	SceneTopFPtr topFPtr;
-	SceneUpdateFPtr updateFPtr;
-	ScenePopFPtr popFPtr;
-	bool depthSorting;
+	ScenePushFPtr pushFPtr;			// Stack push callback
+	SceneTopFPtr topFPtr;			// Stack top callback
+	SceneUpdateFPtr updateFPtr;		// Stack update callback
+	ScenePopFPtr popFPtr;			// Stack pop callback
+	bool depthSorting;				// Enable depth sorting for drawable objects
 } SceneDesc;
 
 /// @brief Stack of active scenes.
@@ -52,6 +52,14 @@ typedef struct {
 	stack_t* sceneStack;
 	unordered_map_t* scenes;
 } SceneList;
+
+/// @brief Iterator for scene objects.
+typedef struct {
+	SceneList* _list;
+	unordered_map_it_t* _ptr;
+	SceneID id;					// Unique scene ID
+	Scene* data;				// Scene data structure
+} SceneListIt;
 
 /// @brief Create a new scene list.
 /// @return Scene list pointer
@@ -69,6 +77,20 @@ void _DrawSceneList(SceneList* _list);
 /// @brief Deallocate the scene list.
 /// @param _list Scene list pointer
 void _DestroySceneList(SceneList* _list);
+
+/// @brief Get the number of scenes in the list.
+/// @param _list Scene list pointer
+/// @return Number of scenes
+size_t GetSceneListSize(SceneList* _list);
+
+/// @brief Get the number of scenes currently in the stack.
+/// @param _list Scene list pointer
+/// @return Number of scenes
+size_t GetSceneStackSize(SceneList* _list);
+
+SceneListIt* SceneListItBegin(SceneList* _list);
+
+void SceneListItNext(SceneListIt** _it);
 
 /// @brief Create a new scene for the list.
 /// @param _list Scene list pointer

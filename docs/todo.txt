@@ -1,4 +1,5 @@
 -Backgrounds & foregrounds
 -More status code return values for functions
 -Alternate memory allocator (mimalloc, jemalloc?)
--More list iterators
+-Normalize data structure interfaces (underscore internal values, const ids)
+-Scene goto function
