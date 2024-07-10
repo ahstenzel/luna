@@ -105,8 +105,9 @@ size_t GetTilemapSize(TilemapList* _list);
 TilemapListIt* TilemapListItBegin(TilemapList* _list);
 
 /// @brief Move the iterator to the next unsorted element.
-/// @param _it Pointer to tilemap iterator
-void TilemapListItNext(TilemapListIt** _it);
+/// @param _it Tilemap iterator
+/// @return Updated tilemap iterator (or NULL)
+TilemapListIt* TilemapListItNext(TilemapListIt* _it);
 
 /// @brief Get an iterator to the beginning of the tilemap list (sorted by depth order).
 /// @param _list Tilemap list pointer
@@ -119,12 +120,14 @@ TilemapListDepthIt* TilemapListDepthItBegin(TilemapList* _list);
 TilemapListDepthIt* TilemapListDepthItRBegin(TilemapList* _list);
 
 /// @brief Move the iterator to the next element (sorted by depth order).
-/// @param _it Pointer to tilemap iterator
-void TilemapListDepthItNext(TilemapListDepthIt** _it);
+/// @param _it Tilemap iterator
+/// @return Updated tilemap iterator (or NULL)
+TilemapListDepthIt* TilemapListDepthItNext(TilemapListDepthIt* _it);
 
 /// @brief Move the iterator to the previous element (sorted by depth order).
-/// @param _it Pointer to tilemap iterator
-void TilemapListDepthItPrev(TilemapListDepthIt** _it);
+/// @param _it Tilemap iterator
+/// @return Updated tilemap iterator (or NULL)
+TilemapListDepthIt* TilemapListDepthItPrev(TilemapListDepthIt* _it);
 
 /// @brief Create a new tilemap object and add it to the list.
 /// @param _list Tilemap list pointer

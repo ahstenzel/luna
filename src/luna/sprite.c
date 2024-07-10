@@ -2,7 +2,8 @@
 
 void _UpdateSprite(Sprite* _sprite, float _dt) {
 	if (!_sprite) { 
-		LUNA_DBG_WARN("Invalid sprite reference!");
+		LUNA_DEBUG_WARN("Invalid sprite reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return; 
 	}
 
@@ -14,7 +15,8 @@ void _UpdateSprite(Sprite* _sprite, float _dt) {
 
 void _DrawSprite(Sprite* _sprite) {
 	if (!_sprite) { 
-		LUNA_DBG_WARN("Invalid sprite reference!");
+		LUNA_DEBUG_WARN("Invalid sprite reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return; 
 	}
 
@@ -41,7 +43,7 @@ void _DrawSprite(Sprite* _sprite) {
 SpriteList* _CreateSpriteList(bool _depthSorting) {
 	SpriteList* list = calloc(1, sizeof *list);
 	if (!list) { 
-		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate sprite list!");
+		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to allocate sprite list!");
 		return NULL; 
 	}
 
@@ -50,7 +52,7 @@ SpriteList* _CreateSpriteList(bool _depthSorting) {
 	list->_sprites = free_list_create(Sprite);
 	list->_spriteDepthOrder = priority_queue_create(size_t);
 	if (!list->_spriteIndices || !list->_sprites || !list->_spriteDepthOrder) {
-		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate sprite list containers!");
+		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to allocate sprite list containers!");
 		_DestroySpriteList(list);
 		return NULL;
 	}
@@ -68,7 +70,8 @@ void _DestroySpriteList(SpriteList* _list) {
 
 void _UpdateSpriteList(SpriteList* _list, float _dt) {
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid sprite list reference!");
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return; 
 	}
 
@@ -80,7 +83,8 @@ void _UpdateSpriteList(SpriteList* _list, float _dt) {
 
 void _DrawSpriteList(SpriteList* _list) {
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid sprite list reference!");
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return; 
 	}
 
@@ -89,7 +93,8 @@ void _DrawSpriteList(SpriteList* _list) {
 			size_t idx = *(size_t*)(it->data);
 			Sprite* sprite = free_list_get(_list->_sprites, idx);
 			if (!sprite) {
-				LUNA_DBG_WARN("Invalid sprite reference!");
+				LUNA_DEBUG_WARN("Sprite list iterator points to invalid data!");
+				LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 			}
 			else if (sprite->_visible) {
 				_DrawSprite(sprite);
@@ -100,7 +105,8 @@ void _DrawSpriteList(SpriteList* _list) {
 		for(free_list_it_t* it = free_list_it(_list->_sprites); it; free_list_it_next(it)) {
 			Sprite* sprite = it->data;
 			if (!sprite) {
-				LUNA_DBG_WARN("Invalid sprite reference!");
+				LUNA_DEBUG_WARN("Sprite list iterator points to invalid data!");
+				LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 			}
 			else if (sprite->_visible) {
 				_DrawSprite(sprite);
@@ -110,18 +116,22 @@ void _DrawSpriteList(SpriteList* _list) {
 }
 
 size_t GetSpriteListSize(SpriteList* _list) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid sprite list reference!");
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return 0; 
 	}
 	return free_list_size(_list->_sprites);
 }
 
 SpriteListIt* SpriteListItBegin(SpriteList* _list) {
+	LUNA_RETURN_CLEAR;
 	// Error check
 	SpriteListIt* it = NULL;
 	if (!_list) {
-		LUNA_DBG_WARN("Invalid sprite list reference!");
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		goto sprite_list_it_begin_fail;
 	}
 	if (free_list_size(_list->_sprites) == 0) { 
@@ -131,17 +141,18 @@ SpriteListIt* SpriteListItBegin(SpriteList* _list) {
 	// Create map iterator
 	it = calloc(1, sizeof *it);
 	if (!it) { 
-		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate sprite list iterator!");
+		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to allocate sprite list iterator!");
 		goto sprite_list_it_begin_fail; 
 	}
 	it->_list = _list;
 	it->_ptr = unordered_map_it(_list->_spriteIndices);
 	if (!it->_ptr) { 
-		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate sprite list index map iterator!");
+		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to allocate sprite list index map iterator!");
 		goto sprite_list_it_begin_fail; 
 	}
 	if (!it->_ptr->data) { 
-		LUNA_DBG_WARN("Sprite list index map iterator points to invalid data!");
+		LUNA_DEBUG_WARN("Sprite list index map iterator points to invalid data!");
+		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		goto sprite_list_it_begin_fail; 
 	}
 
@@ -150,7 +161,8 @@ SpriteListIt* SpriteListItBegin(SpriteList* _list) {
 	it->data = free_list_get(_list->_sprites, *idx);
 	it->id = (SpriteID)it->_ptr->key;
 	if (!it->data) { 
-		LUNA_DBG_WARN("Sprite list iterator points to invalid data!");
+		LUNA_DEBUG_WARN("Sprite list iterator points to invalid data!");
+		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		goto sprite_list_it_begin_fail; 
 	}
 
@@ -160,38 +172,40 @@ sprite_list_it_begin_fail:
 	return NULL;
 }
 
-void SpriteListItNext(SpriteListIt** _it) {
+SpriteListIt* SpriteListItNext(SpriteListIt* _it) {
+	LUNA_RETURN_CLEAR;
 	// Error check
-	if (!_it || !(*_it)) { return; }
+	if (!_it) { return NULL; }
 
 	// Advance to next valid element
-	SpriteListIt* it = *_it;
-	unordered_map_it_next(it->_ptr);
-	if (it->_ptr) {
+	unordered_map_it_next(_it->_ptr);
+	if (_it->_ptr) {
 		// Update iterator contents
-		size_t* idx = it->_ptr->data;
-		it->data = free_list_get(it->_list->_sprites, *idx);
-		it->id = (SpriteID)it->_ptr->key;
-		if (!it->data) { 
-			LUNA_DBG_WARN("Next iterator position yielded invalid sprite data!");
-			free(it);
-			(*_it) = NULL;
-			return;
+		size_t* idx = _it->_ptr->data;
+		_it->data = free_list_get(_it->_list->_sprites, *idx);
+		_it->id = (SpriteID)_it->_ptr->key;
+		if (!_it->data) { 
+			LUNA_DEBUG_WARN("Next iterator position yielded invalid sprite data!");
+			LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
+			free(_it);
+			return NULL;
 		}
 	}
 	else {
 		// Deallocate iterator
-		free(it);
-		(*_it) = NULL;
-		return;
+		free(_it);
+		return NULL;
 	}
+	return _it;
 }
 
 SpriteListDepthIt* SpriteListDepthItBegin(SpriteList* _list) {
+	LUNA_RETURN_CLEAR;
 	// Error check
 	SpriteListDepthIt* it = NULL;
 	if (!_list) {
-		LUNA_DBG_WARN("Invalid sprite list reference!");
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		goto sprite_list_depth_it_begin_fail;
 	}
 	if (free_list_size(_list->_sprites) == 0) { 
@@ -201,17 +215,18 @@ SpriteListDepthIt* SpriteListDepthItBegin(SpriteList* _list) {
 	// Create queue iterator
 	it = calloc(1, sizeof *it);
 	if (!it) { 
-		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate sprite list iterator!");
+		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to allocate sprite list iterator!");
 		goto sprite_list_depth_it_begin_fail; 
 	}
 	it->_list = _list;
 	it->_ptr = priority_queue_it_begin(_list->_spriteDepthOrder);
 	if (!it->_ptr) { 
-		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate sprite list depth queue iterator!");
+		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to allocate sprite list depth queue iterator!");
 		goto sprite_list_depth_it_begin_fail; 
 	}
 	if (!it->_ptr->data) { 
-		LUNA_DBG_WARN("Sprite list depth queue iterator points to invalid data!");
+		LUNA_DEBUG_WARN("Sprite list depth queue iterator points to invalid data!");
+		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		goto sprite_list_depth_it_begin_fail; 
 	}
 
@@ -219,7 +234,8 @@ SpriteListDepthIt* SpriteListDepthItBegin(SpriteList* _list) {
 	size_t* idx = it->_ptr->data;
 	it->data = free_list_get(_list->_sprites, *idx);
 	if (!it->data) { 
-		LUNA_DBG_WARN("Sprite list iterator points to invalid data!");
+		LUNA_DEBUG_WARN("Sprite list iterator points to invalid data!");
+		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		goto sprite_list_depth_it_begin_fail; 
 	}
 	it->id = (SpriteID)it->data->_id;
@@ -231,10 +247,12 @@ sprite_list_depth_it_begin_fail:
 }
 
 SpriteListDepthIt* SpriteListDepthItRBegin(SpriteList* _list) {
+	LUNA_RETURN_CLEAR;
 	// Error check
 	SpriteListDepthIt* it = NULL;
 	if (!_list) {
-		LUNA_DBG_WARN("Invalid sprite list reference!");
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		goto sprite_list_depth_rbegin_fail;
 	}
 	if (free_list_size(_list->_sprites) == 0) { 
@@ -247,11 +265,12 @@ SpriteListDepthIt* SpriteListDepthItRBegin(SpriteList* _list) {
 	it->_list = _list;
 	it->_ptr = priority_queue_it_rbegin(_list->_spriteDepthOrder);
 	if (!it->_ptr) { 
-		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate sprite list depth queue iterator!");
+		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to allocate sprite list depth queue iterator!");
 		goto sprite_list_depth_rbegin_fail; 
 	}
 	if (!it->_ptr->data) { 
-		LUNA_DBG_WARN("Sprite list depth queue iterator points to invalid data!");
+		LUNA_DEBUG_WARN("Sprite list depth queue iterator points to invalid data!");
+		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		goto sprite_list_depth_rbegin_fail; 
 	}
 
@@ -259,7 +278,8 @@ SpriteListDepthIt* SpriteListDepthItRBegin(SpriteList* _list) {
 	size_t* idx = it->_ptr->data;
 	it->data = free_list_get(_list->_sprites, *idx);
 	if (!it->data) { 
-		LUNA_DBG_WARN("Sprite list iterator points to invalid data!");
+		LUNA_DEBUG_WARN("Sprite list iterator points to invalid data!");
+		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		goto sprite_list_depth_rbegin_fail; 
 	}
 	it->id = (SpriteID)it->data->_id;
@@ -270,63 +290,65 @@ sprite_list_depth_rbegin_fail:
 	return NULL;
 }
 
-void SpriteListDepthItNext(SpriteListDepthIt** _it) {
+SpriteListDepthIt* SpriteListDepthItNext(SpriteListDepthIt* _it) {
+	LUNA_RETURN_CLEAR;
 	// Error check
-	if (!_it || !(*_it)) { return; }
+	if (!_it) { return NULL; }
 
 	// Advance to next valid element
-	SpriteListDepthIt* it = *_it;
-	priority_queue_it_next(it->_ptr);
-	if (it->_ptr) {
+	priority_queue_it_next(_it->_ptr);
+	if (_it->_ptr) {
 		// Update iterator contents
-		size_t* idx = it->_ptr->data;
-		it->data = free_list_get(it->_list->_sprites, *idx);
-		if (!it->data) { 
-			LUNA_DBG_WARN("Next iterator position yielded invalid sprite data!");
-			free(it);
-			(*_it) = NULL;
-			return;
+		size_t* idx = _it->_ptr->data;
+		_it->data = free_list_get(_it->_list->_sprites, *idx);
+		if (!_it->data) { 
+			LUNA_DEBUG_WARN("Next iterator position yielded invalid sprite data!");
+			LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
+			free(_it);
+			return NULL;
 		}
-		it->id = (SpriteID)it->data->_id;
+		_it->id = (SpriteID)_it->data->_id;
 	}
 	else {
 		// Deallocate iterator
-		free(it);
-		(*_it) = NULL;
-		return;
+		free(_it);
+		return NULL;
 	}
+	return _it;
 }
 
-void SpriteListDepthItPrev(SpriteListDepthIt** _it) {
+SpriteListDepthIt* SpriteListDepthItPrev(SpriteListDepthIt* _it) {
+	LUNA_RETURN_CLEAR;
 	// Error check
-	if (!_it || !(*_it)) { return; }
+	if (!_it) { return NULL; }
 
-	// Advance to next valid element
-	SpriteListDepthIt* it = *_it;
-	priority_queue_it_prev(it->_ptr);
-	if (it->_ptr) {
+	// Advance to previous valid element
+	priority_queue_it_prev(_it->_ptr);
+	if (_it->_ptr) {
 		// Update iterator contents
-		size_t* idx = it->_ptr->data;
-		it->data = free_list_get(it->_list->_sprites, *idx);
-		if (!it->data) { 
-			LUNA_DBG_WARN("Next iterator position yielded invalid sprite data!");
-			free(it);
-			(*_it) = NULL;
-			return;
+		size_t* idx = _it->_ptr->data;
+		_it->data = free_list_get(_it->_list->_sprites, *idx);
+		if (!_it->data) { 
+			LUNA_DEBUG_WARN("Next iterator position yielded invalid sprite data!");
+			LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
+			free(_it);
+			return NULL;
 		}
-		it->id = (SpriteID)it->data->_id;
+		_it->id = (SpriteID)_it->data->_id;
 	}
 	else {
 		// Deallocate iterator
-		free(it);
-		(*_it) = NULL;
-		return;
+		free(_it);
+		return NULL;
 	}
+	return _it;
 }
 
 SpriteID CreateSprite(SpriteList* _list, SpriteDesc _desc) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid sprite list reference!");
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return ID_NULL; 
 	}
 
@@ -350,17 +372,20 @@ SpriteID CreateSprite(SpriteList* _list, SpriteDesc _desc) {
 	};
 	size_t idx = 0;
 	if (!free_list_insert(_list->_sprites, &idx, &spr)) {
-		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to add sprite to list!");
+		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to add sprite to list!");
+		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		return ID_NULL;
 	}
 	if (!unordered_map_insert(_list->_spriteIndices, id, &idx)) {
-		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to add sprite to index map!");
+		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to add sprite to index map!");
+		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		free_list_remove(_list->_sprites, idx);
 		return ID_NULL;
 	}
 	if (_list->_depthSorting) {
 		if (!priority_queue_push(_list->_spriteDepthOrder, spr._depth, &idx)) {
-			LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to add sprite to depth queue!");
+			LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to add sprite to depth queue!");
+			LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 			free_list_remove(_list->_sprites, idx);
 			unordered_map_delete(_list->_spriteIndices, id);
 			return ID_NULL;
@@ -370,8 +395,10 @@ SpriteID CreateSprite(SpriteList* _list, SpriteDesc _desc) {
 }
 
 void DestroySprite(SpriteList* _list, SpriteID _id) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid sprite list reference!");
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return;
 	}
 
@@ -387,13 +414,16 @@ void DestroySprite(SpriteList* _list, SpriteID _id) {
 		unordered_map_delete(_list->_spriteIndices, _id);
 	}
 	else {
-		LUNA_DBG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 	}
 }
 
 void SetSpritePosition(SpriteList* _list, SpriteID _id, Vector2 _position) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid sprite list reference!");
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return; 
 	}
 
@@ -405,14 +435,17 @@ void SetSpritePosition(SpriteList* _list, SpriteID _id, Vector2 _position) {
 		sprite->_position = _position;
 	}
 	else {
-		LUNA_DBG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 	}
 }
 
 Vector2 GetSpritePosition(SpriteList* _list, SpriteID _id) {
+	LUNA_RETURN_CLEAR;
 	Vector2 ret = { 0.f, 0.f };
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid sprite list reference!");
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return ret; 
 	}
 
@@ -425,14 +458,17 @@ Vector2 GetSpritePosition(SpriteList* _list, SpriteID _id) {
 		ret.y = sprite->_position.y;
 	}
 	else {
-		LUNA_DBG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 	}
 	return ret;
 }
 
 void SetSpriteDepth(SpriteList* _list, SpriteID _id, int _depth) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid sprite list reference!");
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return;
 	}
 
@@ -448,13 +484,16 @@ void SetSpriteDepth(SpriteList* _list, SpriteID _id, int _depth) {
 		sprite->_depth = _depth;
 	}
 	else {
-		LUNA_DBG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 	}
 }
 
 int GetSpriteDepth(SpriteList* _list, SpriteID _id) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid sprite list reference!");
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return 0; 
 	}
 
@@ -466,14 +505,17 @@ int GetSpriteDepth(SpriteList* _list, SpriteID _id) {
 		return sprite->_depth;
 	}
 	else {
-		LUNA_DBG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 	}
 	return 0;
 }
 
 void SetSpriteImageIndex(SpriteList* _list, SpriteID _id, int _imageIndex) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid sprite list reference!");
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return; 
 	}
 
@@ -485,13 +527,16 @@ void SetSpriteImageIndex(SpriteList* _list, SpriteID _id, int _imageIndex) {
 		sprite->_imageIndex = _imageIndex;
 	}
 	else {
-		LUNA_DBG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 	}
 }
 
 int GetSpriteImageIndex(SpriteList* _list, SpriteID _id) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid sprite list reference!");
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return 0; 
 	}
 
@@ -503,14 +548,17 @@ int GetSpriteImageIndex(SpriteList* _list, SpriteID _id) {
 		return sprite->_imageIndex;
 	}
 	else {
-		LUNA_DBG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 	}
 	return 0;
 }
 
 void SetSpriteImageSpeed(SpriteList* _list, SpriteID _id, float _imageSpeed) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid sprite list reference!");
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return; 
 	}
 
@@ -522,13 +570,16 @@ void SetSpriteImageSpeed(SpriteList* _list, SpriteID _id, float _imageSpeed) {
 		sprite->_imageSpeed = _imageSpeed;
 	}
 	else {
-		LUNA_DBG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 	}
 }
 
 float GetSpriteImageSpeed(SpriteList* _list, SpriteID _id) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid sprite list reference!");
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return 0.f; 
 	}
 
@@ -540,14 +591,17 @@ float GetSpriteImageSpeed(SpriteList* _list, SpriteID _id) {
 		return sprite->_imageSpeed;
 	}
 	else {
-		LUNA_DBG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 	}
 	return 0.f;
 }
 
 void SetSpriteVisible(SpriteList* _list, SpriteID _id, bool _visible) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid sprite list reference!");
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return; 
 	}
 
@@ -559,13 +613,16 @@ void SetSpriteVisible(SpriteList* _list, SpriteID _id, bool _visible) {
 		sprite->_visible = _visible;
 	}
 	else {
-		LUNA_DBG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 	}
 }
 
 bool GetSpriteVisible(SpriteList* _list, SpriteID _id) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid sprite list reference!");
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return false; 
 	}
 
@@ -577,7 +634,8 @@ bool GetSpriteVisible(SpriteList* _list, SpriteID _id) {
 		return sprite->_visible;
 	}
 	else {
-		LUNA_DBG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 	}
 	return false;
 }

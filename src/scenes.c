@@ -131,10 +131,10 @@ void scene_first_fn_update(SceneID _id, float _dt) {
 	if (dir & INPUT_MASK_UP)    out[1] = '^';
 	if (dir & INPUT_MASK_LEFT)  out[2] = '<';
 	if (dir & INPUT_MASK_RIGHT) out[3] = '>';
-	LUNA_DBG_LOG("[%s]", out);
+	LUNA_DEBUG_LOG("[%s]", out);
 	*/
 }
 
 void scene_first_fn_pop(SceneID _id) {
-	LUNA_DBG_LOG("Pop!");
+	LUNA_DEBUG_LOG("Pop!");
 }

@@ -50,8 +50,9 @@ size_t GetCameraListSize(CameraList* _list);
 CameraListIt* CameraListItBegin(CameraList* _list);
 
 /// @brief Move the iterator to the next element.
-/// @param _it Pointer to camera iterator
-void CameraListItNext(CameraListIt** _it);
+/// @param _it Camera iterator
+/// @return Updated camera iterator (or NULL)
+CameraListIt* CameraListItNext(CameraListIt* _it);
 
 /// @brief Create a new 2D camera object and add it to the list.
 /// @param _list Camera list pointer

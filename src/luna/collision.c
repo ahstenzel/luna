@@ -3,14 +3,14 @@
 CollisionList* _CreateCollisionList() {
 	CollisionList* list = calloc(1, sizeof *list);
 	if (!list) {
-		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate collision list!");
+		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to allocate collision list!");
 		return NULL;
 	}
 
 	list->_collisions = unordered_map_create(Collision);
 	list->_buckets = unordered_map_create(CollisionBucket);
 	if (!list->_collisions || !list->_buckets) {
-		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate collision list containers!");
+		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to allocate collision list containers!");
 		_DestroyCollisionList(list);
 		return NULL;
 	}
@@ -30,18 +30,22 @@ void _DestroyCollisionList(CollisionList* _list) {
 }
 
 size_t GetCollisionListSize(CollisionList* _list) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid collision list reference!");
+		LUNA_DEBUG_WARN("Invalid collision list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return 0; 
 	}
 	return unordered_map_size(_list->_collisions);
 }
 
 CollisionListIt* CollisionListItBegin(CollisionList* _list) {
+	LUNA_RETURN_CLEAR;
 	// Error check
 	CollisionListIt* it = NULL;
 	if (!_list) {
-		LUNA_DBG_WARN("Invalid collision list reference!");
+		LUNA_DEBUG_WARN("Invalid collision list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		goto collision_list_it_begin_fail;
 	}
 	if (unordered_map_size(_list->_collisions) == 0) { 
@@ -51,17 +55,18 @@ CollisionListIt* CollisionListItBegin(CollisionList* _list) {
 	// Create map iterator
 	it = calloc(1, sizeof *it);
 	if (!it) { 
-		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate collision list iterator!");
+		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to allocate collision list iterator!");
 		goto collision_list_it_begin_fail; 
 	}
 	it->_list = _list;
 	it->_ptr = unordered_map_it(_list->_collisions);
 	if (!it->_ptr) { 
-		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate collision list index map iterator!");
+		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to allocate collision list index map iterator!");
 		goto collision_list_it_begin_fail; 
 	}
 	if (!it->_ptr->data) { 
-		LUNA_DBG_WARN("Collision list index map iterator points to invalid data!");
+		LUNA_DEBUG_WARN("Collision list index map iterator points to invalid data!");
+		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		goto collision_list_it_begin_fail; 
 	}
 
@@ -69,7 +74,8 @@ CollisionListIt* CollisionListItBegin(CollisionList* _list) {
 	it->data = (Collision*)it->_ptr->data;
 	it->id = (CollisionID)it->_ptr->key;
 	if (!it->data) { 
-		LUNA_DBG_WARN("Collision list iterator points to invalid data!");
+		LUNA_DEBUG_WARN("Collision list iterator points to invalid data!");
+		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		goto collision_list_it_begin_fail; 
 	}
 
@@ -79,36 +85,38 @@ collision_list_it_begin_fail:
 	return NULL;
 }
 
-void CollisionListItNext(CollisionListIt** _it) {
+CollisionListIt* CollisionListItNext(CollisionListIt* _it) {
+	LUNA_RETURN_CLEAR;
 	// Error check
-	if (!_it || !(*_it)) { return; }
+	if (!_it) { return NULL; }
 
 	// Advance to next valid element
-	CollisionListIt* it = *_it;
-	unordered_map_it_next(it->_ptr);
-	if (it->_ptr) {
+	unordered_map_it_next(_it->_ptr);
+	if (_it->_ptr) {
 		// Update iterator contents
-		it->data = (Collision*)it->_ptr->data;
-		it->id = (CollisionID)it->_ptr->key;
-		if (!it->data) { 
-			LUNA_DBG_WARN("Next iterator position yielded invalid collision data!");
-			free(it);
-			(*_it) = NULL;
-			return;
+		_it->data = (Collision*)_it->_ptr->data;
+		_it->id = (CollisionID)_it->_ptr->key;
+		if (!_it->data) { 
+			LUNA_DEBUG_WARN("Next iterator position yielded invalid collision data!");
+			LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
+			free(_it);
+			return NULL;
 		}
 	}
 	else {
 		// Deallocate iterator
-		free(it);
-		(*_it) = NULL;
-		return;
+		free(_it);
+		return NULL;
 	}
+	return _it;
 }
 
 CollisionID CreateCollision(CollisionList* _list, CollisionDesc _desc) {
+	LUNA_RETURN_CLEAR;
 	// Error check
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid collision list reference!");
+		LUNA_DEBUG_WARN("Invalid collision list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return ID_NULL; 
 	}
 
@@ -124,12 +132,13 @@ CollisionID CreateCollision(CollisionList* _list, CollisionDesc _desc) {
 	// Add to buckets
 	vector_t* buckets = _GetBuckets(_list, collision._boundingBox);
 	if (!buckets) {
-		LUNA_DBG_WARN("Failed to retrieve buckets for collision box! (x: %f, y: %f, w: %f, h: %f)", 
+		LUNA_DEBUG_WARN("Failed to retrieve buckets for collision box! (x: %f, y: %f, w: %f, h: %f)", 
 			collision._boundingBox.x, 
 			collision._boundingBox.y, 
 			collision._boundingBox.width, 
 			collision._boundingBox.height
 		);
+		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		unordered_map_delete(_list->_collisions, id);
 		return ID_NULL;
 	}
@@ -143,23 +152,27 @@ CollisionID CreateCollision(CollisionList* _list, CollisionDesc _desc) {
 }
 
 void DestroyCollision(CollisionList* _list, CollisionID _id) {
+	LUNA_RETURN_CLEAR;
 	// Error check
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid collision list reference!");
+		LUNA_DEBUG_WARN("Invalid collision list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return; 
 	}
 
 	// Get collision
 	Collision* collision = unordered_map_find(_list->_collisions, _id);
 	if (!collision) { 
-		LUNA_DBG_WARN("Invalid collision id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid collision id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 		return; 
 	}
 
 	// Remove from buckets
 	vector_t* buckets = _GetBuckets(_list, collision->_boundingBox);
 	if (!buckets) { 
-		LUNA_DBG_WARN("Failed to retrieve buckets for collision id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Failed to retrieve buckets for collision id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		return; 
 	}
 	for(size_t i=0; i<vector_size(buckets); ++i) {
@@ -180,26 +193,30 @@ void DestroyCollision(CollisionList* _list, CollisionID _id) {
 }
 
 void SetCollisionPosition(CollisionList* _list, CollisionID _id, Vector2 _position) {
+	LUNA_RETURN_CLEAR;
 	// Error check
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid collision list reference!");
+		LUNA_DEBUG_WARN("Invalid collision list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return; 
 	}
 
 	// Get collision
 	Collision* collision = unordered_map_find(_list->_collisions, _id);
 	if (!collision) {
-		LUNA_DBG_WARN("Invalid collision id (%d)!", (int)_id);
-		return; 
+		LUNA_DEBUG_WARN("Invalid collision id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
+		return;
 	}
 
-	// Don't update properties
+	// Skip idempotent updates
 	if ((collision->_boundingBox.x == _position.x && collision->_boundingBox.y == _position.y)) { return; }
 
 	// Remove from buckets
 	vector_t* buckets = _GetBuckets(_list, collision->_boundingBox);
 	if (!buckets) { 
-		LUNA_DBG_WARN("Failed to retrieve buckets for collision id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Failed to retrieve buckets for collision id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		return; 
 	}
 	for(size_t i=0; i<vector_size(buckets); ++i) {
@@ -216,7 +233,8 @@ void SetCollisionPosition(CollisionList* _list, CollisionID _id, Vector2 _positi
 	// Add to new buckets
 	buckets = _GetBuckets(_list, collision->_boundingBox);
 	if (!buckets) { 
-		LUNA_DBG_WARN("Failed to move buckets for collision id (%d), deleting to be safe...", _id);
+		LUNA_DEBUG_WARN("Failed to move buckets for collision id (%d), deleting to be safe...", _id);
+		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		unordered_map_delete(_list->_collisions, _id);
 		return;
 	}
@@ -226,23 +244,25 @@ void SetCollisionPosition(CollisionList* _list, CollisionID _id, Vector2 _positi
 		unordered_map_insert(bucket->_contents, _id, 0);
 	}
 	vector_destroy(buckets);
-
-	return;
 }
 
-void GetCollisionsAtPlace(CollisionList* _list, CollisionID _id, CollisionID* _results, size_t* _numResults) {
+size_t GetCollisionsAtPlace(CollisionList* _list, CollisionID _id, CollisionID* _results) {
+	LUNA_RETURN_CLEAR;
 	// Error check
+	size_t numResults = 0;
 	vector_t* buckets = NULL;
 	unordered_map_t* candidateIds = NULL;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid collision list reference!");
+		LUNA_DEBUG_WARN("Invalid collision list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		goto get_collisions_at_place_fail;
 	}
 
 	// Get collision
 	Collision* collision = unordered_map_find(_list->_collisions, _id);
 	if (!collision) { 
-		LUNA_DBG_WARN("Invalid collision id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid collision id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 		goto get_collisions_at_place_fail; 
 	}
 
@@ -250,7 +270,8 @@ void GetCollisionsAtPlace(CollisionList* _list, CollisionID _id, CollisionID* _r
 	candidateIds = unordered_map_create(unsigned char);
 	buckets = _GetBuckets(_list, collision->_boundingBox);
 	if (!buckets) { 
-		LUNA_DBG_WARN("Failed to retrieve buckets for collision id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Failed to retrieve buckets for collision id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		goto get_collisions_at_place_fail; 
 	}
 	for(size_t i=0; i<vector_size(buckets); ++i) {
@@ -259,16 +280,17 @@ void GetCollisionsAtPlace(CollisionList* _list, CollisionID _id, CollisionID* _r
 		for(unordered_map_it_t* it = unordered_map_it(bucket->_contents); it; unordered_map_it_next(it)) {
 			CollisionID candidateId = (CollisionID)it->key;
 			if (!unordered_map_insert(candidateIds, candidateId, 0)) {
-				LUNA_DBG_WARN("Failed to merge buckets for collision id (%d)!", (int)_id);
+				LUNA_DEBUG_WARN("Failed to merge buckets for collision id (%d)!", (int)_id);
+				LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 				goto get_collisions_at_place_fail;
 			}
 		}
 	}
 
 	// Copy into results array
-	*_numResults = unordered_map_size(candidateIds);
-	if (*_numResults == 0) { goto get_collisions_at_place_fail; }
-	_results = calloc(*_numResults, sizeof *_results);
+	numResults = unordered_map_size(candidateIds);
+	if (numResults == 0) { goto get_collisions_at_place_fail; }
+	_results = calloc(numResults, sizeof *_results);
 	if (!_results) { goto get_collisions_at_place_fail; }
 	size_t idx = 0;
 	for(unordered_map_it_t* it = unordered_map_it(candidateIds); it; unordered_map_it_next(it)) {
@@ -280,31 +302,33 @@ void GetCollisionsAtPlace(CollisionList* _list, CollisionID _id, CollisionID* _r
 
 	vector_destroy(buckets);
 	unordered_map_destroy(candidateIds);
-	return;
+	return numResults;
 get_collisions_at_place_fail:
 	vector_destroy(buckets);
 	unordered_map_destroy(candidateIds);
 	free(_results);
-	_results = NULL;
-	*_numResults = 0;
-	return;
+	return 0;
 }
 
 bool CheckCollision(CollisionList* _list, CollisionID _id1, CollisionID _id2) {
+	LUNA_RETURN_CLEAR;
 	// Error check
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid collision list reference!");
+		LUNA_DEBUG_WARN("Invalid collision list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return false;
 	}
 	
 	Collision* c1 = unordered_map_find(_list->_collisions, _id1);
 	Collision* c2 = unordered_map_find(_list->_collisions, _id2);
 	if (!c1) {
-		LUNA_DBG_WARN("Invalid collision id (%d)!", (int)_id1);
+		LUNA_DEBUG_WARN("Invalid collision id (%d)!", (int)_id1);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 		return false;
 	}
 	if (!c2) {
-		LUNA_DBG_WARN("Invalid collision id (%d)!", (int)_id2);
+		LUNA_DEBUG_WARN("Invalid collision id (%d)!", (int)_id2);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 		return false;
 	}
 	return CheckCollisionRecs(c1->_boundingBox, c2->_boundingBox);
@@ -313,7 +337,8 @@ bool CheckCollision(CollisionList* _list, CollisionID _id1, CollisionID _id2) {
 vector_t* _GetBuckets(CollisionList* _list, Rectangle _boundingBox) {
 	vector_t* results = NULL;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid collision list reference!");
+		LUNA_DEBUG_WARN("Invalid collision list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		goto get_buckets_fail;
 	}
 
@@ -337,7 +362,8 @@ vector_t* _GetBuckets(CollisionList* _list, Rectangle _boundingBox) {
 					._contents = unordered_map_create(unsigned char)
 				};
 				if (!unordered_map_insert(_list->_buckets, hash, &bucket)) {
-					LUNA_DBG_WARN("Failed to create collision bucket!");
+					LUNA_DEBUG_WARN("Failed to create collision bucket!");
+					LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 					goto get_buckets_fail; 
 				}
 			}

@@ -75,43 +75,37 @@ void ClearMeshCache(ResourceList* _list);
 /// @param _filename Data file name
 /// @param _data Pointer to destination buffer contents
 /// @param _size Pointer to destination buffer size
-/// @return Status code
-int GetData(ResourceList* _list, char* _filename, void** _data, size_t* _size);
+void GetData(ResourceList* _list, char* _filename, void** _data, size_t* _size);
 
 /// @brief Retrieve a text file from the resource list, loading from disk if it isn't cached.
 /// @param _list Resource list pointer
 /// @param _filename Text file name
 /// @param _text Pointer to destination buffer contents
 /// @param _size Pointer to destination buffer size
-/// @return Status code
-int GetText(ResourceList* _list, char* _filename, char** _text, size_t* _size);
+void GetText(ResourceList* _list, char* _filename, char** _text, size_t* _size);
 
 /// @brief Retrieve a texture file from the resource list, loading from disk if it isn't cached.
 /// @param _list Resource list pointer
 /// @param _filename Texture file name
 /// @param _texture Pointer to destination variable
-/// @return Status code
-int GetTexture(ResourceList* _list, char* _filename, Texture2D* _texture);
+void GetTexture(ResourceList* _list, char* _filename, Texture2D* _texture);
 
 /// @brief Retrieve a wave file from the resource list, loading from disk if it isn't cached.
 /// @param _list Resource list pointer
 /// @param _filename Wave file name
 /// @param _wave Pointer to destination variable
-/// @return Status code
-int GetWave(ResourceList* _list, char* _filename, Wave* _wave);
+void GetWave(ResourceList* _list, char* _filename, Wave* _wave);
 
 /// @brief Retrieve a font file from the resource list, loading from disk if it isn't cached.
 /// @param _list Resource list pointer
 /// @param _filename Font file name
 /// @param _font Pointer to destination variable
-/// @return Status code
-int GetFont(ResourceList* _list, char* _filename, Font* _font);
+void GetFont(ResourceList* _list, char* _filename, Font* _font);
 
 /// @brief Retrieve a mesh file from the resource list, loading from disk if it isn't cached.
 /// @param _list Resource list pointer
 /// @param _filename Mesh file name
 /// @param _mesh Pointer to destination variable
-/// @return Status code
-int GetMesh(ResourceList* _list, char* _filename, Mesh* _mesh);
+void GetMesh(ResourceList* _list, char* _filename, Mesh* _mesh);
 
 #endif

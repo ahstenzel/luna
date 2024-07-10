@@ -13,7 +13,9 @@
 	#endif
 #endif
 
-unsigned char _luna_g_err_mask = LUNA_ERR_STATUS_NONE;
+unsigned int _luna_g_return_code = LUNA_RETURN_OK;
+
+unsigned char _luna_g_error_status_mask = LUNA_ERROR_STATUS_NONE;
 
 void _luna_print_stack() {
 #if defined(LUNA_DEBUG) && !defined(LUNA_SUPPRESS_LOG)
@@ -21,8 +23,8 @@ void _luna_print_stack() {
 #endif
 }
 
-void _luna_err_abort(unsigned int status) {
-	if ((_luna_g_err_mask & status) != 0) {
+void _luna_error_abort(unsigned int status) {
+	if ((_luna_g_error_status_mask & status) != 0) {
 		_luna_print_stack();
 		exit(status);
 	}

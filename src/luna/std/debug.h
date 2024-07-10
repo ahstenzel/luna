@@ -14,14 +14,14 @@
 #if defined(LUNA_DEBUG) && !defined(LUNA_SUPPRESS_LOG)
 
 // Debug level flags
-#define LUNA_DBG_LEVEL_NONE 0x00	// Mask for no message levels.
-#define LUNA_DBG_LEVEL_ALL 0xFF     // Mask for all message levels.
-#define LUNA_DBG_LEVEL_STATUS 0x01  // Low-level status message.
-#define LUNA_DBG_LEVEL_WARNING 0x02 // Mid-level warning message - ignoring may lead to issues.
-#define LUNA_DBG_LEVEL_ERROR 0x04   // High-level error message - catastrophic failure.
+#define LUNA_DEBUG_LEVEL_NONE 0x00	// Mask for no message levels.
+#define LUNA_DEBUG_LEVEL_ALL 0xFF     // Mask for all message levels.
+#define LUNA_DEBUG_LEVEL_STATUS 0x01  // Low-level status message.
+#define LUNA_DEBUG_LEVEL_WARNING 0x02 // Mid-level warning message - ignoring may lead to issues.
+#define LUNA_DEBUG_LEVEL_ERROR 0x04   // High-level error message - catastrophic failure.
 
 // Global variables
-extern unsigned char _luna_g_dbg_log_mask;  // Mask for disabling certain debug messages.
+extern unsigned char _luna_g_debug_level_mask;  // Mask for disabling certain debug messages.
 
 /// @brief Write a string to the debug output.
 /// @param level Message severity level
@@ -32,27 +32,27 @@ void _luna_dbg_log_write(const unsigned char level, const char* func, char* fmt,
 /// @brief Write a debug info message.
 /// @param s Format string
 /// @param ... Format arguments
-#define LUNA_DBG_LOG(s, ...) _luna_dbg_log_write(LUNA_DBG_LEVEL_STATUS, LUNA_STR_FUNC, s, ##__VA_ARGS__)
+#define LUNA_DEBUG_LOG(s, ...) _luna_dbg_log_write(LUNA_DEBUG_LEVEL_STATUS, LUNA_STR_FUNC, s, ##__VA_ARGS__)
 
 /// @brief Write a debug warning message.
 /// @param s Format string
 /// @param ... Format arguments
-#define LUNA_DBG_WARN(s, ...) _luna_dbg_log_write(LUNA_DBG_LEVEL_WARNING, LUNA_STR_FUNC, s, ##__VA_ARGS__)
+#define LUNA_DEBUG_WARN(s, ...) _luna_dbg_log_write(LUNA_DEBUG_LEVEL_WARNING, LUNA_STR_FUNC, s, ##__VA_ARGS__)
 
 /// @brief Write a debug error message.
 /// @param s Format string
 /// @param ... Format arguments
-#define LUNA_DBG_ERR(s, ...) _luna_dbg_log_write(LUNA_DBG_LEVEL_ERROR, LUNA_STR_FUNC, s, ##__VA_ARGS__)
+#define LUNA_DEBUG_ERROR(s, ...) _luna_dbg_log_write(LUNA_DEBUG_LEVEL_ERROR, LUNA_STR_FUNC, s, ##__VA_ARGS__)
 
 /// @brief Set the bitmask that defines what debug messages are shown.
-#define LUNA_DBG_SET_SEVERITY(x) _luna_g_dbg_log_mask = x
+#define LUNA_DEBUG_SET_SEVERITY(x) _luna_g_debug_level_mask = x
 
 #else
 
-#define LUNA_DBG_LOG(s, ...) ((void)0)
-#define LUNA_DBG_WARN(s, ...) ((void)0)
-#define LUNA_DBG_ERR(s, ...) ((void)0)
-#define LUNA_DBG_SET_SEVERITY(x) ((void)0)
+#define LUNA_DEBUG_LOG(s, ...) ((void)0)
+#define LUNA_DEBUG_WARN(s, ...) ((void)0)
+#define LUNA_DEBUG_ERROR(s, ...) ((void)0)
+#define LUNA_DEBUG_SET_SEVERITY(x) ((void)0)
 
 #endif // defined(LUNA_DEBUG) && !defined(LUNA_SUPPRESS_LOG)
 

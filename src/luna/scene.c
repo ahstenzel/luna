@@ -3,14 +3,14 @@
 SceneList* _CreateSceneList() {
 	SceneList* list = calloc(1, sizeof *list);
 	if (!list) { 
-		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate scene list!");
+		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to allocate scene list!");
 		return NULL; 
 	}
 
 	list->_sceneStack = stack_create(SceneID);
 	list->_scenes = unordered_map_create(Scene);
 	if (!list->_scenes || !list->_sceneStack) { 
-		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate scene list containers!");
+		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to allocate scene list containers!");
 		_DestroySceneList(list);
 		return NULL;
 	}
@@ -19,7 +19,8 @@ SceneList* _CreateSceneList() {
 
 void _UpdateSceneList(SceneList* _list, float _dt) {
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid scene list reference!");
+		LUNA_DEBUG_WARN("Invalid scene list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return; 
 	}
 
@@ -37,7 +38,8 @@ void _UpdateSceneList(SceneList* _list, float _dt) {
 
 void _DrawSceneList(SceneList* _list) {
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid scene list reference!");
+		LUNA_DEBUG_WARN("Invalid scene list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return; 
 	}
 
@@ -77,26 +79,32 @@ void _DestroySceneList(SceneList* _list) {
 }
 
 size_t GetSceneListSize(SceneList* _list) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid scene list reference!");
+		LUNA_DEBUG_WARN("Invalid scene list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return 0; 
 	}
 	return unordered_map_size(_list->_scenes);
 }
 
 size_t GetSceneStackSize(SceneList* _list) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid scene list reference!");
+		LUNA_DEBUG_WARN("Invalid scene list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return 0; 
 	}
 	return stack_size(_list->_sceneStack);
 }
 
 SceneListIt* SceneListItBegin(SceneList* _list) {
+	LUNA_RETURN_CLEAR;
 	// Error check
 	SceneListIt* it = NULL;
 	if (!_list) {
-		LUNA_DBG_WARN("Invalid scene list reference!");
+		LUNA_DEBUG_WARN("Invalid scene list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		goto scene_list_it_begin_fail;
 	}
 	if (unordered_map_size(_list->_scenes) == 0) { 
@@ -106,17 +114,18 @@ SceneListIt* SceneListItBegin(SceneList* _list) {
 	// Create map iterator
 	it = calloc(1, sizeof *it);
 	if (!it) { 
-		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to scene sprite list iterator!");
+		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to scene sprite list iterator!");
 		goto scene_list_it_begin_fail; 
 	}
 	it->_list = _list;
 	it->_ptr = unordered_map_it(_list->_scenes);
 	if (!it->_ptr) { 
-		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate scene list index map iterator!");
+		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to allocate scene list index map iterator!");
 		goto scene_list_it_begin_fail; 
 	}
 	if (!it->_ptr->data) { 
-		LUNA_DBG_WARN("Scene list index map iterator points to invalid data!");
+		LUNA_DEBUG_WARN("Scene list index map iterator points to invalid data!");
+		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		goto scene_list_it_begin_fail; 
 	}
 
@@ -124,7 +133,8 @@ SceneListIt* SceneListItBegin(SceneList* _list) {
 	it->data = (Scene*)it->_ptr->data;
 	it->id = (SceneID)it->_ptr->key;
 	if (!it->data) { 
-		LUNA_DBG_WARN("Scene list iterator points to invalid data!");
+		LUNA_DEBUG_WARN("Scene list iterator points to invalid data!");
+		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		goto scene_list_it_begin_fail; 
 	}
 
@@ -134,35 +144,37 @@ scene_list_it_begin_fail:
 	return NULL;
 }
 
-void SceneListItNext(SceneListIt** _it) {
+SceneListIt* SceneListItNext(SceneListIt* _it) {
+	LUNA_RETURN_CLEAR;
 	// Error check
-	if (!_it || !(*_it)) { return; }
+	if (!_it) { return NULL; }
 
 	// Advance to next valid element
-	SceneListIt* it = *_it;
-	unordered_map_it_next(it->_ptr);
-	if (it->_ptr) {
+	unordered_map_it_next(_it->_ptr);
+	if (_it->_ptr) {
 		// Update iterator contents
-		it->data = (Scene*)it->_ptr->data;
-		it->id = (SceneID)it->_ptr->key;
-		if (!it->data) { 
-			LUNA_DBG_WARN("Next iterator position yielded invalid scene data!");
-			free(it);
-			(*_it) = NULL;
-			return;
+		_it->data = (Scene*)_it->_ptr->data;
+		_it->id = (SceneID)_it->_ptr->key;
+		if (!_it->data) { 
+			LUNA_DEBUG_WARN("Next iterator position yielded invalid scene data!");
+			LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
+			free(_it);
+			return NULL;
 		}
 	}
 	else {
 		// Deallocate iterator
-		free(it);
-		(*_it) = NULL;
-		return;
+		free(_it);
+		return NULL;
 	}
+	return _it;
 }
 
 SceneID CreateScene(SceneList* _list, SceneDesc _desc) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid scene list reference!");
+		LUNA_DEBUG_WARN("Invalid scene list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return ID_NULL; 
 	}
 
@@ -192,8 +204,10 @@ SceneID CreateScene(SceneList* _list, SceneDesc _desc) {
 }
 
 void DestroyScene(SceneList* _list, SceneID _id) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid scene list reference!");
+		LUNA_DEBUG_WARN("Invalid scene list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return; 
 	}
 
@@ -208,8 +222,10 @@ void DestroyScene(SceneList* _list, SceneID _id) {
 }
 
 void PushScene(SceneList* _list, SceneID _id) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid scene list reference!");
+		LUNA_DEBUG_WARN("Invalid scene list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return; 
 	}
 
@@ -224,13 +240,16 @@ void PushScene(SceneList* _list, SceneID _id) {
 		}
 	}
 	else {
-		LUNA_DBG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 	}
 }
 
 void PopScene(SceneList* _list) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid scene list reference!");
+		LUNA_DEBUG_WARN("Invalid scene list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return; 
 	}
 
@@ -253,8 +272,10 @@ void PopScene(SceneList* _list) {
 }
 
 SceneID GetTopScene(SceneList* _list) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid scene list reference!");
+		LUNA_DEBUG_WARN("Invalid scene list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return ID_NULL; 
 	}
 
@@ -263,7 +284,8 @@ SceneID GetTopScene(SceneList* _list) {
 		if (stack_size(_list->_sceneStack) == 0) { break; }
 		id = *(SceneID*)(stack_head(_list->_sceneStack));
 		if (unordered_map_find(_list->_scenes, id)) { break; }
-		LUNA_DBG_WARN("Scene id (%d) does not exist! Popping the stack & using the next value...", (int)id);
+		LUNA_DEBUG_WARN("Scene id (%d) does not exist! Popping the stack & using the next value...", (int)id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 		stack_pop(_list->_sceneStack);
 	}
 	
@@ -271,72 +293,88 @@ SceneID GetTopScene(SceneList* _list) {
 }
 
 SpriteList* GetSceneSpriteList(SceneList* _list, SceneID _id) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid scene list reference!");
+		LUNA_DEBUG_WARN("Invalid scene list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return NULL; 
 	}
 	if (_id == ID_NULL) {
-		LUNA_DBG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 		return NULL; 
 	}
 
 	Scene* scene = unordered_map_find(_list->_scenes, _id);
 	if (!scene) {
-		LUNA_DBG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 		return NULL; 
 	}
 	return scene->_spriteList;
 }
 
 CollisionList* GetSceneCollisionList(SceneList* _list, SceneID _id) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid scene list reference!");
+		LUNA_DEBUG_WARN("Invalid scene list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return NULL; 
 	}
 	if (_id == ID_NULL) {
-		LUNA_DBG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 		return NULL; 
 	}
 
 	Scene* scene = unordered_map_find(_list->_scenes, _id);
 	if (!scene) {
-		LUNA_DBG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 		return NULL; 
 	}
 	return scene->_collisionList;
 }
 
 TilemapList* GetSceneTilemapList(SceneList* _list, SceneID _id) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid scene list reference!");
+		LUNA_DEBUG_WARN("Invalid scene list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return NULL;
 	}
 	if (_id == ID_NULL) {
-		LUNA_DBG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 		return NULL; 
 	}
 
 	Scene* scene = unordered_map_find(_list->_scenes, _id);
 	if (!scene) {
-		LUNA_DBG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 		return NULL; 
 	}
 	return scene->_tilemapList;
 }
 
 CameraList* GetSceneCameraList(SceneList* _list, SceneID _id) {
+	LUNA_RETURN_CLEAR;
 	if (!_list) { 
-		LUNA_DBG_WARN("Invalid scene list reference!");
+		LUNA_DEBUG_WARN("Invalid scene list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
 		return NULL; 
 	}
 	if (_id == ID_NULL) {
-		LUNA_DBG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 		return NULL; 
 	}
 
 	Scene* scene = unordered_map_find(_list->_scenes, _id);
 	if (!scene) {
-		LUNA_DBG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_DEBUG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 		return NULL; 
 	}
 	return scene->_cameraList;

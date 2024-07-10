@@ -88,9 +88,15 @@ size_t GetSceneListSize(SceneList* _list);
 /// @return Number of scenes
 size_t GetSceneStackSize(SceneList* _list);
 
+/// @brief Get an iterator for the list of scenes.
+/// @param _list Scene list pointer
+/// @return Scene iterator
 SceneListIt* SceneListItBegin(SceneList* _list);
 
-void SceneListItNext(SceneListIt** _it);
+/// @brief Move the iterator to the next element.
+/// @param _it Scene iterator
+/// @return Updated scene iterator (or NULL)
+SceneListIt* SceneListItNext(SceneListIt* _it);
 
 /// @brief Create a new scene for the list.
 /// @param _list Scene list pointer

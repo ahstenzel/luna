@@ -107,8 +107,9 @@ size_t GetSpriteListSize(SpriteList* _list);
 SpriteListIt* SpriteListItBegin(SpriteList* _list);
 
 /// @brief Move the iterator to the next unsorted element.
-/// @param _it Pointer to sprite iterator
-void SpriteListItNext(SpriteListIt** _it);
+/// @param _it Sprite iterator
+/// @return Updated sprite iterator (or NULL)
+SpriteListIt* SpriteListItNext(SpriteListIt* _it);
 
 /// @brief Get an iterator to the beginning of the sprite list (sorted by depth order).
 /// @param _list Sprite list pointer
@@ -121,12 +122,14 @@ SpriteListDepthIt* SpriteListDepthItBegin(SpriteList* _list);
 SpriteListDepthIt* SpriteListDepthItRBegin(SpriteList* _list);
 
 /// @brief Move the iterator to the next element (sorted by depth order).
-/// @param _it Pointer to sprite iterator
-void SpriteListDepthItNext(SpriteListDepthIt** _it);
+/// @param _it Sprite iterator
+/// @return Updated sprite iterator (or NULL)
+SpriteListDepthIt* SpriteListDepthItNext(SpriteListDepthIt* _it);
 
 /// @brief Move the iterator to the previous element (sorted by depth order).
-/// @param _it Pointer to sprite iterator
-void SpriteListDepthItPrev(SpriteListDepthIt** _it);
+/// @param _it Sprite iterator
+/// @return Updated sprite iterator (or NULL)
+SpriteListDepthIt* SpriteListDepthItPrev(SpriteListDepthIt* _it);
 
 /// @brief Create a new sprite and add it to the list.
 /// @param _list Sprite list pointer
