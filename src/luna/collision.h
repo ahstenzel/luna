@@ -17,34 +17,34 @@ typedef _LUNA_ID_TYPE CollisionID;
 
 /// @brief Single collision object
 typedef struct {
-	Rectangle boundingBox;	// Position & size of collision box
-	CollisionID id;			// Unique collision ID
-	bool rounded;			// If true, use a circular (or elliptical) collision boundary
+	Rectangle _boundingBox;			// Position & size of collision box
+	const CollisionID _id;			// Unique collision ID
+	bool _rounded;					// If true, use a circular (or elliptical) collision boundary
 } Collision;
 
 /// @brief Descriptor for creating a collision object
 typedef struct {
-	Rectangle boundingBox;	// Position & size of collision box
-	bool rounded;			// If true, use a circular (or elliptical) collision boundary
+	Rectangle boundingBox;			// Position & size of collision box
+	bool rounded;					// If true, use a circular (or elliptical) collision boundary
 } CollisionDesc;
 
 /// @brief Single cell in space containing collision objects
 typedef struct {
-	unordered_map_t* contents;
+	unordered_map_t* _contents;		// Collision objects inside this bucket
 } CollisionBucket;
 
 /// @brief Spatial hash containing cells of collision objects
 typedef struct {
-	unordered_map_t* collisions;
-	unordered_map_t* buckets;
+	unordered_map_t* _collisions;	// Container of collision data
+	unordered_map_t* _buckets;		// Container of collision buckets
 } CollisionList;
 
 /// @brief Iterator for collision objects
 typedef struct {
-	CollisionList* _list;
-	unordered_map_it_t* _ptr;
-	CollisionID id;				// Unique collision ID
-	Collision* data;			// Collision data structure
+	CollisionList* _list;			// Collision list to iterate through
+	unordered_map_it_t* _ptr;		// Internal iterator reference
+	CollisionID id;					// Unique collision ID
+	Collision* data;				// Collision data structure
 } CollisionListIt;
 
 /// @brief Create a new 2D collision list.

@@ -10,25 +10,25 @@ typedef _LUNA_ID_TYPE CameraID;
 
 /// @brief Descriptor for creating a 2D camera object
 typedef struct {
-	Vector2 target;		// Point in worldspace the camera should follow
-	Vector2 offset;		// Offset of cameras target in screenspace
-	float rotation;		// Rotation angle (degrees)
-	float zoom;			// Zoom level
+	Vector2 target;						// Point in worldspace the camera should follow
+	Vector2 offset;						// Offset of cameras target in screenspace
+	float rotation;						// Rotation angle (degrees)
+	float zoom;							// Zoom level
 } CameraDesc;
 
 /// @brief Organized list of camera objects
 typedef struct {
-	unordered_map_t* cameraIndices;
-	free_list_t* cameras;
-	CameraID active;
+	unordered_map_t* _cameraIndices;	// Map camera IDs to container indices
+	free_list_t* _cameras;				// Container of camera data
+	CameraID _active;					// Which camera is currently being drawn
 } CameraList;
 
 /// @brief Iterator for camera objects
 typedef struct {
-	CameraList* _list;
-	unordered_map_it_t* _ptr;
-	CameraID id;				// Unique camera ID
-	Camera2D* data;				// Camera data structure
+	CameraList* _list;					// Camera list to iterate through
+	unordered_map_it_t* _ptr;			// Internal iterator reference
+	CameraID id;						// Unique camera ID
+	Camera2D* data;						// Camera data structure
 } CameraListIt;
 
 /// @brief Create a new camera list.

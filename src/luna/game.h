@@ -11,24 +11,23 @@
 
 /// @brief List of all video related settings
 typedef struct {
-	size_t width;
-	size_t height;
-	bool fullscreen;
+	size_t _width;							// Window width
+	size_t _height;							// Window height
+	bool _fullscreen;						// Fullscreen window
 } VideoSettingsList;
 
-/// @brief Descriptor pointing to all game settings
+/// @brief Structure containing all game settings
 typedef struct {
-	InputSettingsList* inputSettingsList;
-	VideoSettingsList* videoSettingsList;
+	InputSettingsList* _inputSettingsList;	// List of all input settings
+	VideoSettingsList* _videoSettingsList;	// List of all video settings
 } SettingsList;
 
 /// @brief Game state
 typedef struct {
-	SceneList* sceneList;
-	SettingsList* settingsList;
-	ResourceList* resourceList;
-	ResourceListDesc* resourceDesc;
-	size_t numResourceDesc;
+	SceneList* _sceneList;					// List of all scenes
+	SettingsList* _settingsList;			// List of all settings
+	ResourceList* _resourceList;			// List of all resources
+	vector_t* _resourceDescList;			// List of all resource list descriptors
 } Game;
 
 extern Game* _luna_game_instance;
@@ -67,10 +66,10 @@ int LoadSettingsFile(char* _settingsFile, SettingsList* _targetSettingsList);
 SettingsList* GenerateDefaultSettings();
 
 #define LUNA_GAME _luna_game_instance
-#define LUNA_SCENES _luna_game_instance->sceneList
-#define LUNA_RESOURCES _luna_game_instance->resourceList
-#define LUNA_SETTINGS _luna_game_instance->settingsList
-#define LUNA_INPUTS _luna_game_instance->settingsList->inputSettingsList
-#define LUNA_VIDEO _luna_game_instance->settingsList->videoSettingsList
+#define LUNA_SCENES _luna_game_instance->_sceneList
+#define LUNA_RESOURCES _luna_game_instance->_resourceList
+#define LUNA_SETTINGS _luna_game_instance->_settingsList
+#define LUNA_INPUTS _luna_game_instance->_settingsList->_inputSettingsList
+#define LUNA_VIDEO _luna_game_instance->_settingsList->_videoSettingsList
 
 #endif

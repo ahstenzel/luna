@@ -27,15 +27,15 @@ typedef void (*ScenePopFPtr)(SceneID);
 
 /// @brief Individual game scene
 typedef struct {
-	SpriteList* spriteList;			// List of sprites
-	CollisionList* collisionList;	// List of collisions
-	TilemapList* tilemapList;		// List of tilemaps
-	CameraList* cameraList;			// List of cameras
-	ScenePushFPtr pushFPtr;			// Stack push callback
-	SceneTopFPtr topFPtr;			// Stack top callback
-	SceneUpdateFPtr updateFPtr;		// Stack update callback
-	ScenePopFPtr popFPtr;			// Stack pop callback
-	SceneID id;						// Unique scene ID
+	SpriteList* _spriteList;		// List of sprites
+	CollisionList* _collisionList;	// List of collisions
+	TilemapList* _tilemapList;		// List of tilemaps
+	CameraList* _cameraList;		// List of cameras
+	ScenePushFPtr _pushFPtr;		// Stack push callback
+	SceneTopFPtr _topFPtr;			// Stack top callback
+	SceneUpdateFPtr _updateFPtr;	// Stack update callback
+	ScenePopFPtr _popFPtr;			// Stack pop callback
+	const SceneID _id;				// Unique scene ID
 } Scene;
 
 /// @brief Descriptor for creating a scene
@@ -49,14 +49,14 @@ typedef struct {
 
 /// @brief Stack of active scenes.
 typedef struct {
-	stack_t* sceneStack;
-	unordered_map_t* scenes;
+	stack_t* _sceneStack;
+	unordered_map_t* _scenes;
 } SceneList;
 
 /// @brief Iterator for scene objects.
 typedef struct {
-	SceneList* _list;
-	unordered_map_it_t* _ptr;
+	SceneList* _list;			// Scene list to iterate through
+	unordered_map_it_t* _ptr;	// Internal iterator reference
 	SceneID id;					// Unique scene ID
 	Scene* data;				// Scene data structure
 } SceneListIt;

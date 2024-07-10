@@ -8,33 +8,33 @@
 
 /// @brief Internal sized data block type
 typedef struct {
-	size_t size;
-	void* data;
+	size_t _size;	// Data buffer size
+	void* _data;	// Data buffer
 } _lunaDataResource;
 
 /// @brief Internal sized text block type
 typedef struct {
-	size_t size;
-	char* text;
+	size_t _size;	// Text buffer size (including null terminator)
+	char* _text;	// Text buffer
 } _lunaTextResource;
 
 /// @brief Organized list of resources
 typedef struct {
-	unordered_map_str_t* dataCache;
-	unordered_map_str_t* textCache;
-	unordered_map_str_t* textureCache;
-	unordered_map_str_t* waveCache;
-	unordered_map_str_t* fontCache;
-	unordered_map_str_t* meshCache;
-	char* resourceFile;
-	char* resourcePassword;
-	rresCentralDir directory;
+	unordered_map_str_t* _dataCache;		// Cache for data blocks 
+	unordered_map_str_t* _textCache;		// Cache for text blocks
+	unordered_map_str_t* _textureCache;		// Cache for textures
+	unordered_map_str_t* _waveCache;		// Cache for waves
+	unordered_map_str_t* _fontCache;		// Cache for fonts
+	unordered_map_str_t* _meshCache;		// Cache for meshes
+	char* _resourceFile;					// Resource file name
+	char* _resourcePassword;				// Resource file password
+	rresCentralDir _directory;				// Resource central directory
 } ResourceList;
 
 typedef struct {
-	const char* resourceFile;
-	const char* resourcePassword;
-	const char* resourceName;
+	const char* resourceFile;				// Resource file name
+	const char* resourcePassword;			// Resource file password
+	const char* resourceName;				// Resource identifying name
 } ResourceListDesc;
 
 /// @brief Create a new resource list.

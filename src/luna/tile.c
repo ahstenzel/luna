@@ -11,22 +11,22 @@ void _DrawTilemap(Tilemap* _tile) {
 		if (idx != ID_NULL && _tile_valid_idx(_tile, idx)) {
 			// Get position of tile id within base texture
 			idx--;
-			Vector2i texGrid = { idx % _tile->texMapSize.x, idx / _tile->texMapSize.x };
-			Vector2i texSpacing = Vector2iAdd(_tile->texTileSize, _tile->texTileSpacing);
-			Vector2i texPos = Vector2iAdd(_tile->texOffset, Vector2iMultiply(texGrid, texSpacing));
+			Vector2i texGrid = { idx % _tile->_texMapSize.x, idx / _tile->_texMapSize.x };
+			Vector2i texSpacing = Vector2iAdd(_tile->_texTileSize, _tile->_texTileSpacing);
+			Vector2i texPos = Vector2iAdd(_tile->_texOffset, Vector2iMultiply(texGrid, texSpacing));
 
 			// Get worldspace position
-			Vector2i sceneGrid = { (int32_t)i % _tile->sceneMapSize.x, (int32_t)i / _tile->sceneMapSize.x };
-			Vector2i scenePos = Vector2iAdd(_tile->sceneOffset, Vector2iMultiply(sceneGrid, _tile->texTileSize));
+			Vector2i sceneGrid = { (int32_t)i % _tile->_sceneMapSize.x, (int32_t)i / _tile->_sceneMapSize.x };
+			Vector2i scenePos = Vector2iAdd(_tile->_sceneOffset, Vector2iMultiply(sceneGrid, _tile->_texTileSize));
 
 			// Draw texture
 			Rectangle rec = {
 				(float)texPos.x,
 				(float)texPos.y,
-				(float)_tile->texTileSize.x,
-				(float)_tile->texTileSize.y,
+				(float)_tile->_texTileSize.x,
+				(float)_tile->_texTileSize.y,
 			};
-			DrawTextureRec(_tile->texture, rec, Vector2iCastFloat(scenePos), _tile->tint);
+			DrawTextureRec(_tile->_texture, rec, Vector2iCastFloat(scenePos), _tile->_tint);
 		}
 	}
 }
@@ -38,11 +38,11 @@ TilemapList* _CreateTilemapList(bool _depthSorting) {
 		return NULL; 
 	}
 
-	list->depthSorting = _depthSorting;
-	list->tilemapIndices = unordered_map_create(size_t);
-	list->tilemaps = free_list_create(Tilemap);
-	list->tilemapDepthOrder = priority_queue_create(size_t);
-	if (!list->tilemapIndices || !list->tilemaps || !list->tilemapDepthOrder) {
+	list->_depthSorting = _depthSorting;
+	list->_tilemapIndices = unordered_map_create(size_t);
+	list->_tilemaps = free_list_create(Tilemap);
+	list->_tilemapDepthOrder = priority_queue_create(size_t);
+	if (!list->_tilemapIndices || !list->_tilemaps || !list->_tilemapDepthOrder) {
 		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate tilemap list containers!");
 		_DestroyTilemapList(list);
 		return NULL;
@@ -52,9 +52,9 @@ TilemapList* _CreateTilemapList(bool _depthSorting) {
 
 void _DestroyTilemapList(TilemapList* _list) {
 	if (_list) {
-		unordered_map_destroy(_list->tilemapIndices);
-		free_list_destroy(_list->tilemaps);
-		priority_queue_destroy(_list->tilemapDepthOrder);
+		unordered_map_destroy(_list->_tilemapIndices);
+		free_list_destroy(_list->_tilemaps);
+		priority_queue_destroy(_list->_tilemapDepthOrder);
 		free(_list);
 	}
 }
@@ -65,25 +65,25 @@ void _DrawTilemapList(TilemapList* _list) {
 		return; 
 	}
 
-	if (_list->depthSorting) {
-		for(priority_queue_it_t* it = priority_queue_it_begin(_list->tilemapDepthOrder); it; priority_queue_it_next(it)) {
+	if (_list->_depthSorting) {
+		for(priority_queue_it_t* it = priority_queue_it_begin(_list->_tilemapDepthOrder); it; priority_queue_it_next(it)) {
 			size_t idx = *(size_t*)(it->data);
-			Tilemap* tilemap = free_list_get(_list->tilemaps, idx);
+			Tilemap* tilemap = free_list_get(_list->_tilemaps, idx);
 			if (!tilemap) {
 				LUNA_DBG_WARN("Invalid tilemap reference!");
 			}
-			else if (tilemap->visible) {
+			else if (tilemap->_visible) {
 				_DrawTilemap(tilemap);
 			}
 		}
 	}
 	else {
-		for(free_list_it_t* it = free_list_it(_list->tilemaps); it; free_list_it_next(it)) {
+		for(free_list_it_t* it = free_list_it(_list->_tilemaps); it; free_list_it_next(it)) {
 			Tilemap* tilemap = it->data;
 			if (!tilemap) {
 				LUNA_DBG_WARN("Invalid tilemap reference!");
 			}
-			else if (tilemap->visible) {
+			else if (tilemap->_visible) {
 				_DrawTilemap(tilemap);
 			}
 		}
@@ -95,7 +95,7 @@ size_t GetTilemapSize(TilemapList* _list) {
 		LUNA_DBG_WARN("Invalid tilemap list reference!");
 		return 0; 
 	}
-	return free_list_size(_list->tilemaps);
+	return free_list_size(_list->_tilemaps);
 }
 
 TilemapListIt* TilemapListItBegin(TilemapList* _list) {
@@ -105,7 +105,7 @@ TilemapListIt* TilemapListItBegin(TilemapList* _list) {
 		LUNA_DBG_WARN("Invalid sprite list reference!");
 		goto tilemap_list_it_begin_fail;
 	}
-	if (free_list_size(_list->tilemaps) == 0) { 
+	if (free_list_size(_list->_tilemaps) == 0) { 
 		goto tilemap_list_it_begin_fail; 
 	}
 
@@ -116,7 +116,7 @@ TilemapListIt* TilemapListItBegin(TilemapList* _list) {
 		goto tilemap_list_it_begin_fail; 
 	}
 	it->_list = _list;
-	it->_ptr = unordered_map_it(_list->tilemapIndices);
+	it->_ptr = unordered_map_it(_list->_tilemapIndices);
 	if (!it->_ptr) { 
 		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate tilemap list index map iterator!");
 		goto tilemap_list_it_begin_fail; 
@@ -128,7 +128,7 @@ TilemapListIt* TilemapListItBegin(TilemapList* _list) {
 
 	// Retrieve tilemap data from list
 	size_t* idx = it->_ptr->data;
-	it->data = free_list_get(_list->tilemaps, *idx);
+	it->data = free_list_get(_list->_tilemaps, *idx);
 	it->id = (TilemapID)it->_ptr->key;
 	if (!it->data) { 
 		LUNA_DBG_WARN("Tilemap list iterator points to invalid data!");
@@ -151,7 +151,7 @@ void TilemapListItNext(TilemapListIt** _it) {
 	if (it->_ptr) {
 		// Update iterator contents
 		size_t* idx = it->_ptr->data;
-		it->data = free_list_get(it->_list->tilemaps, *idx);
+		it->data = free_list_get(it->_list->_tilemaps, *idx);
 		it->id = (TilemapID)it->_ptr->key;
 		if (!it->data) { 
 			LUNA_DBG_WARN("Next iterator position yielded invalid tilemap data!");
@@ -175,7 +175,7 @@ TilemapListDepthIt* TilemapListDepthItBegin(TilemapList* _list) {
 		LUNA_DBG_WARN("Invalid tilemap list reference!");
 		goto tilemap_list_depth_it_begin_fail;
 	}
-	if (free_list_size(_list->tilemaps) == 0) { 
+	if (free_list_size(_list->_tilemaps) == 0) { 
 		goto tilemap_list_depth_it_begin_fail; 
 	}
 
@@ -186,7 +186,7 @@ TilemapListDepthIt* TilemapListDepthItBegin(TilemapList* _list) {
 		goto tilemap_list_depth_it_begin_fail; 
 	}
 	it->_list = _list;
-	it->_ptr = priority_queue_it_begin(_list->tilemapDepthOrder);
+	it->_ptr = priority_queue_it_begin(_list->_tilemapDepthOrder);
 	if (!it->_ptr) { 
 		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate tilemap list depth queue iterator!");
 		goto tilemap_list_depth_it_begin_fail; 
@@ -198,7 +198,7 @@ TilemapListDepthIt* TilemapListDepthItBegin(TilemapList* _list) {
 
 	// Retrieve tilemap data from list
 	size_t* idx = it->_ptr->data;
-	it->data = free_list_get(_list->tilemaps, *idx);
+	it->data = free_list_get(_list->_tilemaps, *idx);
 	if (!it->data) { 
 		LUNA_DBG_WARN("Tilemap list iterator points to invalid data!");
 		goto tilemap_list_depth_it_begin_fail; 
@@ -218,7 +218,7 @@ TilemapListDepthIt* TilemapListDepthItRBegin(TilemapList* _list) {
 		LUNA_DBG_WARN("Invalid tilemap list reference!");
 		goto tilemap_list_depth_it_begin_fail;
 	}
-	if (free_list_size(_list->tilemaps) == 0) { 
+	if (free_list_size(_list->_tilemaps) == 0) { 
 		goto tilemap_list_depth_it_begin_fail; 
 	}
 
@@ -229,7 +229,7 @@ TilemapListDepthIt* TilemapListDepthItRBegin(TilemapList* _list) {
 		goto tilemap_list_depth_it_begin_fail; 
 	}
 	it->_list = _list;
-	it->_ptr = priority_queue_it_rbegin(_list->tilemapDepthOrder);
+	it->_ptr = priority_queue_it_rbegin(_list->_tilemapDepthOrder);
 	if (!it->_ptr) { 
 		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate tilemap list depth queue iterator!");
 		goto tilemap_list_depth_it_begin_fail; 
@@ -241,7 +241,7 @@ TilemapListDepthIt* TilemapListDepthItRBegin(TilemapList* _list) {
 
 	// Retrieve tilemap data from list
 	size_t* idx = it->_ptr->data;
-	it->data = free_list_get(_list->tilemaps, *idx);
+	it->data = free_list_get(_list->_tilemaps, *idx);
 	if (!it->data) { 
 		LUNA_DBG_WARN("Tilemap list iterator points to invalid data!");
 		goto tilemap_list_depth_it_begin_fail; 
@@ -264,7 +264,7 @@ void TilemapListDepthItNext(TilemapListDepthIt** _it) {
 	if (it->_ptr) {
 		// Update iterator contents
 		size_t* idx = it->_ptr->data;
-		it->data = free_list_get(it->_list->tilemaps, *idx);
+		it->data = free_list_get(it->_list->_tilemaps, *idx);
 		if (!it->data) { 
 			LUNA_DBG_WARN("Next iterator position yielded invalid tilemap data!");
 			free(it);
@@ -291,7 +291,7 @@ void TilemapListDepthItPrev(TilemapListDepthIt** _it) {
 	if (it->_ptr) {
 		// Update iterator contents
 		size_t* idx = it->_ptr->data;
-		it->data = free_list_get(it->_list->tilemaps, *idx);
+		it->data = free_list_get(it->_list->_tilemaps, *idx);
 		if (!it->data) { 
 			LUNA_DBG_WARN("Next iterator position yielded invalid tilemap data!");
 			free(it);
@@ -322,20 +322,20 @@ TilemapID CreateTilemap(TilemapList* _list, TilemapDesc _desc) {
 	// Create data array
 	TilemapID id = _luna_id_generate();
 	Tilemap tile = {
-		.texture = _desc.texture,
-		.tint = _desc.tint,
-		.texOffset = _desc.texOffset,
-		.sceneOffset = _desc.sceneOffset,
-		.texTileSize = _desc.texTileSize,
-		.texTileSpacing = _desc.texTileSpacing,
-		.sceneMapSize = _desc.sceneMapSize,
-		.texMapSize = {
+		._texture = _desc.texture,
+		._tint = _desc.tint,
+		._texOffset = _desc.texOffset,
+		._sceneOffset = _desc.sceneOffset,
+		._texTileSize = _desc.texTileSize,
+		._texTileSpacing = _desc.texTileSpacing,
+		._sceneMapSize = _desc.sceneMapSize,
+		._texMapSize = {
 			(_desc.texture.width -  _desc.texOffset.x) / _desc.texTileSize.x, 
 			(_desc.texture.height - _desc.texOffset.y) / _desc.texTileSize.y 
 		},
 		._data = vector_create_size(TileIdx, (_desc.sceneMapSize.x * _desc.sceneMapSize.y)),
-		.visible = _desc.visible,
-		.depth = _desc.depth
+		._visible = _desc.visible,
+		._depth = _desc.depth
 	};
 	if (!tile._data) { 
 		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate tilemap data buffer!");
@@ -344,23 +344,23 @@ TilemapID CreateTilemap(TilemapList* _list, TilemapDesc _desc) {
 
 	// Add to list
 	size_t idx = 0;
-	if (!free_list_insert(_list->tilemaps, &idx, &tile)) {
+	if (!free_list_insert(_list->_tilemaps, &idx, &tile)) {
 		LUNA_DBG_WARN("Failed to add tilemap to list!");
 		vector_destroy(tile._data);
 		return ID_NULL;
 	}
-	if (!unordered_map_insert(_list->tilemapIndices, id, &idx)) {
+	if (!unordered_map_insert(_list->_tilemapIndices, id, &idx)) {
 		LUNA_DBG_WARN("Failed to add tilemap to index map!");
 		vector_destroy(tile._data);
-		free_list_remove(_list->tilemaps, idx);
+		free_list_remove(_list->_tilemaps, idx);
 		return ID_NULL;
 	}
-	if (_list->depthSorting) {
-		if (!priority_queue_push(_list->tilemapDepthOrder, tile.depth, &idx)) {
+	if (_list->_depthSorting) {
+		if (!priority_queue_push(_list->_tilemapDepthOrder, tile._depth, &idx)) {
 			LUNA_DBG_WARN("Failed to add tilemap to depth queue!");
 			vector_destroy(tile._data);
-			free_list_remove(_list->tilemaps, idx);
-			unordered_map_delete(_list->tilemapIndices, id);
+			free_list_remove(_list->_tilemaps, idx);
+			unordered_map_delete(_list->_tilemapIndices, id);
 			return ID_NULL;
 		}
 	}
@@ -373,16 +373,16 @@ void DestroyTilemap(TilemapList* _list, TilemapID _id) {
 		return; 
 	}
 
-	size_t* idxPtr = unordered_map_find(_list->tilemapIndices, _id);
+	size_t* idxPtr = unordered_map_find(_list->_tilemapIndices, _id);
 	if (idxPtr) {
-		if (_list->depthSorting) {
-			Tilemap* tile = free_list_get(_list->tilemaps, *idxPtr);
+		if (_list->_depthSorting) {
+			Tilemap* tile = free_list_get(_list->_tilemaps, *idxPtr);
 			if (tile) {
-				priority_queue_remove(_list->tilemapDepthOrder, tile->depth, idxPtr);
+				priority_queue_remove(_list->_tilemapDepthOrder, tile->_depth, idxPtr);
 			}
 		}
-		free_list_remove(_list->tilemaps, *idxPtr);
-		unordered_map_delete(_list->tilemapIndices, _id);
+		free_list_remove(_list->_tilemaps, *idxPtr);
+		unordered_map_delete(_list->_tilemapIndices, _id);
 	}
 	else {
 		LUNA_DBG_WARN("Invalid tilemap id (%d)!", (int)_id);
@@ -396,15 +396,15 @@ Vector2i GetTilemapGridFromPosition(TilemapList* _list, TilemapID _id, Vector2 _
 		return ret; 
 	}
 
-	size_t* idxPtr = unordered_map_find(_list->tilemapIndices, _id);
+	size_t* idxPtr = unordered_map_find(_list->_tilemapIndices, _id);
 	if (idxPtr) {
-		Tilemap* tilemap = free_list_get(_list->tilemaps, *idxPtr);
+		Tilemap* tilemap = free_list_get(_list->_tilemaps, *idxPtr);
 
 		// Get property
 		ret.x = (int32_t)_pos.x;
 		ret.y = (int32_t)_pos.y;
-		ret = Vector2iSubtract(ret, tilemap->sceneOffset);
-		ret = Vector2iDivide(ret, tilemap->texTileSize);
+		ret = Vector2iSubtract(ret, tilemap->_sceneOffset);
+		ret = Vector2iDivide(ret, tilemap->_texTileSize);
 	}
 	else {
 		LUNA_DBG_WARN("Invalid tilemap id (%d)!", (int)_id);
@@ -418,12 +418,12 @@ TileIdx GetTileTextureIndex(TilemapList* _list, TilemapID _id, Vector2i _grid) {
 		return TILE_NULL; 
 	}
 
-	size_t* idxPtr = unordered_map_find(_list->tilemapIndices, _id);
+	size_t* idxPtr = unordered_map_find(_list->_tilemapIndices, _id);
 	if (idxPtr) {
-		Tilemap* tilemap = free_list_get(_list->tilemaps, *idxPtr);
+		Tilemap* tilemap = free_list_get(_list->_tilemaps, *idxPtr);
 
 		// Get property
-		return ((_grid.y * tilemap->sceneMapSize.x) + _grid.x) + 1;
+		return ((_grid.y * tilemap->_sceneMapSize.x) + _grid.x) + 1;
 	}
 	else {
 		LUNA_DBG_WARN("Invalid tilemap id (%d)!", (int)_id);
@@ -437,13 +437,13 @@ TileIdx GetTilemapIndex(TilemapList* _list, TilemapID _id, Vector2i _grid) {
 		return TILE_NULL; 
 	}
 
-	size_t* idxPtr = unordered_map_find(_list->tilemapIndices, _id);
+	size_t* idxPtr = unordered_map_find(_list->_tilemapIndices, _id);
 	if (idxPtr) {
-		Tilemap* tilemap = free_list_get(_list->tilemaps, *idxPtr);
+		Tilemap* tilemap = free_list_get(_list->_tilemaps, *idxPtr);
 
 		// Get property
 		if (!_tile_valid_grid(tilemap, _grid)) { return TILE_NULL; }
-		void* get = vector_get(tilemap->_data, (_grid.y * tilemap->sceneMapSize.x) + _grid.x);
+		void* get = vector_get(tilemap->_data, (_grid.y * tilemap->_sceneMapSize.x) + _grid.x);
 		if (!get) { return TILE_NULL; }
 		else { return *(TileIdx*)(get); }
 	}
@@ -459,9 +459,9 @@ void SetTilemapIndex(TilemapList* _list, TilemapID _id, Vector2i _grid, TileIdx 
 		return; 
 	}
 
-	size_t* idxPtr = unordered_map_find(_list->tilemapIndices, _id);
+	size_t* idxPtr = unordered_map_find(_list->_tilemapIndices, _id);
 	if (idxPtr) {
-		Tilemap* tilemap = free_list_get(_list->tilemaps, *idxPtr);
+		Tilemap* tilemap = free_list_get(_list->_tilemaps, *idxPtr);
 
 		// Set property
 		if (!_tile_valid_grid(tilemap, _grid)) { 
@@ -472,7 +472,7 @@ void SetTilemapIndex(TilemapList* _list, TilemapID _id, Vector2i _grid, TileIdx 
 			LUNA_DBG_WARN("Invalid tile index! idx: (%d), tilemap: (%d)", (int)_idx, (int)_id);
 			return; 
 		}
-		uint32_t _dataGrid = (_grid.y * tilemap->sceneMapSize.x) + _grid.x;
+		uint32_t _dataGrid = (_grid.y * tilemap->_sceneMapSize.x) + _grid.x;
 		if (_dataGrid >= vector_size(tilemap->_data)) { 
 			LUNA_DBG_WARN("Undersized tilemap data buffer! tilemap: (%d)", (int)_id);
 			return; 
@@ -497,12 +497,12 @@ void SetTilemapIndexAll(TilemapList* _list, TilemapID _id, TileIdx* _data, size_
 		goto set_tilemap_index_all_fail; 
 	}
 
-	size_t* idxPtr = unordered_map_find(_list->tilemapIndices, _id);
+	size_t* idxPtr = unordered_map_find(_list->_tilemapIndices, _id);
 	if (idxPtr) {
-		Tilemap* tilemap = free_list_get(_list->tilemaps, *idxPtr);
+		Tilemap* tilemap = free_list_get(_list->_tilemaps, *idxPtr);
 
 		// Error check
-		if (_dataSize != (tilemap->sceneMapSize.x * tilemap->sceneMapSize.y)) { 
+		if (_dataSize != (tilemap->_sceneMapSize.x * tilemap->_sceneMapSize.y)) { 
 			LUNA_DBG_WARN("Tilemap data buffer size mismatch!");
 			goto set_tilemap_index_all_fail;
 		}
@@ -537,16 +537,16 @@ void SetTilemapDepth(TilemapList* _list, TilemapID _id, int _depth) {
 		return; 
 	}
 
-	size_t* idxPtr = unordered_map_find(_list->tilemapIndices, _id);
+	size_t* idxPtr = unordered_map_find(_list->_tilemapIndices, _id);
 	if (idxPtr) {
-		Tilemap* tilemap = free_list_get(_list->tilemaps, *idxPtr);
+		Tilemap* tilemap = free_list_get(_list->_tilemaps, *idxPtr);
 
 		// Update depth & sort if necessary
-		if (_list->depthSorting) {
-			priority_queue_remove(_list->tilemapDepthOrder, tilemap->depth, idxPtr);
-			priority_queue_push(_list->tilemapDepthOrder, _depth, idxPtr);
+		if (_list->_depthSorting) {
+			priority_queue_remove(_list->_tilemapDepthOrder, tilemap->_depth, idxPtr);
+			priority_queue_push(_list->_tilemapDepthOrder, _depth, idxPtr);
 		}
-		tilemap->depth = _depth;
+		tilemap->_depth = _depth;
 	}
 	else {
 		LUNA_DBG_WARN("Invalid tilemap id (%d)!", (int)_id);
@@ -559,12 +559,12 @@ int GetTilemapDepth(TilemapList* _list, TilemapID _id) {
 		return 0; 
 	}
 
-	size_t* idxPtr = unordered_map_find(_list->tilemapIndices, _id);
+	size_t* idxPtr = unordered_map_find(_list->_tilemapIndices, _id);
 	if (idxPtr) {
-		Tilemap* tilemap = free_list_get(_list->tilemaps, *idxPtr);
+		Tilemap* tilemap = free_list_get(_list->_tilemaps, *idxPtr);
 
 		// Get property
-		return tilemap->depth;
+		return tilemap->_depth;
 	}
 	else {
 		LUNA_DBG_WARN("Invalid tilemap id (%d)!", (int)_id);
@@ -578,12 +578,12 @@ void SetTilemapVisible(TilemapList* _list, TilemapID _id, bool _visible) {
 		return; 
 	}
 
-	size_t* idxPtr = unordered_map_find(_list->tilemapIndices, _id);
+	size_t* idxPtr = unordered_map_find(_list->_tilemapIndices, _id);
 	if (idxPtr) {
-		Tilemap* tilemap = free_list_get(_list->tilemaps, *idxPtr);
+		Tilemap* tilemap = free_list_get(_list->_tilemaps, *idxPtr);
 
 		// Get property
-		tilemap->visible = _visible;
+		tilemap->_visible = _visible;
 	}
 	else {
 		LUNA_DBG_WARN("Invalid tilemap id (%d)!", (int)_id);
@@ -596,12 +596,12 @@ bool GetTilemapVisible(TilemapList* _list, TilemapID _id) {
 		return false; 
 	}
 
-	size_t* idxPtr = unordered_map_find(_list->tilemapIndices, _id);
+	size_t* idxPtr = unordered_map_find(_list->_tilemapIndices, _id);
 	if (idxPtr) {
-		Tilemap* tilemap = free_list_get(_list->tilemaps, *idxPtr);
+		Tilemap* tilemap = free_list_get(_list->_tilemaps, *idxPtr);
 
 		// Get property
-		return tilemap->visible;
+		return tilemap->_visible;
 	}
 	else {
 		LUNA_DBG_WARN("Invalid tilemap id (%d)!", (int)_id);

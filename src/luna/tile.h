@@ -17,27 +17,27 @@ typedef unsigned int TileIdx;
 /// @brief Check if the given grid square is within the bounds of the scenes tile map.
 /// @param t Tilemap object pointer
 /// @param v Tilemap scene grid square
-#define _tile_valid_grid(t, v) ((v).x >= 0 && (v).x < (t)->sceneMapSize.x && (v).y >= 0 && (v).y < (t)->sceneMapSize.y)
+#define _tile_valid_grid(t, v) ((v).x >= 0 && (v).x < (t)->_sceneMapSize.x && (v).y >= 0 && (v).y < (t)->_sceneMapSize.y)
 
 /// @brief Check if the given index is valid within the base texture of the tilemap.
 /// @param t Tilemap object pointer
 /// @param i Tile index
-#define _tile_valid_idx(t, i) ((i) >= 0 && (int32_t)(i) < (((t)->texMapSize.x * (t)->texMapSize.y) + 1))
+#define _tile_valid_idx(t, i) ((i) >= 0 && (int32_t)(i) < (((t)->_texMapSize.x * (t)->_texMapSize.y) + 1))
 
 /// @brief 2D grid of tiles
 typedef struct {
-	Texture2D texture;			// Base texture
-	Color tint;					// Color tint
-	Vector2i texOffset;			// Offset (in pixels) of first tile in the texture
-	Vector2i sceneOffset;		// Offset (in pixels) of the tile map in the scene
-	Vector2i texTileSize;		// Size (in pixels) of a single tile in the texture
-	Vector2i texTileSpacing;	// Space (in pixels) between tiles in the texture
-	Vector2i sceneMapSize;		// Size (in grid squares) of the tile map in the scene
-	Vector2i texMapSize;		// Size (in grid squares) of the tile map in the texture
+	Texture2D _texture;			// Base texture
+	Color _tint;				// Color tint
+	Vector2i _texOffset;		// Offset (in pixels) of first tile in the texture
+	Vector2i _sceneOffset;		// Offset (in pixels) of the tile map in the scene
+	Vector2i _texTileSize;		// Size (in pixels) of a single tile in the texture
+	Vector2i _texTileSpacing;	// Space (in pixels) between tiles in the texture
+	Vector2i _sceneMapSize;		// Size (in grid squares) of the tile map in the scene
+	Vector2i _texMapSize;		// Size (in grid squares) of the tile map in the texture
 	vector_t* _data;			// Container of tile data
-	TilemapID _id;				// Unique tilemap ID
-	int depth;					// Draw depth
-	bool visible;				// Visibility flag
+	const TilemapID _id;		// Unique tilemap ID
+	int _depth;					// Draw depth
+	bool _visible;				// Visibility flag
 } Tilemap;
 
 /// @brief Descriptor for creating a tilemap object
@@ -55,26 +55,26 @@ typedef struct {
 
 /// @brief Organized list of tilemaps
 typedef struct {
-	unordered_map_t* tilemapIndices;		// Map tilemap IDs to container indices
-	free_list_t* tilemaps;					// Container of tilemap data
-	priority_queue_t* tilemapDepthOrder;	// Sort tilemap indices by depth value
-	bool depthSorting;						// Enable depth sorting
+	unordered_map_t* _tilemapIndices;		// Map tilemap IDs to container indices
+	free_list_t* _tilemaps;					// Container of tilemap data
+	priority_queue_t* _tilemapDepthOrder;	// Sort tilemap indices by depth value
+	bool _depthSorting;						// Enable depth sorting
 } TilemapList;
 
 /// @brief Iterator for tilemap objects
 typedef struct {
-	TilemapList* _list;
-	unordered_map_it_t* _ptr;
-	TilemapID id;		// Unique tilemap ID
-	Tilemap* data;		// Tilemap data structure
+	TilemapList* _list;			// Tilemap list to iterate through
+	unordered_map_it_t* _ptr;	// Internal iterator reference
+	TilemapID id;				// Unique tilemap ID
+	Tilemap* data;				// Tilemap data structure
 } TilemapListIt;
 
 /// @brief Iterator for tilemap objects (sorted by depth)
 typedef struct {
-	TilemapList* _list;
-	priority_queue_it_t* _ptr;
-	TilemapID id;		// Unique tilemap ID
-	Tilemap* data;		// Tilemap data structure
+	TilemapList* _list;			// Tilemap list to iterate through
+	priority_queue_it_t* _ptr;	// Internal iterator reference
+	TilemapID id;				// Unique tilemap ID
+	Tilemap* data;				// Tilemap data structure
 } TilemapListDepthIt;
 
 /// @brief Draw the tilemap.

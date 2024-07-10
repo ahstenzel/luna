@@ -42,25 +42,25 @@ typedef enum {
 } InputMode;
 
 typedef struct {
-	int keyboardMapping[INPUT_NUMBER];
-	int gamepadMapping[INPUT_NUMBER];
-	float gamepadAxisLatch[MAX_GAMEPAD_AXIS];
-	float gamepadDeadzone;
-	int gamepadIndex;
-	InputMode mode;
+	int _keyboardMapping[INPUT_NUMBER];
+	int _gamepadMapping[INPUT_NUMBER];
+	float _gamepadAxisLatch[MAX_GAMEPAD_AXIS];
+	float _gamepadDeadzone;
+	int _gamepadIndex;
+	InputMode _mode;
 } InputSlot;
 
 typedef struct {
-	int keyboardMapping[INPUT_NUMBER];
-	int gamepadMapping[INPUT_NUMBER];
-	float gamepadDeadzone;
-	int gamepadIndex;
-	InputMode mode;
+	int _keyboardMapping[INPUT_NUMBER];
+	int _gamepadMapping[INPUT_NUMBER];
+	float _gamepadDeadzone;
+	int _gamepadIndex;
+	InputMode _mode;
 } InputSlotDesc;
 
 typedef struct {
-	InputSlot inputs[MAX_INPUT_SLOTS];
-	size_t num;
+	InputSlot _inputs[MAX_INPUT_SLOTS];
+	size_t _num;
 } InputSettingsList;
 
 /// @brief Create a new input list.

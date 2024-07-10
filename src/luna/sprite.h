@@ -11,60 +11,60 @@ typedef _LUNA_ID_TYPE SpriteID;
 
 /// @brief Single drawable object
 typedef struct {
-	Texture2D texture;		// Base texture
-	Vector2 position;		// Position in worldspace
-	Vector2 scale;			// Scaling factor
-	Vector2 origin;			// Transformation origin (scaling, rotating etc.)
-	Color tint;				// Blending color
-	SpriteID id;			// Unique sprite ID
-	int depth;				// Draw depth
-	int imageIndex;			// Current animation frame
-	unsigned int imageNum;	// Total animation frames
-	unsigned int numRows;	// Rows of animation frames in base texture
-	unsigned int numCols;	// Columns of animation frames in base texture
-	float imageSpeed;		// Animation speed (seconds per frame of animation)
-	float rotation;			// Rotation angle (degrees)
-	float _timer;			// Internal timer for pacing animation
-	bool visible;			// Visibility flag
+	Texture2D _texture;			// Base texture
+	Vector2 _position;			// Position in worldspace
+	Vector2 _scale;				// Scaling factor
+	Vector2 _origin;			// Transformation origin (scaling, rotating etc.)
+	Color _tint;				// Blending color
+	const SpriteID _id;			// Unique sprite ID
+	int _depth;					// Draw depth
+	int _imageIndex;			// Current animation frame
+	unsigned int _imageNum;		// Total animation frames
+	unsigned int _numRows;		// Rows of animation frames in base texture
+	unsigned int _numCols;		// Columns of animation frames in base texture
+	float _imageSpeed;			// Animation speed (seconds per frame of animation)
+	float _rotation;			// Rotation angle (degrees)
+	float _timer;				// Internal timer for pacing animation
+	bool _visible;				// Visibility flag
 } Sprite;
 
 /// @brief Descriptor for creating a sprite object
 typedef struct {
-	Texture2D texture;		// Base texture
-	Vector2 position;		// Position in worldspace
-	Vector2 scale;			// Scaling factor
-	Vector2 origin;			// Transformation origin (scaling, rotating etc.)
-	Color tint;				// Blending color
-	int depth;				// Draw depth
-	int imageIndex;			// Current animation frame
-	unsigned int imageNum;	// Total animation frames
-	unsigned int numRows;	// Rows of animation frames in base texture
-	unsigned int numCols;	// Columns of animation frames in base texture
-	float imageSpeed;		// Animation speed (seconds per frame of animation)
-	float rotation;			// Rotation angle (degrees)
-	bool visible;			// Visibility flag
+	Texture2D texture;			// Base texture
+	Vector2 position;			// Position in worldspace
+	Vector2 scale;				// Scaling factor
+	Vector2 origin;				// Transformation origin (scaling, rotating etc.)
+	Color tint;					// Blending color
+	int depth;					// Draw depth
+	int imageIndex;				// Current animation frame
+	unsigned int imageNum;		// Total animation frames
+	unsigned int numRows;		// Rows of animation frames in base texture
+	unsigned int numCols;		// Columns of animation frames in base texture
+	float imageSpeed;			// Animation speed (seconds per frame of animation)
+	float rotation;				// Rotation angle (degrees)
+	bool visible;				// Visibility flag
 } SpriteDesc;
 
 /// @brief Organized list of sprites
 typedef struct {
-	unordered_map_t* spriteIndices;			// Map sprite IDs to container indices
-	free_list_t* sprites;					// Container of sprite data
-	priority_queue_t* spriteDepthOrder;		// Sort container indices by depth value
-	bool depthSorting;						// Enable depth sorting
+	unordered_map_t* _spriteIndices;		// Map sprite IDs to container indices
+	free_list_t* _sprites;					// Container of sprite data
+	priority_queue_t* _spriteDepthOrder;	// Sort container indices by depth value
+	bool _depthSorting;						// Enable depth sorting
 } SpriteList;
 
 /// @brief Iterator for sprite objects
 typedef struct {
-	SpriteList* _list;
-	unordered_map_it_t* _ptr;
+	SpriteList* _list;			// Sprite list to iterate through
+	unordered_map_it_t* _ptr;	// Internal iterator reference
 	SpriteID id;				// Unique sprite ID
 	Sprite* data;				// Sprite data structure
 } SpriteListIt;
 
 /// @brief Iterator for sprite objects sorted by depth
 typedef struct {
-	SpriteList* _list;
-	priority_queue_it_t* _ptr;
+	SpriteList* _list;			// Sprite list to iterate through
+	priority_queue_it_t* _ptr;	// Internal iterator reference
 	SpriteID id;				// Unique sprite ID
 	Sprite* data;				// Sprite data structure
 } SpriteListDepthIt;

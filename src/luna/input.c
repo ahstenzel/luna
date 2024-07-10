@@ -17,13 +17,13 @@ InputSettingsList* _CreateInputSettingsList(InputSlotDesc* _desc, size_t _num) {
 		LUNA_RAISE_ERR(LUNA_ERR_STATUS_BAD_ALLOC, "Failed to allocate input list!");
 		return NULL;
 	}
-	list->num = _num;
+	list->_num = _num;
 	for(size_t slot=0; slot<_num; ++slot) {
-		list->inputs[slot].gamepadDeadzone = _desc[slot].gamepadDeadzone;
-		list->inputs[slot].gamepadIndex = _desc[slot].gamepadIndex;
-		list->inputs[slot].mode = _desc[slot].mode;
-		memcpy_s(&(list->inputs[slot].keyboardMapping), INPUT_NUMBER*sizeof(int), &(_desc[slot].keyboardMapping), INPUT_NUMBER*sizeof(int));
-		memcpy_s(&(list->inputs[slot].gamepadMapping), INPUT_NUMBER*sizeof(int), &(_desc[slot].gamepadMapping), INPUT_NUMBER*sizeof(int));
+		list->_inputs[slot]._gamepadDeadzone = _desc[slot]._gamepadDeadzone;
+		list->_inputs[slot]._gamepadIndex = _desc[slot]._gamepadIndex;
+		list->_inputs[slot]._mode = _desc[slot]._mode;
+		memcpy_s(&(list->_inputs[slot]._keyboardMapping), INPUT_NUMBER*sizeof(int), &(_desc[slot]._keyboardMapping), INPUT_NUMBER*sizeof(int));
+		memcpy_s(&(list->_inputs[slot]._gamepadMapping), INPUT_NUMBER*sizeof(int), &(_desc[slot]._gamepadMapping), INPUT_NUMBER*sizeof(int));
 	}
 	return list;
 }
@@ -41,13 +41,13 @@ void _UpdateInputSettingsList(InputSettingsList* _list) {
 		return; 
 	}
 
-	for(int slot=0; slot<_list->num; ++slot) {
-		switch(_list->inputs[slot].mode) {
+	for(int slot=0; slot<_list->_num; ++slot) {
+		switch(_list->_inputs[slot]._mode) {
 			case INPUT_MODE_PENDING: 
 				// Check for keyboard input
 				if (!_IsKeyboardTaken(_list)) {
 					if (GetKeyPressed() != KEY_NULL) {
-						_list->inputs[slot].mode = INPUT_MODE_KEYBOARD;
+						_list->_inputs[slot]._mode = INPUT_MODE_KEYBOARD;
 						break;
 					}
 				}
@@ -55,10 +55,10 @@ void _UpdateInputSettingsList(InputSettingsList* _list) {
 				// Check for gamepad input
 				for(int gamepad=0; gamepad<MAX_GAMEPADS; ++gamepad) {
 					if (!_IsGamepadTaken(_list, gamepad) && _GetGamepadPressed(_list, slot, gamepad, NULL) != -1) {
-						_list->inputs[slot].mode = INPUT_MODE_GAMEPAD;
-						_list->inputs[slot].gamepadIndex = gamepad;
+						_list->_inputs[slot]._mode = INPUT_MODE_GAMEPAD;
+						_list->_inputs[slot]._gamepadIndex = gamepad;
 						for(int axis=0; axis<MAX_GAMEPAD_AXIS; ++axis) {
-							_list->inputs[slot].gamepadAxisLatch[axis] = 2.0f;
+							_list->_inputs[slot]._gamepadAxisLatch[axis] = 2.0f;
 						}
 						_SetGamepadAxisLatches(_list, slot);
 					}
@@ -80,18 +80,18 @@ Vector2 GetDirection(InputSettingsList* _list, unsigned int _slot, bool _aligned
 		LUNA_DBG_WARN("Invalid input list reference!");
 		return input;
 	}
-	if (_slot >= _list->num) {
+	if (_slot >= _list->_num) {
 		LUNA_DBG_WARN("Invalid input slot (%d)!", _slot);
 		return input;
 	}
 
-	if (_list->inputs[_slot].mode == INPUT_MODE_GAMEPAD) {
-		int gamepad = _list->inputs[_slot].gamepadIndex;
+	if (_list->_inputs[_slot]._mode == INPUT_MODE_GAMEPAD) {
+		int gamepad = _list->_inputs[_slot]._gamepadIndex;
 		if (GetGamepadAxisCount(gamepad) > 0) {
 			Vector2 value = Vector2Zero();
 			value.x = GetGamepadAxisMovement(gamepad, GAMEPAD_AXIS_LEFT_X);
 			value.y = GetGamepadAxisMovement(gamepad, GAMEPAD_AXIS_LEFT_Y);
-			if (Vector2Length(value) >= _list->inputs[_slot].gamepadDeadzone) {
+			if (Vector2Length(value) >= _list->_inputs[_slot]._gamepadDeadzone) {
 				if (_aligned) {
 					input.x = (fabsf(value.x) > GAMEPAD_AXIS_SECTOR) ? (signbit(value.x) ? -1.f : 1.f) : 0.f;
 					input.y = (fabsf(value.y) > GAMEPAD_AXIS_SECTOR) ? (signbit(value.y) ? -1.f : 1.f) : 0.f;
@@ -102,17 +102,17 @@ Vector2 GetDirection(InputSettingsList* _list, unsigned int _slot, bool _aligned
 			}
 		}
 		else {
-			if (IsGamepadButtonDown(gamepad, _list->inputs[_slot].gamepadMapping[INPUT_UP]))    { input.y -= 1.f; }
-			if (IsGamepadButtonDown(gamepad, _list->inputs[_slot].gamepadMapping[INPUT_LEFT]))  { input.x -= 1.f; }
-			if (IsGamepadButtonDown(gamepad, _list->inputs[_slot].gamepadMapping[INPUT_DOWN]))  { input.y += 1.f; }
-			if (IsGamepadButtonDown(gamepad, _list->inputs[_slot].gamepadMapping[INPUT_RIGHT])) { input.x += 1.f; }
+			if (IsGamepadButtonDown(gamepad, _list->_inputs[_slot]._gamepadMapping[INPUT_UP]))    { input.y -= 1.f; }
+			if (IsGamepadButtonDown(gamepad, _list->_inputs[_slot]._gamepadMapping[INPUT_LEFT]))  { input.x -= 1.f; }
+			if (IsGamepadButtonDown(gamepad, _list->_inputs[_slot]._gamepadMapping[INPUT_DOWN]))  { input.y += 1.f; }
+			if (IsGamepadButtonDown(gamepad, _list->_inputs[_slot]._gamepadMapping[INPUT_RIGHT])) { input.x += 1.f; }
 		}
 	}
 	else {
-		if (IsKeyDown(_list->inputs[_slot].keyboardMapping[INPUT_UP]))    { input.y -= 1.f; }
-		if (IsKeyDown(_list->inputs[_slot].keyboardMapping[INPUT_LEFT]))  { input.x -= 1.f; }
-		if (IsKeyDown(_list->inputs[_slot].keyboardMapping[INPUT_DOWN]))  { input.y += 1.f; }
-		if (IsKeyDown(_list->inputs[_slot].keyboardMapping[INPUT_RIGHT])) { input.x += 1.f; }
+		if (IsKeyDown(_list->_inputs[_slot]._keyboardMapping[INPUT_UP]))    { input.y -= 1.f; }
+		if (IsKeyDown(_list->_inputs[_slot]._keyboardMapping[INPUT_LEFT]))  { input.x -= 1.f; }
+		if (IsKeyDown(_list->_inputs[_slot]._keyboardMapping[INPUT_DOWN]))  { input.y += 1.f; }
+		if (IsKeyDown(_list->_inputs[_slot]._keyboardMapping[INPUT_RIGHT])) { input.x += 1.f; }
 	}
 	return Vector2Normalize(input);
 }
@@ -124,18 +124,18 @@ unsigned char GetDirectionBitfield(InputSettingsList* _list, unsigned int _slot)
 		LUNA_DBG_WARN("Invalid input list reference!");
 		return input;
 	}
-	if (_slot >= _list->num) {
+	if (_slot >= _list->_num) {
 		LUNA_DBG_WARN("Invalid input slot (%d)!", _slot);
 		return input;
 	}
 
-	if (_list->inputs[_slot].mode == INPUT_MODE_GAMEPAD) {
-		int gamepad = _list->inputs[_slot].gamepadIndex;
+	if (_list->_inputs[_slot]._mode == INPUT_MODE_GAMEPAD) {
+		int gamepad = _list->_inputs[_slot]._gamepadIndex;
 		if (GetGamepadAxisCount(gamepad) > 0) {
 			Vector2 value = Vector2Zero();
 			value.x = GetGamepadAxisMovement(gamepad, GAMEPAD_AXIS_LEFT_X);
 			value.y = GetGamepadAxisMovement(gamepad, GAMEPAD_AXIS_LEFT_Y);
-			if (Vector2Length(value) >= _list->inputs[_slot].gamepadDeadzone) {
+			if (Vector2Length(value) >= _list->_inputs[_slot]._gamepadDeadzone) {
 				if (value.y < -GAMEPAD_AXIS_SECTOR) { input |= INPUT_MASK_UP; }
 				if (value.x < -GAMEPAD_AXIS_SECTOR) { input |= INPUT_MASK_LEFT; }
 				if (value.y > GAMEPAD_AXIS_SECTOR)  { input |= INPUT_MASK_DOWN; }
@@ -143,17 +143,17 @@ unsigned char GetDirectionBitfield(InputSettingsList* _list, unsigned int _slot)
 			}
 		}
 		else {
-			if (IsGamepadButtonDown(gamepad, _list->inputs[_slot].gamepadMapping[INPUT_UP]))    { input |= INPUT_MASK_UP; }
-			if (IsGamepadButtonDown(gamepad, _list->inputs[_slot].gamepadMapping[INPUT_LEFT]))  { input |= INPUT_MASK_LEFT; }
-			if (IsGamepadButtonDown(gamepad, _list->inputs[_slot].gamepadMapping[INPUT_DOWN]))  { input |= INPUT_MASK_DOWN; }
-			if (IsGamepadButtonDown(gamepad, _list->inputs[_slot].gamepadMapping[INPUT_RIGHT])) { input |= INPUT_MASK_RIGHT; }
+			if (IsGamepadButtonDown(gamepad, _list->_inputs[_slot]._gamepadMapping[INPUT_UP]))    { input |= INPUT_MASK_UP; }
+			if (IsGamepadButtonDown(gamepad, _list->_inputs[_slot]._gamepadMapping[INPUT_LEFT]))  { input |= INPUT_MASK_LEFT; }
+			if (IsGamepadButtonDown(gamepad, _list->_inputs[_slot]._gamepadMapping[INPUT_DOWN]))  { input |= INPUT_MASK_DOWN; }
+			if (IsGamepadButtonDown(gamepad, _list->_inputs[_slot]._gamepadMapping[INPUT_RIGHT])) { input |= INPUT_MASK_RIGHT; }
 		}
 	}
 	else {
-		if (IsKeyDown(_list->inputs[_slot].keyboardMapping[INPUT_UP]))    { input |= INPUT_MASK_UP; }
-		if (IsKeyDown(_list->inputs[_slot].keyboardMapping[INPUT_LEFT]))  { input |= INPUT_MASK_LEFT; }
-		if (IsKeyDown(_list->inputs[_slot].keyboardMapping[INPUT_DOWN]))  { input |= INPUT_MASK_DOWN; }
-		if (IsKeyDown(_list->inputs[_slot].keyboardMapping[INPUT_RIGHT])) { input |= INPUT_MASK_RIGHT; }
+		if (IsKeyDown(_list->_inputs[_slot]._keyboardMapping[INPUT_UP]))    { input |= INPUT_MASK_UP; }
+		if (IsKeyDown(_list->_inputs[_slot]._keyboardMapping[INPUT_LEFT]))  { input |= INPUT_MASK_LEFT; }
+		if (IsKeyDown(_list->_inputs[_slot]._keyboardMapping[INPUT_DOWN]))  { input |= INPUT_MASK_DOWN; }
+		if (IsKeyDown(_list->_inputs[_slot]._keyboardMapping[INPUT_RIGHT])) { input |= INPUT_MASK_RIGHT; }
 	}
 	return input;
 }
@@ -164,17 +164,17 @@ bool GetInputPressed(InputSettingsList* _list, unsigned int _slot, Input _input)
 		LUNA_DBG_WARN("Invalid input list reference!");
 		return false;
 	}
-	if (_slot >= _list->num) {
+	if (_slot >= _list->_num) {
 		LUNA_DBG_WARN("Invalid input slot (%d)!", _slot);
 		return false;
 	}
 
-	if (_list->inputs[_slot].mode == INPUT_MODE_GAMEPAD) {
-		int mappedInput = _list->inputs[_slot].gamepadMapping[_input];
-		return IsGamepadButtonPressed(_list->inputs[_slot].gamepadIndex, mappedInput);
+	if (_list->_inputs[_slot]._mode == INPUT_MODE_GAMEPAD) {
+		int mappedInput = _list->_inputs[_slot]._gamepadMapping[_input];
+		return IsGamepadButtonPressed(_list->_inputs[_slot]._gamepadIndex, mappedInput);
 	}
 	else {
-		int mappedInput = _list->inputs[_slot].keyboardMapping[_input];
+		int mappedInput = _list->_inputs[_slot]._keyboardMapping[_input];
 		return IsKeyPressed(mappedInput);
 	}
 }
@@ -185,17 +185,17 @@ bool GetInputDown(InputSettingsList* _list, unsigned int _slot, Input _input) {
 		LUNA_DBG_WARN("Invalid input list reference!");
 		return false;
 	}
-	if (_slot >= _list->num) {
+	if (_slot >= _list->_num) {
 		LUNA_DBG_WARN("Invalid input slot (%d)!", _slot);
 		return false;
 	}
 
-	if (_list->inputs[_slot].mode == INPUT_MODE_GAMEPAD) {
-		int mappedInput = _list->inputs[_slot].gamepadMapping[_input];
-		return IsGamepadButtonDown(_list->inputs[_slot].gamepadIndex, mappedInput);
+	if (_list->_inputs[_slot]._mode == INPUT_MODE_GAMEPAD) {
+		int mappedInput = _list->_inputs[_slot]._gamepadMapping[_input];
+		return IsGamepadButtonDown(_list->_inputs[_slot]._gamepadIndex, mappedInput);
 	}
 	else {
-		int mappedInput = _list->inputs[_slot].keyboardMapping[_input];
+		int mappedInput = _list->_inputs[_slot]._keyboardMapping[_input];
 		return IsKeyDown(mappedInput);
 	}
 }
@@ -206,17 +206,17 @@ bool GetInputReleased(InputSettingsList* _list, unsigned int _slot, Input _input
 		LUNA_DBG_WARN("Invalid input list reference!");
 		return false;
 	}
-	if (_slot >= _list->num) {
+	if (_slot >= _list->_num) {
 		LUNA_DBG_WARN("Invalid input slot (%d)!", _slot);
 		return false;
 	}
 
-	if (_list->inputs[_slot].mode == INPUT_MODE_GAMEPAD) {
-		int mappedInput = _list->inputs[_slot].gamepadMapping[_input];
-		return IsGamepadButtonReleased(_list->inputs[_slot].gamepadIndex, mappedInput);
+	if (_list->_inputs[_slot]._mode == INPUT_MODE_GAMEPAD) {
+		int mappedInput = _list->_inputs[_slot]._gamepadMapping[_input];
+		return IsGamepadButtonReleased(_list->_inputs[_slot]._gamepadIndex, mappedInput);
 	}
 	else {
-		int mappedInput = _list->inputs[_slot].keyboardMapping[_input];
+		int mappedInput = _list->_inputs[_slot]._keyboardMapping[_input];
 		return IsKeyReleased(mappedInput);
 	}
 }
@@ -227,7 +227,7 @@ int _GetGamepadPressed(InputSettingsList* _list, unsigned int _slot, int _gamepa
 		LUNA_DBG_WARN("Invalid input list reference!");
 		goto get_gamepad_pressed_fail;
 	}
-	if (_slot >= _list->num) {
+	if (_slot >= _list->_num) {
 		LUNA_DBG_WARN("Invalid input slot (%d)!", _slot);
 		goto get_gamepad_pressed_fail;
 	}
@@ -241,7 +241,7 @@ int _GetGamepadPressed(InputSettingsList* _list, unsigned int _slot, int _gamepa
 		}
 		for(int axis=0; axis<=GetGamepadAxisCount(_gamepad); ++axis) {
 			float val = GetGamepadAxisMovement(_gamepad, axis);
-			if (fabsf(val - _list->inputs[_slot].gamepadAxisLatch[axis]) > _list->inputs[_slot].gamepadDeadzone) {
+			if (fabsf(val - _list->_inputs[_slot]._gamepadAxisLatch[axis]) > _list->_inputs[_slot]._gamepadDeadzone) {
 				if (_axis) { *_axis = true; }
 				return axis;
 			}
@@ -259,11 +259,11 @@ int GetKeyboardMapping(InputSettingsList* _list, unsigned int _slot, Input _inpu
 		LUNA_DBG_WARN("Invalid input list reference!");
 		return -1;
 	}
-	if (_slot >= _list->num) {
+	if (_slot >= _list->_num) {
 		LUNA_DBG_WARN("Invalid input slot (%d)!", _slot);
 		return -1;
 	}
-	return _list->inputs[_slot].keyboardMapping[_input];
+	return _list->_inputs[_slot]._keyboardMapping[_input];
 }
 
 void SetKeyboardMapping(InputSettingsList* _list, unsigned int _slot, Input _input, int _mapping) {
@@ -272,11 +272,11 @@ void SetKeyboardMapping(InputSettingsList* _list, unsigned int _slot, Input _inp
 		LUNA_DBG_WARN("Invalid input list reference!");
 		return;
 	}
-	if (_slot >= _list->num) {
+	if (_slot >= _list->_num) {
 		LUNA_DBG_WARN("Invalid input slot (%d)!", _slot);
 		return;
 	}
-	_list->inputs[_slot].keyboardMapping[_input] = _mapping;
+	_list->_inputs[_slot]._keyboardMapping[_input] = _mapping;
 }
 
 int GetGamepadMapping(InputSettingsList* _list, unsigned int _slot, Input _input) {
@@ -285,11 +285,11 @@ int GetGamepadMapping(InputSettingsList* _list, unsigned int _slot, Input _input
 		LUNA_DBG_WARN("Invalid input list reference!");
 		return -1;
 	}
-	if (_slot >= _list->num) {
+	if (_slot >= _list->_num) {
 		LUNA_DBG_WARN("Invalid input slot (%d)!", _slot);
 		return -1;
 	}
-	return _list->inputs[_slot].gamepadMapping[_input];
+	return _list->_inputs[_slot]._gamepadMapping[_input];
 }
 
 void SetGamepadMapping(InputSettingsList* _list, unsigned int _slot, Input _input, int _mapping) {
@@ -298,11 +298,11 @@ void SetGamepadMapping(InputSettingsList* _list, unsigned int _slot, Input _inpu
 		LUNA_DBG_WARN("Invalid input list reference!");
 		return;
 	}
-	if (_slot >= _list->num) {
+	if (_slot >= _list->_num) {
 		LUNA_DBG_WARN("Invalid input slot (%d)!", _slot);
 		return;
 	}
-	_list->inputs[_slot].gamepadMapping[_input] = _mapping;
+	_list->_inputs[_slot]._gamepadMapping[_input] = _mapping;
 }
 
 float GetGamepadDeadzone(InputSettingsList* _list, unsigned int _slot) {
@@ -311,11 +311,11 @@ float GetGamepadDeadzone(InputSettingsList* _list, unsigned int _slot) {
 		LUNA_DBG_WARN("Invalid input list reference!");
 		return 0.f;
 	}
-	if (_slot >= _list->num) {
+	if (_slot >= _list->_num) {
 		LUNA_DBG_WARN("Invalid input slot (%d)!", _slot);
 		return 0.f;
 	}
-	return _list->inputs[_slot].gamepadDeadzone;
+	return _list->_inputs[_slot]._gamepadDeadzone;
 }
 
 void SetGamepadDeadzone(InputSettingsList* _list, unsigned int _slot, float _deadzone) {
@@ -324,11 +324,11 @@ void SetGamepadDeadzone(InputSettingsList* _list, unsigned int _slot, float _dea
 		LUNA_DBG_WARN("Invalid input list reference!");
 		return;
 	}
-	if (_slot >= _list->num) {
+	if (_slot >= _list->_num) {
 		LUNA_DBG_WARN("Invalid input slot (%d)!", _slot);
 		return;
 	}
-	_list->inputs[_slot].gamepadDeadzone = _deadzone;
+	_list->_inputs[_slot]._gamepadDeadzone = _deadzone;
 }
 
 InputMode GetInputMode(InputSettingsList* _list, unsigned int _slot) {
@@ -337,11 +337,11 @@ InputMode GetInputMode(InputSettingsList* _list, unsigned int _slot) {
 		LUNA_DBG_WARN("Invalid input list reference!");
 		return INPUT_MODE_NONE;
 	}
-	if (_slot >= _list->num) {
+	if (_slot >= _list->_num) {
 		LUNA_DBG_WARN("Invalid input slot (%d)!", _slot);
 		return INPUT_MODE_NONE;
 	}
-	return _list->inputs[_slot].mode;
+	return _list->_inputs[_slot]._mode;
 }
 
 void SetInputMode(InputSettingsList* _list, unsigned int _slot, InputMode _mode) {
@@ -350,11 +350,11 @@ void SetInputMode(InputSettingsList* _list, unsigned int _slot, InputMode _mode)
 		LUNA_DBG_WARN("Invalid input list reference!");
 		return;
 	}
-	if (_slot >= _list->num) {
+	if (_slot >= _list->_num) {
 		LUNA_DBG_WARN("Invalid input slot (%d)!", _slot);
 		return;
 	}
-	_list->inputs[_slot].mode = _mode;
+	_list->_inputs[_slot]._mode = _mode;
 }
 
 void SetGamepadIndex(InputSettingsList* _list, unsigned int _slot, int _gamepad) {
@@ -363,11 +363,11 @@ void SetGamepadIndex(InputSettingsList* _list, unsigned int _slot, int _gamepad)
 		LUNA_DBG_WARN("Invalid input list reference!");
 		return;
 	}
-	if (_slot >= _list->num) {
+	if (_slot >= _list->_num) {
 		LUNA_DBG_WARN("Invalid input slot (%d)!", _slot);
 		return;
 	}
-	_list->inputs[_slot].gamepadIndex = _gamepad;
+	_list->_inputs[_slot]._gamepadIndex = _gamepad;
 }
 
 bool _IsGamepadTaken(InputSettingsList* _list, int _gamepad) {
@@ -377,8 +377,8 @@ bool _IsGamepadTaken(InputSettingsList* _list, int _gamepad) {
 		return false;
 	}
 
-	for(int slot=0; slot<_list->num; ++slot) {
-		if (_list->inputs[slot].gamepadIndex == _gamepad) {
+	for(int slot=0; slot<_list->_num; ++slot) {
+		if (_list->_inputs[slot]._gamepadIndex == _gamepad) {
 			return true;
 		}
 	}
@@ -392,8 +392,8 @@ bool _IsKeyboardTaken(InputSettingsList* _list) {
 		return false;
 	}
 
-	for(int slot=0; slot<_list->num; ++slot) {
-		if (_list->inputs[slot].mode == INPUT_MODE_KEYBOARD) {
+	for(int slot=0; slot<_list->_num; ++slot) {
+		if (_list->_inputs[slot]._mode == INPUT_MODE_KEYBOARD) {
 			return true;
 		}
 	}
@@ -406,18 +406,18 @@ bool _ScanForGamepads(InputSettingsList* _list, unsigned int _slot) {
 		LUNA_DBG_WARN("Invalid input list reference!");
 		return false;
 	}
-	if (_slot >= _list->num) {
+	if (_slot >= _list->_num) {
 		LUNA_DBG_WARN("Invalid input slot (%d)!", _slot);
 		return false;
 	}
 
 	for(int gamepad=0; gamepad<MAX_GAMEPADS; ++gamepad) {
 		if (IsGamepadAvailable(gamepad) && !_IsGamepadTaken(_list, gamepad)) {
-			_list->inputs[_slot].gamepadIndex = gamepad;
+			_list->_inputs[_slot]._gamepadIndex = gamepad;
 			return true;
 		}
 	}
-	_list->inputs[_slot].gamepadIndex = -1;
+	_list->_inputs[_slot]._gamepadIndex = -1;
 	return false;
 }
 
@@ -427,17 +427,17 @@ void _SetGamepadAxisLatches(InputSettingsList* _list, unsigned int _slot) {
 		LUNA_DBG_WARN("Invalid input list reference!");
 		return;
 	}
-	if (_slot >= _list->num) {
+	if (_slot >= _list->_num) {
 		LUNA_DBG_WARN("Invalid input slot (%d)!", _slot);
 		return;
 	}
 	
-	int gamepad = _list->inputs[_slot].gamepadIndex;
-	if (IsGamepadAvailable(gamepad) && _list->inputs[_slot].mode == INPUT_MODE_GAMEPAD) {
+	int gamepad = _list->_inputs[_slot]._gamepadIndex;
+	if (IsGamepadAvailable(gamepad) && _list->_inputs[_slot]._mode == INPUT_MODE_GAMEPAD) {
 		for(int axis=0; axis<GetGamepadAxisCount(gamepad); ++axis) {
 			float val = GetGamepadAxisMovement(gamepad, axis);
-			if (fabsf(val) - _list->inputs[_slot].gamepadAxisLatch[axis] > 0.05f) {
-				_list->inputs[_slot].gamepadAxisLatch[axis] = val;
+			if (fabsf(val) - _list->_inputs[_slot]._gamepadAxisLatch[axis] > 0.05f) {
+				_list->_inputs[_slot]._gamepadAxisLatch[axis] = val;
 			}
 		}
 	}
