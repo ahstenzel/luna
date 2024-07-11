@@ -65,6 +65,30 @@
 /// @return ID
 _LUNA_ID_TYPE _luna_id_generate();
 
+
+//----------------------------------------------------------------------------------
+// BAMS Functions
+//----------------------------------------------------------------------------------
+
+typedef short Angle;	// Angle units stored as BAM (Binary angular measurement) integers.
+
+#define ANGLE_MIN 0x0000
+#define ANGLE_MAX 0xFFFF
+#define ANGLE_HALF 0x7FFF
+
+/// @brief Convert the angle value (BAM integer) to degrees (float).
+#define ANGLE_TO_DEG(a) ((float)(a) * 360.f / (float)(ANGLE_MAX))
+
+/// @brief Convert the degrees value (float) to angle units (BAM integer).
+#define DEG_TO_ANGLE(a) (Angle)(a * (float)(ANGLE_MAX) / 360.f )
+
+/// @brief Convert the angle value (BAM integer) to radians (float).
+#define ANGLE_TO_RAD(a) ((float)(a) * (2.f * PI) / (float)(ANGLE_MAX))
+
+/// @brief Convert the radians value (float) to angle units (BAM integer).
+#define RAD_TO_ANGLE(a) (Angle)(a * (float)(ANGLE_MAX) / (2.f * PI) )
+
+
 //----------------------------------------------------------------------------------
 // Extra Vector Operations
 //----------------------------------------------------------------------------------
@@ -72,9 +96,9 @@ _LUNA_ID_TYPE _luna_id_generate();
 /// @brief Rotate the point v1 around the point v2 by the given angle
 /// @param v1 First vector
 /// @param v2 Second vector
-/// @param angle Angle of rotation (in radians)
+/// @param angle Angle of rotation (BAM integers)
 /// @return Rotated vector
-Vector2 Vector2RotatePoint(Vector2 v1, Vector2 v2, float angle);
+Vector2 Vector2RotatePoint(Vector2 v1, Vector2 v2, Angle angle);
 
 /// @brief Reflect the vector v1 across v2, along the line between them
 /// @param v1 First vector

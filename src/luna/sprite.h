@@ -18,7 +18,7 @@ typedef struct {
 	Vector2 _scrollSpeed;		// Sprite lateral scrolling speed (pixels / sec)
 	Vector2 _scrollOffset;		// Current offset for scrolling
 	Vector2 _scrollTimer;		// Internal timer for pacing lateral scrolling
-	Color _tint;				// Blending color
+	Color _tint;				// Blend color
 	const SpriteID _id;			// Unique sprite ID
 	int _depth;					// Draw depth
 	int _imageIndex;			// Current animation frame
@@ -26,8 +26,9 @@ typedef struct {
 	unsigned int _numRows;		// Rows of animation frames in base texture
 	unsigned int _numCols;		// Columns of animation frames in base texture
 	float _imageSpeed;			// Animation speed (frames / sec)
-	float _rotation;			// Rotation angle (degrees)
 	float _timer;				// Internal timer for pacing animation
+	Angle _rotation;			// Rotation angle (BAM integers)
+	Angle _rotationSpeed;		// Rotation speed (BAM integers / sec)
 	bool _visible;				// Whether to draw the sprite
 } Sprite;
 
@@ -46,7 +47,8 @@ typedef struct {
 	unsigned int numRows;		// Rows of animation frames in base texture
 	unsigned int numCols;		// Columns of animation frames in base texture
 	float imageSpeed;			// Animation speed (frames / sec)
-	float rotation;				// Rotation angle (degrees)
+	Angle rotation;				// Rotation angle (BAM integers)
+	Angle rotationSpeed;		// Rotation speed (BAM integers / sec)
 	bool visible;				// Whether to draw the sprite
 } SpriteDesc;
 
@@ -89,7 +91,8 @@ typedef struct {
 	.numRows = 1, \
 	.numCols = 1, \
 	.imageSpeed = 0.f, \
-	.rotation = 0.f, \
+	.rotation = ANGLE_MIN, \
+	.rotationSpeed = ANGLE_MIN \
 	.visible = true \
 }
 
@@ -108,7 +111,8 @@ typedef struct {
 	.numRows = _numRows, \
 	.numCols = _numCols, \
 	.imageSpeed = _imageSpeed, \
-	.rotation = 0.f, \
+	.rotation = ANGLE_MIN, \
+	.rotationSpeed = ANGLE_MIN, \
 	.visible = true \
 }
 
@@ -232,13 +236,13 @@ int GetSpriteImageIndex(SpriteList* _list, SpriteID _id);
 /// @brief Set the sprites animation speed.
 /// @param _list Sprite list pointer
 /// @param _id Sprite id
-/// @param _imageSpeed Length of time per frame
+/// @param _imageSpeed Animation speed (frames / sec)
 void SetSpriteImageSpeed(SpriteList* _list, SpriteID _id, float _imageSpeed);
 
 /// @brief Get the sprites animation speed.
 /// @param _list Sprite list pointer
 /// @param _id Sprite id
-/// @return Length of time per frame
+/// @return Animation speed (frames / sec)
 float GetSpriteImageSpeed(SpriteList* _list, SpriteID _id);
 
 /// @brief Set whether the sprite should be drawn.
@@ -256,13 +260,13 @@ bool GetSpriteVisible(SpriteList* _list, SpriteID _id);
 /// @brief Set the sprites scroll speed.
 /// @param _list Sprite list pointer
 /// @param _id Sprite id
-/// @param _scrollSpeed Lateral scroll speed
+/// @param _scrollSpeed Scroll speed (pixels / sec)
 void SetSpriteScrollSpeed(SpriteList* _list, SpriteID _id, Vector2 _scrollSpeed);
 
 /// @brief Get the sprites scroll speed.
 /// @param _list Sprite list pointer
 /// @param _id Sprite id
-/// @return Scroll speed
+/// @return Scroll speed (pixels / sec)
 Vector2 GetSpriteScrollSpeed(SpriteList* _list, SpriteID _id);
 
 /// @brief Set the sprites scroll offset.
@@ -276,5 +280,53 @@ void SetSpriteScrollOffset(SpriteList* _list, SpriteID _id, Vector2 _scrollOffse
 /// @param _id Sprite id
 /// @return Scroll offset
 Vector2 GetSpriteScrollOffset(SpriteList* _list, SpriteID _id);
+
+/// @brief Set the sprites scaling factor.
+/// @param _list Sprite list pointer
+/// @param _id Sprite id
+/// @param _scale Scale factor
+void SetSpriteScale(SpriteList* _list, SpriteID _id, Vector2 _scale);
+
+/// @brief Get the sprites scaling factor.
+/// @param _list Sprite list pointer
+/// @param _id Sprite id
+/// @return Scale factor
+Vector2 GetSpriteScale(SpriteList* _list, SpriteID _id);
+
+/// @brief Set the sprites angle of rotation.
+/// @param _list Sprite list pointer
+/// @param _id Sprite id
+/// @param _rotation Rotation angle (BAM integers)
+void SetSpriteRotation(SpriteList* _list, SpriteID _id, Angle _rotation);
+
+/// @brief Get the sprites angle of rotation.
+/// @param _list Sprite list pointer
+/// @param _id Sprite id
+/// @return Rotation angle (BAM integers)
+Angle GetSpriteRotation(SpriteList* _list, SpriteID _id);
+
+/// @brief Set the sprites speed of rotation.
+/// @param _list Sprite list pointer
+/// @param _id Sprite id
+/// @param _rotation Rotation speed (BAM integers / second)
+void SetSpriteRotationSpeed(SpriteList* _list, SpriteID _id, Angle _rotationSpeed);
+
+/// @brief Get the sprites speed of rotation.
+/// @param _list Sprite list pointer
+/// @param _id Sprite id
+/// @return Rotation speed (BAM integers / second)
+Angle GetSpriteRotationSpeed(SpriteList* _list, SpriteID _id);
+
+/// @brief Set the sprites blend color.
+/// @param _list Sprite list pointer
+/// @param _id Sprite id
+/// @param _tint Blend color
+void SetSpriteTint(SpriteList* _list, SpriteID _id, Color _tint);
+
+/// @brief Get the sprites blend color.
+/// @param _list Sprite list pointer
+/// @param _id Sprite id
+/// @return Blend color
+Color GetSpriteTint(SpriteList* _list, SpriteID _id);
 
 #endif

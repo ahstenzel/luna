@@ -78,7 +78,8 @@ void scene_first_fn_push(SceneID _id) {
 		.numRows = 1,
 		.numCols = 3,
 		.imageSpeed = 1.0f,
-		.rotation = 0.0f,
+		.rotation = 0,
+		.rotationSpeed = 0,
 		.visible = true
 	};
 	SpriteDesc dsc_spr_test_2 = {
@@ -95,14 +96,15 @@ void scene_first_fn_push(SceneID _id) {
 		.numRows = 1,
 		.numCols = 3,
 		.imageSpeed = 5.0f,
-		.rotation = 0.0f,
+		.rotation = 0,
+		.rotationSpeed = (ANGLE_MAX / 4),
 		.visible = true
 	};
 	SpriteDesc dsc_spr_test_3 = {
 		.texture = tex_spr_test,
 		.position = { 192.0f, 64.0f },
 		.scale = { 2.0f, 2.0f },
-		.origin = { 1.0f, 1.0f },
+		.origin = { 0.5f, 0.5f },
 		.tint = RED,
 		.depth = 0,
 		.imageIndex = 0,
@@ -110,7 +112,8 @@ void scene_first_fn_push(SceneID _id) {
 		.numRows = 1,
 		.numCols = 3,
 		.imageSpeed = 15.0f,
-		.rotation = 20.0f,
+		.rotation = 0,
+		.rotationSpeed = -(ANGLE_MAX / 4),
 		.visible = true
 	};
 	SpriteID test_sprite_1 = CreateSprite(LUNA_SPRITES, dsc_spr_test_1);

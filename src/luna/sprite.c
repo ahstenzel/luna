@@ -13,6 +13,9 @@ void _UpdateSprite(Sprite* _sprite, float _dt) {
 		_sprite->_imageIndex = (_sprite->_imageIndex + 1) % _sprite->_imageNum;
 	}
 
+	// Update rotation
+	_sprite->_rotation += (Angle)(_dt * (float)_sprite->_rotationSpeed);
+
 	// Update scrolling
 	_sprite->_scrollTimer.x = fmodf(_sprite->_scrollTimer.x + _dt, 1.f / _sprite->_scrollSpeed.x);
 	if (_sprite->_scrollTimer.x < _dt) {
@@ -54,7 +57,7 @@ void _DrawSprite(Sprite* _sprite) {
 			width * _sprite->_scale.x,
 			height * _sprite->_scale.y
 		};
-		DrawTexturePro(_sprite->_texture, source, dest, origin, _sprite->_rotation, _sprite->_tint);
+		DrawTexturePro(_sprite->_texture, source, dest, origin, ANGLE_TO_DEG(_sprite->_rotation), _sprite->_tint);
 	}
 	else {
 		// Draw portions of the sprite up to 4 times
@@ -110,16 +113,16 @@ void _DrawSprite(Sprite* _sprite) {
 		};
 
 		if (s1.width != 0.f && s1.height != 0.f) {
-			DrawTexturePro(_sprite->_texture, s1, d1, origin, _sprite->_rotation, _sprite->_tint);
+			DrawTexturePro(_sprite->_texture, s1, d1, origin, ANGLE_TO_DEG(_sprite->_rotation), _sprite->_tint);
 		}
 		if (s2.width != 0.f && s2.height != 0.f) {
-			DrawTexturePro(_sprite->_texture, s2, d2, origin, _sprite->_rotation, _sprite->_tint);
+			DrawTexturePro(_sprite->_texture, s2, d2, origin, ANGLE_TO_DEG(_sprite->_rotation), _sprite->_tint);
 		}
 		if (s3.width != 0.f && s3.height != 0.f) {
-			DrawTexturePro(_sprite->_texture, s3, d3, origin, _sprite->_rotation, _sprite->_tint);
+			DrawTexturePro(_sprite->_texture, s3, d3, origin, ANGLE_TO_DEG(_sprite->_rotation), _sprite->_tint);
 		}
 		if (s4.width != 0.f && s4.height != 0.f) {
-			DrawTexturePro(_sprite->_texture, s4, d4, origin, _sprite->_rotation, _sprite->_tint);
+			DrawTexturePro(_sprite->_texture, s4, d4, origin, ANGLE_TO_DEG(_sprite->_rotation), _sprite->_tint);
 		}
 	}
 	
@@ -455,6 +458,7 @@ SpriteID CreateSprite(SpriteList* _list, SpriteDesc _desc) {
 		._numCols = _desc.numCols,
 		._imageSpeed = _desc.imageSpeed,
 		._rotation = _desc.rotation,
+		._rotationSpeed = _desc.rotationSpeed,
 		._timer = 0.f,
 		._visible = _desc.visible
 	};
@@ -812,4 +816,176 @@ Vector2 GetSpriteScrollOffset(SpriteList* _list, SpriteID _id) {
 		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 	}
 	return Vector2Zero();
+}
+
+void SetSpriteScale(SpriteList* _list, SpriteID _id, Vector2 _scale) {
+	LUNA_RETURN_CLEAR;
+	if (!_list) { 
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return; 
+	}
+
+	size_t* idxPtr = unordered_map_find(_list->_spriteIndices, _id);
+	if (idxPtr) {
+		Sprite* sprite = free_list_get(_list->_sprites, *idxPtr);
+
+		// Update property
+		sprite->_scale = _scale;
+	}
+	else {
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
+	}
+}
+
+Vector2 GetSpriteScale(SpriteList* _list, SpriteID _id) {
+	LUNA_RETURN_CLEAR;
+	if (!_list) { 
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return Vector2Zero(); 
+	}
+
+	size_t* idxPtr = unordered_map_find(_list->_spriteIndices, _id);
+	if (idxPtr) {
+		Sprite* sprite = free_list_get(_list->_sprites, *idxPtr);
+
+		// Get property
+		return sprite->_scale;
+	}
+	else {
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
+	}
+	return Vector2Zero();
+}
+
+void SetSpriteRotation(SpriteList* _list, SpriteID _id, Angle _rotation) {
+	LUNA_RETURN_CLEAR;
+	if (!_list) { 
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return; 
+	}
+
+	size_t* idxPtr = unordered_map_find(_list->_spriteIndices, _id);
+	if (idxPtr) {
+		Sprite* sprite = free_list_get(_list->_sprites, *idxPtr);
+
+		// Update property
+		sprite->_rotation = _rotation;
+	}
+	else {
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
+	}
+}
+
+Angle GetSpriteRotation(SpriteList* _list, SpriteID _id) {
+	LUNA_RETURN_CLEAR;
+	if (!_list) { 
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return ANGLE_MIN; 
+	}
+
+	size_t* idxPtr = unordered_map_find(_list->_spriteIndices, _id);
+	if (idxPtr) {
+		Sprite* sprite = free_list_get(_list->_sprites, *idxPtr);
+
+		// Get property
+		return sprite->_rotation;
+	}
+	else {
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
+	}
+	return ANGLE_MIN;
+}
+
+void SetSpriteRotationSpeed(SpriteList* _list, SpriteID _id, Angle _rotationSpeed) {
+	LUNA_RETURN_CLEAR;
+	if (!_list) { 
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return; 
+	}
+
+	size_t* idxPtr = unordered_map_find(_list->_spriteIndices, _id);
+	if (idxPtr) {
+		Sprite* sprite = free_list_get(_list->_sprites, *idxPtr);
+
+		// Update property
+		sprite->_rotationSpeed = _rotationSpeed;
+	}
+	else {
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
+	}
+}
+
+Angle GetSpriteRotationSpeed(SpriteList* _list, SpriteID _id) {
+	LUNA_RETURN_CLEAR;
+	if (!_list) { 
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return ANGLE_MIN; 
+	}
+
+	size_t* idxPtr = unordered_map_find(_list->_spriteIndices, _id);
+	if (idxPtr) {
+		Sprite* sprite = free_list_get(_list->_sprites, *idxPtr);
+
+		// Get property
+		return sprite->_rotationSpeed;
+	}
+	else {
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
+	}
+	return ANGLE_MIN;
+}
+
+void SetSpriteTint(SpriteList* _list, SpriteID _id, Color _tint) {
+	LUNA_RETURN_CLEAR;
+	if (!_list) { 
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return; 
+	}
+
+	size_t* idxPtr = unordered_map_find(_list->_spriteIndices, _id);
+	if (idxPtr) {
+		Sprite* sprite = free_list_get(_list->_sprites, *idxPtr);
+
+		// Update property
+		sprite->_tint = _tint;
+	}
+	else {
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
+	}
+}
+
+Color GetSpriteTint(SpriteList* _list, SpriteID _id) {
+	LUNA_RETURN_CLEAR;
+	if (!_list) { 
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return BLACK; 
+	}
+
+	size_t* idxPtr = unordered_map_find(_list->_spriteIndices, _id);
+	if (idxPtr) {
+		Sprite* sprite = free_list_get(_list->_sprites, *idxPtr);
+
+		// Get property
+		return sprite->_tint;
+	}
+	else {
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
+	}
+	return BLACK;
 }

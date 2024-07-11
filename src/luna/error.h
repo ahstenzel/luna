@@ -6,7 +6,6 @@
 */
 #include "luna/std/debug.h"
 
-
 //----------------------------------------------------------------------------------
 // Return codes
 //----------------------------------------------------------------------------------
@@ -31,6 +30,7 @@ extern unsigned int _luna_g_return_code;	// Last recorded function return code.
 
 /// @brief Record the current function return code.
 #define LUNA_RETURN_SET(x) _luna_g_return_code = x
+
 
 //----------------------------------------------------------------------------------
 // Error raising

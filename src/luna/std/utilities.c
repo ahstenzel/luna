@@ -3,10 +3,10 @@
 static inline int32_t imin(int32_t x, int32_t y) { return (x < y) ? x : y; }
 static inline int32_t imax(int32_t x, int32_t y) { return (x > y) ? x : y; }
 
-Vector2 Vector2RotatePoint(Vector2 v1, Vector2 v2, float angle) {
+Vector2 Vector2RotatePoint(Vector2 v1, Vector2 v2, Angle angle) {
 	Vector2 result = { 0 };
-	float sinres = sinf(angle);
-	float cosres = cosf(angle);
+	float sinres = sinf(ANGLE_TO_RAD(angle));
+	float cosres = cosf(ANGLE_TO_RAD(angle));
 
 	result.x = v1.x - v2.x;
 	result.y = v1.y - v2.y;
