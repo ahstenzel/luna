@@ -15,6 +15,9 @@ typedef struct {
 	Vector2 _position;			// Position in worldspace
 	Vector2 _scale;				// Scaling factor
 	Vector2 _origin;			// Transformation origin (scaling, rotating etc.)
+	Vector2 _scrollSpeed;		// Sprite lateral scrolling speed (pixels / sec)
+	Vector2 _scrollOffset;		// Current offset for scrolling
+	Vector2 _scrollTimer;		// Internal timer for pacing lateral scrolling
 	Color _tint;				// Blending color
 	const SpriteID _id;			// Unique sprite ID
 	int _depth;					// Draw depth
@@ -22,10 +25,10 @@ typedef struct {
 	unsigned int _imageNum;		// Total animation frames
 	unsigned int _numRows;		// Rows of animation frames in base texture
 	unsigned int _numCols;		// Columns of animation frames in base texture
-	float _imageSpeed;			// Animation speed (seconds per frame of animation)
+	float _imageSpeed;			// Animation speed (frames / sec)
 	float _rotation;			// Rotation angle (degrees)
 	float _timer;				// Internal timer for pacing animation
-	bool _visible;				// Visibility flag
+	bool _visible;				// Whether to draw the sprite
 } Sprite;
 
 /// @brief Descriptor for creating a sprite object
@@ -34,15 +37,17 @@ typedef struct {
 	Vector2 position;			// Position in worldspace
 	Vector2 scale;				// Scaling factor
 	Vector2 origin;				// Transformation origin (scaling, rotating etc.)
+	Vector2 scrollSpeed;		// Sprite lateral scrolling speed (pixels / sec)
+	Vector2 scrollOffset;		// Current offset for sprite lateral scrolling
 	Color tint;					// Blending color
 	int depth;					// Draw depth
 	int imageIndex;				// Current animation frame
 	unsigned int imageNum;		// Total animation frames
 	unsigned int numRows;		// Rows of animation frames in base texture
 	unsigned int numCols;		// Columns of animation frames in base texture
-	float imageSpeed;			// Animation speed (seconds per frame of animation)
+	float imageSpeed;			// Animation speed (frames / sec)
 	float rotation;				// Rotation angle (degrees)
-	bool visible;				// Visibility flag
+	bool visible;				// Whether to draw the sprite
 } SpriteDesc;
 
 /// @brief Organized list of sprites
@@ -68,6 +73,52 @@ typedef struct {
 	SpriteID id;				// Unique sprite ID
 	Sprite* data;				// Sprite data structure
 } SpriteListDepthIt;
+
+/// @brief Generate a sprite descriptor populating a lot of fields with default values.
+#define LUNA_SPRITE_DESC(_texture, _position, _depth) { \
+	.texture = _texture, \
+	.position = _position, \
+	.scale = { 1.f, 1.f }, \
+	.origin = { 0.f, 0.f }, \
+	.scrollSpeed = { 0.f, 0.f }, \
+	.scrollOffset = { 0.f, 0.f }, \
+	.tint = WHITE, \
+	.depth = _depth, \
+	.imageIndex = 0, \
+	.imageNum = 1, \
+	.numRows = 1, \
+	.numCols = 1, \
+	.imageSpeed = 0.f, \
+	.rotation = 0.f, \
+	.visible = true \
+}
+
+/// @brief Generate a sprite descriptor populating some fields with default values.
+#define LUNA_SPRITE_DESC_PRO(_texture, _position, _depth, _imageIndex, _imageSpeed, _imageNum, _numRows, _numCols) { \
+	.texture = _texture, \
+	.position = _position, \
+	.scale = { 1.f, 1.f }, \
+	.origin = { 0.f, 0.f }, \
+	.scrollSpeed = { 0.f, 0.f }, \
+	.scrollOffset = { 0.f, 0.f }, \
+	.tint = WHITE, \
+	.depth = _depth, \
+	.imageIndex = _imageIndex, \
+	.imageNum = _imageNum, \
+	.numRows = _numRows, \
+	.numCols = _numCols, \
+	.imageSpeed = _imageSpeed, \
+	.rotation = 0.f, \
+	.visible = true \
+}
+
+/// @brief Calculate a sprites width, including its scaling.
+/// @param _sprite Sprite pointer
+#define LUNA_SPRITE_WIDTH(_sprite) (_sprite->_texture.width * _sprite->_scale.x / (float)_sprite->_numCols)
+
+/// @brief Calculate a sprites height, including its scaling.
+/// @param _sprite Sprite pointer
+#define LUNA_SPRITE_HEIGHT(_sprite) (_sprite->_texture.height * _sprite->_scale.y / (float)_sprite->_numRows)
 
 /// @brief Update the sprites animation.
 /// @param _sprite Sprite pointer
@@ -201,5 +252,29 @@ void SetSpriteVisible(SpriteList* _list, SpriteID _id, bool _visible);
 /// @param _id Sprite id
 /// @return If true, sprite will be drawn
 bool GetSpriteVisible(SpriteList* _list, SpriteID _id);
+
+/// @brief Set the sprites scroll speed.
+/// @param _list Sprite list pointer
+/// @param _id Sprite id
+/// @param _scrollSpeed Lateral scroll speed
+void SetSpriteScrollSpeed(SpriteList* _list, SpriteID _id, Vector2 _scrollSpeed);
+
+/// @brief Get the sprites scroll speed.
+/// @param _list Sprite list pointer
+/// @param _id Sprite id
+/// @return Scroll speed
+Vector2 GetSpriteScrollSpeed(SpriteList* _list, SpriteID _id);
+
+/// @brief Set the sprites scroll offset.
+/// @param _list Sprite list pointer
+/// @param _id Sprite id
+/// @param _scrollOffset Scroll offset
+void SetSpriteScrollOffset(SpriteList* _list, SpriteID _id, Vector2 _scrollOffset);
+
+/// @brief Get the sprites scroll offset.
+/// @param _list Sprite list pointer
+/// @param _id Sprite id
+/// @return Scroll offset
+Vector2 GetSpriteScrollOffset(SpriteList* _list, SpriteID _id);
 
 #endif

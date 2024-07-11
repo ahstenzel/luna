@@ -7,9 +7,20 @@ void _UpdateSprite(Sprite* _sprite, float _dt) {
 		return; 
 	}
 
-	_sprite->_timer = fmodf(_sprite->_timer + _dt, _sprite->_imageSpeed);
+	// Update animation
+	_sprite->_timer = fmodf(_sprite->_timer + _dt, 1.f / _sprite->_imageSpeed);
 	if (_sprite->_timer < _dt) {
 		_sprite->_imageIndex = (_sprite->_imageIndex + 1) % _sprite->_imageNum;
+	}
+
+	// Update scrolling
+	_sprite->_scrollTimer.x = fmodf(_sprite->_scrollTimer.x + _dt, 1.f / _sprite->_scrollSpeed.x);
+	if (_sprite->_scrollTimer.x < _dt) {
+		_sprite->_scrollOffset.x = fmodf((_sprite->_scrollOffset.x + 1.f), _sprite->_texture.width / (float)_sprite->_numCols);
+	}
+	_sprite->_scrollTimer.y = fmodf(_sprite->_scrollTimer.y + _dt, 1.f / _sprite->_scrollSpeed.y);
+	if (_sprite->_scrollTimer.y < _dt) {
+		_sprite->_scrollOffset.y = fmodf((_sprite->_scrollOffset.y + 1.f), _sprite->_texture.height / (float)_sprite->_numRows);
 	}
 }
 
@@ -24,20 +35,94 @@ void _DrawSprite(Sprite* _sprite) {
 	float height = _sprite->_texture.height / (float)_sprite->_numRows;
 	size_t col = _sprite->_imageIndex % _sprite->_numCols;
 	size_t row = _sprite->_imageIndex / _sprite->_numCols;
-	Rectangle source = {
-		width*col,
-		height*row,
-		width,
-		height
+	Vector2 origin = {
+		_sprite->_origin.x * width * _sprite->_scale.x, 
+		_sprite->_origin.y * height * _sprite->_scale.y
 	};
-	Rectangle dest = {
-		_sprite->_position.x,
-		_sprite->_position.y,
-		width * _sprite->_scale.x,
-		height * _sprite->_scale.y
-	};
-	Vector2 origin = {_sprite->_origin.x * width * _sprite->_scale.x, _sprite->_origin.y * height * _sprite->_scale.y};
-	DrawTexturePro(_sprite->_texture, source, dest, origin, _sprite->_rotation, _sprite->_tint);
+
+	if (VECTOR2_IS_ZERO(_sprite->_scrollOffset)) {
+		// Draw the entire sprite once
+		Rectangle source = {
+			width*col,
+			height*row,
+			width,
+			height
+		};
+		Rectangle dest = {
+			_sprite->_position.x,
+			_sprite->_position.y,
+			width * _sprite->_scale.x,
+			height * _sprite->_scale.y
+		};
+		DrawTexturePro(_sprite->_texture, source, dest, origin, _sprite->_rotation, _sprite->_tint);
+	}
+	else {
+		// Draw portions of the sprite up to 4 times
+		float scrollX = _sprite->_scrollOffset.x;
+		float scrollY = _sprite->_scrollOffset.y;
+		Rectangle s1 = { 
+			.x = width*col,
+			.y = height*row,
+			.width = width - scrollX,
+			.height =height - scrollY
+		};
+		Rectangle s2 = {
+			.x = (width*col) + (width - scrollX),
+			.y = height*row,
+			.width = scrollX,
+			.height = height - scrollY
+		};
+		Rectangle s3 = { 
+			.x = width*col,
+			.y = (height*row) + (height - scrollY),
+			.width = width - scrollX,
+			.height = scrollY
+		};
+		Rectangle s4 = { 
+			.x = (width*col) + (width - scrollX),
+			.y = (height*row) + (height - scrollY),
+			.width = scrollX,
+			.height = scrollY
+		};
+		Rectangle d1 = { 
+			.x = _sprite->_position.x + (scrollX * _sprite->_scale.x),
+			.y = _sprite->_position.y + (scrollY * _sprite->_scale.y),
+			.width = s1.width * _sprite->_scale.x,
+			.height = s1.height * _sprite->_scale.y
+		};
+		Rectangle d2 = { 
+			.x = _sprite->_position.x,
+			.y = _sprite->_position.y + (scrollY * _sprite->_scale.y),
+			.width = s2.width * _sprite->_scale.x,
+			.height = s2.height * _sprite->_scale.y
+		};
+		Rectangle d3 = { 
+			.x = _sprite->_position.x + (scrollX * _sprite->_scale.x),
+			.y = _sprite->_position.y,
+			.width = s3.width * _sprite->_scale.x,
+			.height = s3.height * _sprite->_scale.y
+		};
+		Rectangle d4 = { 
+			.x = _sprite->_position.x,
+			.y = _sprite->_position.y,
+			.width = s4.width * _sprite->_scale.x,
+			.height = s4.height * _sprite->_scale.y
+		};
+
+		if (s1.width != 0.f && s1.height != 0.f) {
+			DrawTexturePro(_sprite->_texture, s1, d1, origin, _sprite->_rotation, _sprite->_tint);
+		}
+		if (s2.width != 0.f && s2.height != 0.f) {
+			DrawTexturePro(_sprite->_texture, s2, d2, origin, _sprite->_rotation, _sprite->_tint);
+		}
+		if (s3.width != 0.f && s3.height != 0.f) {
+			DrawTexturePro(_sprite->_texture, s3, d3, origin, _sprite->_rotation, _sprite->_tint);
+		}
+		if (s4.width != 0.f && s4.height != 0.f) {
+			DrawTexturePro(_sprite->_texture, s4, d4, origin, _sprite->_rotation, _sprite->_tint);
+		}
+	}
+	
 }
 
 SpriteList* _CreateSpriteList(bool _depthSorting) {
@@ -358,6 +443,9 @@ SpriteID CreateSprite(SpriteList* _list, SpriteDesc _desc) {
 		._position = _desc.position,
 		._scale = _desc.scale,
 		._origin = _desc.origin,
+		._scrollSpeed = _desc.scrollSpeed,
+		._scrollOffset = _desc.scrollOffset,
+		._scrollTimer = { 0.f, 0.f },
 		._tint = _desc.tint,
 		._id = id,
 		._depth = _desc.depth,
@@ -372,19 +460,19 @@ SpriteID CreateSprite(SpriteList* _list, SpriteDesc _desc) {
 	};
 	size_t idx = 0;
 	if (!free_list_insert(_list->_sprites, &idx, &spr)) {
-		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to add sprite to list!");
+		LUNA_DEBUG_WARN("Failed to add sprite to list!");
 		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		return ID_NULL;
 	}
 	if (!unordered_map_insert(_list->_spriteIndices, id, &idx)) {
-		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to add sprite to index map!");
+		LUNA_DEBUG_WARN("Failed to add sprite to index map!");
 		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		free_list_remove(_list->_sprites, idx);
 		return ID_NULL;
 	}
 	if (_list->_depthSorting) {
 		if (!priority_queue_push(_list->_spriteDepthOrder, spr._depth, &idx)) {
-			LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to add sprite to depth queue!");
+			LUNA_DEBUG_WARN("Failed to add sprite to depth queue!");
 			LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 			free_list_remove(_list->_sprites, idx);
 			unordered_map_delete(_list->_spriteIndices, id);
@@ -638,4 +726,90 @@ bool GetSpriteVisible(SpriteList* _list, SpriteID _id) {
 		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
 	}
 	return false;
+}
+
+void SetSpriteScrollSpeed(SpriteList* _list, SpriteID _id, Vector2 _scrollSpeed) {
+	LUNA_RETURN_CLEAR;
+	if (!_list) { 
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return; 
+	}
+
+	size_t* idxPtr = unordered_map_find(_list->_spriteIndices, _id);
+	if (idxPtr) {
+		Sprite* sprite = free_list_get(_list->_sprites, *idxPtr);
+
+		// Update property
+		sprite->_scrollSpeed = _scrollSpeed;
+	}
+	else {
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
+	}
+}
+
+Vector2 GetSpriteScrollSpeed(SpriteList* _list, SpriteID _id) {
+	LUNA_RETURN_CLEAR;
+	if (!_list) { 
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return Vector2Zero(); 
+	}
+
+	size_t* idxPtr = unordered_map_find(_list->_spriteIndices, _id);
+	if (idxPtr) {
+		Sprite* sprite = free_list_get(_list->_sprites, *idxPtr);
+
+		// Get property
+		return sprite->_scrollSpeed;
+	}
+	else {
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
+	}
+	return Vector2Zero();
+}
+
+void SetSpriteScrollOffset(SpriteList* _list, SpriteID _id, Vector2 _scrollOffset) {
+	LUNA_RETURN_CLEAR;
+	if (!_list) { 
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return; 
+	}
+
+	size_t* idxPtr = unordered_map_find(_list->_spriteIndices, _id);
+	if (idxPtr) {
+		Sprite* sprite = free_list_get(_list->_sprites, *idxPtr);
+
+		// Update property
+		sprite->_scrollOffset = _scrollOffset;
+	}
+	else {
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
+	}
+}
+
+Vector2 GetSpriteScrollOffset(SpriteList* _list, SpriteID _id) {
+	LUNA_RETURN_CLEAR;
+	if (!_list) { 
+		LUNA_DEBUG_WARN("Invalid sprite list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return Vector2Zero(); 
+	}
+
+	size_t* idxPtr = unordered_map_find(_list->_spriteIndices, _id);
+	if (idxPtr) {
+		Sprite* sprite = free_list_get(_list->_sprites, *idxPtr);
+
+		// Get property
+		return sprite->_scrollOffset;
+	}
+	else {
+		LUNA_DEBUG_WARN("Invalid sprite id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
+	}
+	return Vector2Zero();
 }

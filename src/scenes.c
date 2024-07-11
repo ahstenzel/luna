@@ -66,9 +66,11 @@ void scene_first_fn_push(SceneID _id) {
 	Texture2D tex_spr_test; GetTexture(LUNA_RESOURCES, "sprites/face.png", &tex_spr_test);
 	SpriteDesc dsc_spr_test_1 = {
 		.texture = tex_spr_test,
-		.position = {64.0f, 64.0f},
-		.scale = {2.0f, 2.0f},
-		.origin = {0.0f, 0.0f},
+		.position = { 64.0f, 64.0f },
+		.scale = { 2.0f, 2.0f },
+		.origin = { 0.0f, 0.0f },
+		.scrollSpeed = { 8.f, 8.f },
+		.scrollOffset = { 0.f, 0.f },
 		.tint = WHITE,
 		.depth = 0,
 		.imageIndex = 0,
@@ -81,31 +83,33 @@ void scene_first_fn_push(SceneID _id) {
 	};
 	SpriteDesc dsc_spr_test_2 = {
 		.texture = tex_spr_test,
-		.position = {128.0f, 64.0f},
-		.scale = {2.0f, 2.0f},
-		.origin = {0.5f, 0.5f},
+		.position = { 128.0f, 64.0f },
+		.scale = { 2.0f, 2.0f },
+		.origin = { 0.5f, 0.5f },
+		.scrollSpeed = { 0.f, 0.f },
+		.scrollOffset = { 0.f, 0.f },
 		.tint = PINK,
 		.depth = 0,
 		.imageIndex = 0,
 		.imageNum = 3,
 		.numRows = 1,
 		.numCols = 3,
-		.imageSpeed = 0.5f,
-		.rotation = 10.0f,
+		.imageSpeed = 5.0f,
+		.rotation = 0.0f,
 		.visible = true
 	};
 	SpriteDesc dsc_spr_test_3 = {
 		.texture = tex_spr_test,
-		.position = {192.0f, 64.0f},
-		.scale = {2.0f, 2.0f},
-		.origin = {1.0f, 1.0f},
+		.position = { 192.0f, 64.0f },
+		.scale = { 2.0f, 2.0f },
+		.origin = { 1.0f, 1.0f },
 		.tint = RED,
 		.depth = 0,
 		.imageIndex = 0,
 		.imageNum = 3,
 		.numRows = 1,
 		.numCols = 3,
-		.imageSpeed = 0.25f,
+		.imageSpeed = 15.0f,
 		.rotation = 20.0f,
 		.visible = true
 	};
@@ -122,7 +126,7 @@ void scene_first_fn_update(SceneID _id, float _dt) {
 	}
 	float v = sinf(2 * PI * counter / 4.f);
 	Camera2D* camera = GetActiveCamera(GetSceneCameraList(LUNA_SCENES, _id));
-	camera->target.x = roundf((GetScreenWidth() / 2.f) + (8.f * v));
+	//camera->target.x = roundf((GetScreenWidth() / 2.f) + (8.f * v));
 
 	/*
 	unsigned char out[5] = "....\0";

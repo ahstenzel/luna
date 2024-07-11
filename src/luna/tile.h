@@ -37,7 +37,7 @@ typedef struct {
 	vector_t* _data;			// Container of tile data
 	const TilemapID _id;		// Unique tilemap ID
 	int _depth;					// Draw depth
-	bool _visible;				// Visibility flag
+	bool _visible;				// Whether to draw the tilemap
 } Tilemap;
 
 /// @brief Descriptor for creating a tilemap object
@@ -50,7 +50,7 @@ typedef struct {
 	Vector2i texTileSpacing;	// Space (in pixels) between tiles in the texture
 	Vector2i sceneMapSize;		// Size (in grid squares) of the tile map in the scene
 	int depth;					// Draw depth
-	bool visible;				// Visibility flag
+	bool visible;				// Whether to draw the tilemap
 } TilemapDesc;
 
 /// @brief Organized list of tilemaps

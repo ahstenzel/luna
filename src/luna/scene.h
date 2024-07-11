@@ -28,6 +28,8 @@ typedef void (*ScenePopFPtr)(SceneID);
 /// @brief Individual game scene
 typedef struct {
 	SpriteList* _spriteList;		// List of sprites
+	SpriteList* _backgroundList;	// List of sprites to draw below everything else
+	SpriteList* _foregroundList;	// List of sprites to draw on top of everything else
 	CollisionList* _collisionList;	// List of collisions
 	TilemapList* _tilemapList;		// List of tilemaps
 	CameraList* _cameraList;		// List of cameras
@@ -118,6 +120,11 @@ void PushScene(SceneList* _list, SceneID _id);
 /// @param _list Scene list pointer
 void PopScene(SceneList* _list);
 
+/// @brief Pop the top scene off the stack and immediately push another one on.
+/// @param _list Scene list pointer
+/// @param _id Scene id
+void GotoScene(SceneList* _list, SceneID _id);
+
 /// @brief Get the id of the scene on top of the stack.
 /// @param _list Scene list pointer
 /// @return Scene id
@@ -128,6 +135,18 @@ SceneID GetTopScene(SceneList* _list);
 /// @param _id Scene id
 /// @return Sprite list pointer
 SpriteList* GetSceneSpriteList(SceneList* _list, SceneID _id);
+
+/// @brief Get the background sprite list for the given scene.
+/// @param _list Scene list pointer
+/// @param _id Scene id
+/// @return Sprite list pointer
+SpriteList* GetSceneBackgroundSpriteList(SceneList* _list, SceneID _id);
+
+/// @brief Get the foreground sprite list for the given scene.
+/// @param _list Scene list pointer
+/// @param _id Scene id
+/// @return Sprite list pointer
+SpriteList* GetSceneForegroundSpriteList(SceneList* _list, SceneID _id);
 
 /// @brief Get the collision map for the given scene.
 /// @param _list Scene list pointer
@@ -149,6 +168,12 @@ CameraList* GetSceneCameraList(SceneList* _list, SceneID _id);
 
 /// @brief Get the sprite list for the scene on top of the stack.
 #define LUNA_SPRITES GetSceneSpriteList(LUNA_SCENES, GetTopScene(LUNA_SCENES))
+
+/// @brief Get the background sprite list for the scene on top of the stack.
+#define LUNA_BACKGROUNDS GetSceneBackgroundSpriteList(LUNA_SCENES, GetTopScene(LUNA_SCENES))
+
+/// @brief Get the foreground sprite list for the scene on top of the stack.
+#define LUNA_FOREGROUNDS GetSceneForegroundSpriteList(LUNA_SCENES, GetTopScene(LUNA_SCENES))
 
 /// @brief Get the collision map for the scene on top of the stack.
 #define LUNA_COLLISIONS GetSceneCollisionList(LUNA_SCENES, GetTopScene(LUNA_SCENES))

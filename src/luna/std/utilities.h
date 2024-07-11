@@ -303,4 +303,28 @@ Vector4i Vector4iNegate(Vector4i q);
 // Cast an integer vector to a float vector.
 Vector4 Vector4iCastFloat(Vector4i v);
 
+#define VECTOR2_IS_ZERO(v) ((v).x == 0.f && (v).y == 0.f)
+
+#define VECTOR3_IS_ZERO(v) ((v).x == 0.f && (v).y == 0.f && (v).z == 0.f)
+
+#define VECTOR4_IS_ZERO(v) ((v).x == 0.f && (v).y == 0.f && (v).z == 0.f && (v).w == 0.f)
+
+#define VECTOR2I_IS_ZERO(v) ((v).x == 0 && (v).y == 0)
+
+#define VECTOR3I_IS_ZERO(v) ((v).x == 0 && (v).y == 0 && (v).z == 0)
+
+#define VECTOR4I_IS_ZERO(v) ((v).x == 0 && (v).y == 0 && (v).z == 0 && (v).w == 0)
+
+#define VECTOR2_ANY_ZERO(v) ((v).x == 0.f || (v).y == 0.f)
+
+#define VECTOR3_ANY_ZERO(v) ((v).x == 0.f || (v).y == 0.f || (v).z == 0.f)
+
+#define VECTOR4_ANY_ZERO(v) ((v).x == 0.f || (v).y == 0.f || (v).z == 0.f || (v).w == 0.f)
+
+#define VECTOR2I_ANY_ZERO(v) ((v).x == 0 || (v).y == 0)
+
+#define VECTOR3I_ANY_ZERO(v) ((v).x == 0 || (v).y == 0 || (v).z == 0)
+
+#define VECTOR4I_ANY_ZERO(v) ((v).x == 0 || (v).y == 0 || (v).z == 0 || (v).w == 0)
+
 #endif // LUNA_STD_UTILITIES_H

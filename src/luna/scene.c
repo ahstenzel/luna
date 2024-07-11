@@ -49,8 +49,10 @@ void _DrawSceneList(SceneList* _list) {
 		if (scene) {
 			Camera2D* camera = GetActiveCamera(scene->_cameraList);
 			if (camera) { BeginMode2D(*camera); }
+			_DrawSpriteList(scene->_backgroundList);
 			_DrawTilemapList(scene->_tilemapList);
 			_DrawSpriteList(scene->_spriteList);
+			_DrawSpriteList(scene->_foregroundList);
 			if (camera) { EndMode2D(); }
 		}
 	}
@@ -181,6 +183,8 @@ SceneID CreateScene(SceneList* _list, SceneDesc _desc) {
 	SceneID id = _luna_id_generate();
 	Scene scene = {
 		._spriteList = _CreateSpriteList(_desc.depthSorting),
+		._backgroundList = _CreateSpriteList(_desc.depthSorting),
+		._foregroundList = _CreateSpriteList(_desc.depthSorting),
 		._collisionList = _CreateCollisionList(),
 		._tilemapList = _CreateTilemapList(_desc.depthSorting),
 		._cameraList = _CreateCameraList(),
@@ -191,13 +195,18 @@ SceneID CreateScene(SceneList* _list, SceneDesc _desc) {
 		._id = id
 	};
 	if (!scene._spriteList || !scene._collisionList || !scene._tilemapList) {
+		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to allocate scene containers!");
 		_DestroySpriteList(scene._spriteList);
+		_DestroySpriteList(scene._backgroundList);
+		_DestroySpriteList(scene._foregroundList);
 		_DestroyCollisionList(scene._collisionList);
 		_DestroyTilemapList(scene._tilemapList);
 		_DestroyCameraList(scene._cameraList);
 		return ID_NULL;
 	}
 	if (!unordered_map_insert(_list->_scenes, id, &scene)) {
+		LUNA_DEBUG_WARN("Failed to add scene to list!");
+		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		return ID_NULL;
 	}
 	return id;
@@ -214,6 +223,8 @@ void DestroyScene(SceneList* _list, SceneID _id) {
 	Scene* scene = unordered_map_find(_list->_scenes, _id);
 	if (scene) {
 		_DestroySpriteList(scene->_spriteList);
+		_DestroySpriteList(scene->_backgroundList);
+		_DestroySpriteList(scene->_foregroundList);
 		_DestroyCollisionList(scene->_collisionList);
 		_DestroyTilemapList(scene->_tilemapList);
 		_DestroyCameraList(scene->_cameraList);
@@ -271,6 +282,40 @@ void PopScene(SceneList* _list) {
 	}
 }
 
+void GotoScene(SceneList* _list, SceneID _id) {
+	LUNA_RETURN_CLEAR;
+	// Error check
+	if (!_list) { 
+		LUNA_DEBUG_WARN("Invalid scene list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return; 
+	}
+	Scene* scene = unordered_map_find(_list->_scenes, _id);
+	if (!scene) {
+		LUNA_DEBUG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
+	}
+	
+	// Pop stack if it's not empty
+	SceneID lastId = GetTopScene(_list);
+	if (lastId != ID_NULL) {
+		Scene* lastScene = unordered_map_find(_list->_scenes, lastId);
+		if (lastScene && lastScene->_popFPtr) {
+			lastScene->_popFPtr(lastId);
+		}
+	}
+	stack_pop(_list->_sceneStack);
+
+	// Push new scene
+	stack_push(_list->_sceneStack, &_id);
+	if (scene->_pushFPtr) {
+		scene->_pushFPtr(_id);
+	}
+	if (scene->_topFPtr) {
+		scene->_topFPtr(_id);
+	}
+}
+
 SceneID GetTopScene(SceneList* _list) {
 	LUNA_RETURN_CLEAR;
 	if (!_list) { 
@@ -312,6 +357,50 @@ SpriteList* GetSceneSpriteList(SceneList* _list, SceneID _id) {
 		return NULL; 
 	}
 	return scene->_spriteList;
+}
+
+SpriteList* GetSceneBackgroundSpriteList(SceneList* _list, SceneID _id) {
+	LUNA_RETURN_CLEAR;
+	if (!_list) { 
+		LUNA_DEBUG_WARN("Invalid scene list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return NULL; 
+	}
+	if (_id == ID_NULL) {
+		LUNA_DEBUG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
+		return NULL; 
+	}
+
+	Scene* scene = unordered_map_find(_list->_scenes, _id);
+	if (!scene) {
+		LUNA_DEBUG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
+		return NULL; 
+	}
+	return scene->_backgroundList;
+}
+
+SpriteList* GetSceneForegroundSpriteList(SceneList* _list, SceneID _id) {
+	LUNA_RETURN_CLEAR;
+	if (!_list) { 
+		LUNA_DEBUG_WARN("Invalid scene list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return NULL; 
+	}
+	if (_id == ID_NULL) {
+		LUNA_DEBUG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
+		return NULL; 
+	}
+
+	Scene* scene = unordered_map_find(_list->_scenes, _id);
+	if (!scene) {
+		LUNA_DEBUG_WARN("Invalid scene id (%d)!", (int)_id);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
+		return NULL; 
+	}
+	return scene->_foregroundList;
 }
 
 CollisionList* GetSceneCollisionList(SceneList* _list, SceneID _id) {
