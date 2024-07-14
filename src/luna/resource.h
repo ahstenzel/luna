@@ -34,7 +34,6 @@ typedef struct {
 typedef struct {
 	const char* resourceFile;				// Resource file name
 	const char* resourcePassword;			// Resource file password
-	const char* resourceName;				// Resource identifying name
 } ResourceListDesc;
 
 /// @brief Create a new resource list.
@@ -107,5 +106,35 @@ void GetFont(ResourceList* _list, char* _filename, Font* _font);
 /// @param _filename Mesh file name
 /// @param _mesh Pointer to destination variable
 void GetMesh(ResourceList* _list, char* _filename, Mesh* _mesh);
+
+/// @brief Remove the data file from cache, unloading it from memory.
+/// @param _list Resource list pointer
+/// @param _filename Data file name
+void DeleteData(ResourceList* _list, char* _filename);
+
+/// @brief Remove the text file from cache, unloading it from memory.
+/// @param _list Resource list pointer
+/// @param _filename Text file name
+void DeleteText(ResourceList* _list, char* _filename);
+
+/// @brief Remove the texture file from cache, unloading it from memory.
+/// @param _list Resource list pointer
+/// @param _filename Texture file name
+void DeleteTexture(ResourceList* _list, char* _filename);
+
+/// @brief Remove the wave file from cache, unloading it from memory.
+/// @param _list Resource list pointer
+/// @param _filename Wave file name
+void DeleteWave(ResourceList* _list, char* _filename);
+
+/// @brief Remove the font file from cache, unloading it from memory.
+/// @param _list Resource list pointer
+/// @param _filename Font file name
+void DeleteFont(ResourceList* _list, char* _filename);
+
+/// @brief Remove the mesh file from cache, unloading it from memory.
+/// @param _list Resource list pointer
+/// @param _filename Mesh file name
+void DeleteMesh(ResourceList* _list, char* _filename);
 
 #endif

@@ -45,6 +45,14 @@ ResourceList* _CreateResourceList(ResourceListDesc _desc) {
 
 void _DestroyResourceList(ResourceList* _list) {
 	if (_list) {
+		for(unordered_map_str_it_t* it = unordered_map_str_it(_list->_dataCache); it; unordered_map_str_it_next(it)) {
+			_lunaDataResource* rsc = it->data;
+			free(rsc->_data);
+		}
+		for(unordered_map_str_it_t* it = unordered_map_str_it(_list->_textCache); it; unordered_map_str_it_next(it)) {
+			_lunaTextResource* rsc = it->data;
+			free(rsc->_text);
+		}
 		for(unordered_map_str_it_t* it = unordered_map_str_it(_list->_textureCache); it; unordered_map_str_it_next(it)) {
 			Texture2D* rsc = it->data;
 			UnloadTexture(*rsc);
@@ -454,4 +462,178 @@ void GetMesh(ResourceList* _list, char* _filename, Mesh* _mesh) {
 		LUNA_RETURN_SET(LUNA_RETURN_CONTAINER_FAILURE);
 		return;
 	}
+}
+
+void DeleteData(ResourceList* _list, char* _filename) {
+	LUNA_RETURN_CLEAR;
+	// Error check
+	if (!_list) {
+		LUNA_DEBUG_WARN("Invalid resource list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return;
+	}
+	if (!_filename) {
+		LUNA_DEBUG_WARN("Invalid filename!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_PARAMETER);
+		return;
+	}
+
+	// Check cache and unload from memory
+	_lunaDataResource* rsc = unordered_map_str_find(_list->_dataCache, _filename);
+	if (rsc) {
+		free(rsc->_data);
+	}
+	else {
+		LUNA_DEBUG_WARN("Invalid data block (%s)!", _filename);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_PARAMETER);
+		return;
+	}
+
+	// Remove from cache
+	unordered_map_str_delete(_list->_dataCache, _filename);
+}
+
+void DeleteText(ResourceList* _list, char* _filename) {
+	LUNA_RETURN_CLEAR;
+	// Error check
+	if (!_list) {
+		LUNA_DEBUG_WARN("Invalid resource list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return;
+	}
+	if (!_filename) {
+		LUNA_DEBUG_WARN("Invalid filename!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_PARAMETER);
+		return;
+	}
+
+	// Check cache and unload from memory
+	_lunaTextResource* rsc = unordered_map_str_find(_list->_textCache, _filename);
+	if (rsc) {
+		free(rsc->_text);
+	}
+	else {
+		LUNA_DEBUG_WARN("Invalid text block (%s)!", _filename);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_PARAMETER);
+		return;
+	}
+
+	// Remove from cache
+	unordered_map_str_delete(_list->_textCache, _filename);
+}
+
+void DeleteTexture(ResourceList* _list, char* _filename) {
+	LUNA_RETURN_CLEAR;
+	// Error check
+	if (!_list) {
+		LUNA_DEBUG_WARN("Invalid resource list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return;
+	}
+	if (!_filename) {
+		LUNA_DEBUG_WARN("Invalid filename!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_PARAMETER);
+		return;
+	}
+
+	// Check cache and unload from memory
+	Texture2D* rsc = unordered_map_str_find(_list->_textureCache, _filename);
+	if (rsc) {
+		UnloadTexture(*rsc);
+	}
+	else {
+		LUNA_DEBUG_WARN("Invalid texture (%s)!", _filename);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_PARAMETER);
+		return;
+	}
+
+	// Remove from cache
+	unordered_map_str_delete(_list->_textureCache, _filename);
+}
+
+void DeleteWave(ResourceList* _list, char* _filename) {
+	LUNA_RETURN_CLEAR;
+	// Error check
+	if (!_list) {
+		LUNA_DEBUG_WARN("Invalid resource list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return;
+	}
+	if (!_filename) {
+		LUNA_DEBUG_WARN("Invalid filename!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_PARAMETER);
+		return;
+	}
+
+	// Check cache and unload from memory
+	Wave* rsc = unordered_map_str_find(_list->_waveCache, _filename);
+	if (rsc) {
+		UnloadWave(*rsc);
+	}
+	else {
+		LUNA_DEBUG_WARN("Invalid wave (%s)!", _filename);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_PARAMETER);
+		return;
+	}
+
+	// Remove from cache
+	unordered_map_str_delete(_list->_waveCache, _filename);
+}
+
+void DeleteFont(ResourceList* _list, char* _filename) {
+	LUNA_RETURN_CLEAR;
+	// Error check
+	if (!_list) {
+		LUNA_DEBUG_WARN("Invalid resource list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return;
+	}
+	if (!_filename) {
+		LUNA_DEBUG_WARN("Invalid filename!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_PARAMETER);
+		return;
+	}
+
+	// Check cache and unload from memory
+	Font* rsc = unordered_map_str_find(_list->_fontCache, _filename);
+	if (rsc) {
+		UnloadFont(*rsc);
+	}
+	else {
+		LUNA_DEBUG_WARN("Invalid font (%s)!", _filename);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_PARAMETER);
+		return;
+	}
+
+	// Remove from cache
+	unordered_map_str_delete(_list->_fontCache, _filename);
+}
+
+void DeleteMesh(ResourceList* _list, char* _filename) {
+	LUNA_RETURN_CLEAR;
+	// Error check
+	if (!_list) {
+		LUNA_DEBUG_WARN("Invalid resource list reference!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
+		return;
+	}
+	if (!_filename) {
+		LUNA_DEBUG_WARN("Invalid filename!");
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_PARAMETER);
+		return;
+	}
+
+	// Check cache and unload from memory
+	Mesh* rsc = unordered_map_str_find(_list->_meshCache, _filename);
+	if (rsc) {
+		UnloadMesh(*rsc);
+	}
+	else {
+		LUNA_DEBUG_WARN("Invalid mesh (%s)!", _filename);
+		LUNA_RETURN_SET(LUNA_RETURN_INVALID_PARAMETER);
+		return;
+	}
+
+	// Remove from cache
+	unordered_map_str_delete(_list->_meshCache, _filename);
 }

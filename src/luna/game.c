@@ -3,7 +3,7 @@
 
 Game* _luna_game_instance = NULL;
 
-void CreateGame(SettingsList* _settingsList, ResourceListDesc* _resourceDesc, size_t _numResourceDesc) {
+void CreateGame(SettingsList* _settingsList, ResourceListDesc _resourceDesc) {
 	LUNA_RETURN_CLEAR;
 	LUNA_DEBUG_LOG("===Creating game state===");
 	Game* game = calloc(1, sizeof *game);
@@ -11,6 +11,7 @@ void CreateGame(SettingsList* _settingsList, ResourceListDesc* _resourceDesc, si
 		LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to allocate game state!");
 		goto create_game_failed; 
 	}
+	LUNA_GAME = game;
 
 	// Create scene list
 	LUNA_DEBUG_LOG("Creating scene list");
@@ -28,39 +29,10 @@ void CreateGame(SettingsList* _settingsList, ResourceListDesc* _resourceDesc, si
 		goto create_game_failed;
 	}
 
-	// Copy resource list descriptors
-	LUNA_DEBUG_LOG("Copying resource list descriptors");
-	game->_resourceDescList = vector_create(ResourceListDesc);
-	if (!game->_resourceDescList) {
-		LUNA_ABORT(LUNA_ERROR_STATUS_GENERIC, "Failed to allocate resource file descriptor list!");
-		goto create_game_failed;
-	}
-	if (_numResourceDesc == 0 || !_resourceDesc) {
-		LUNA_DEBUG_WARN("No resource list descriptors provided!");
-		LUNA_RETURN_SET(LUNA_RETURN_INVALID_PARAMETER);
-	}
-	else {
-		for(size_t i=0; i<_numResourceDesc; ++i) {
-			vector_push_back(game->_resourceDescList, &_resourceDesc[i]);
-		}
-	}
-
-	// Create resource list
+	// Create & load resource list
 	LUNA_DEBUG_LOG("Creating resource list");
-	if (vector_size(game->_resourceDescList) > 0) {
-		ResourceListDesc* resourceListDesc = vector_get(game->_resourceDescList, 0);
-		if (resourceListDesc) {
-			game->_resourceList = _CreateResourceList(*resourceListDesc);
-			if (!game->_resourceList) {
-				LUNA_ABORT(LUNA_ERROR_STATUS_BAD_ALLOC, "Failed to create resource list!");
-				goto create_game_failed;
-			}
-		}
-		else {
-			LUNA_DEBUG_WARN("Invalid resource file descriptor (0)!");
-			LUNA_RETURN_SET(LUNA_RETURN_INVALID_PARAMETER);
-		}
-	}
+	game->_resourceDesc = _resourceDesc;
+	game->_resourceList = _CreateResourceList(game->_resourceDesc);
 
 	// Create window
 	LUNA_DEBUG_LOG("Creating window");
@@ -70,7 +42,6 @@ void CreateGame(SettingsList* _settingsList, ResourceListDesc* _resourceDesc, si
 		"GAME"
 	);
 	SetTargetFPS(60);
-	LUNA_GAME = game;
 	return;
 
 create_game_failed:
@@ -78,7 +49,6 @@ create_game_failed:
 		_DestroySceneList(game->_sceneList);
 		_DestroyResourceList(game->_resourceList);
 		_DestroyInputSettingsList(game->_settingsList->_inputSettingsList);
-		vector_destroy(game->_resourceDescList);
 	}
 	free(game);
 	return;
@@ -90,7 +60,6 @@ void DestroyGame() {
 		_DestroySceneList(LUNA_SCENES);
 		_DestroyResourceList(LUNA_RESOURCES);
 		_DestroyInputSettingsList(LUNA_INPUTS);
-		vector_destroy(LUNA_GAME->_resourceDescList);
 		free(LUNA_GAME);
 	}
 }
@@ -115,80 +84,6 @@ void UpdateGame() {
 		EndDrawing();
 	}
 	CloseWindow();
-}
-
-void LoadResourceFileByName(const char* _name) {
-	LUNA_RETURN_CLEAR;
-	// Error check
-	if (!LUNA_GAME) { 
-		LUNA_DEBUG_WARN("Invalid game state reference!");
-		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
-		return; 
-	}
-
-	// Search list for matching name
-	for(size_t i=0; i<vector_size(LUNA_GAME->_resourceDescList); ++i) {
-		ResourceListDesc* resourceListDesc = vector_get(LUNA_GAME->_resourceDescList, i);
-		if (resourceListDesc) {
-			if (strcmp(_name, resourceListDesc->resourceName)) {
-				_LoadResourceFile(*resourceListDesc);
-				return;
-			}
-			else {
-				LUNA_DEBUG_WARN("Failed to find a resource list with name (%s)", _name);
-				LUNA_RETURN_SET(LUNA_RETURN_INVALID_PARAMETER);
-			}
-		}
-		else {
-			LUNA_DEBUG_WARN("Invalid resource file descriptor (%d)!", (int)i);
-			LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
-		}
-	}
-}
-
-void LoadResourceFileByIndex(size_t _idx) {
-	LUNA_RETURN_CLEAR;
-	// Error check
-	if (!LUNA_GAME) { 
-		LUNA_DEBUG_WARN("Invalid game state reference!");
-		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
-		return; 
-	}
-
-	if (_idx < vector_size(LUNA_GAME->_resourceDescList)) {
-		ResourceListDesc* resourceListDesc = vector_get(LUNA_GAME->_resourceDescList, _idx);
-		if (resourceListDesc) {
-			_LoadResourceFile(*resourceListDesc);
-		}
-		else {
-			LUNA_DEBUG_WARN("Invalid resource file descriptor (%d)!", (int)_idx);
-			LUNA_RETURN_SET(LUNA_RETURN_INVALID_ID);
-		}
-	}
-	LUNA_DEBUG_WARN("Resource list (%d) does not exist, only (%d) descriptors are registered", 
-		(int)_idx, 
-		(int)vector_size(LUNA_GAME->_resourceDescList)
-	);
-	LUNA_RETURN_SET(LUNA_RETURN_INVALID_PARAMETER);
-}
-
-void _LoadResourceFile(ResourceListDesc _desc) {
-	// Error check
-	if (!LUNA_GAME) { 
-		LUNA_DEBUG_WARN("Invalid game state reference!");
-		LUNA_RETURN_SET(LUNA_RETURN_INVALID_REFERENCE);
-		return; 
-	}
-
-	// Create new resource list
-	ResourceList* list = _CreateResourceList(_desc);
-	if (!list) {
-		LUNA_ABORT(LUNA_ERROR_STATUS_FILESYS, "Failed to load resource file (%s)!", _desc.resourceFile);
-		return;
-	}
-	_DestroyResourceList(LUNA_RESOURCES);
-	LUNA_RESOURCES = list;
-	return;
 }
 
 static int settings_ini_handler(void* user, const char* section, const char* name, const char* value) {

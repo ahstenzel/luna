@@ -7,14 +7,13 @@ int main() {
 	LoadSettingsFile("settings.ini", settings);
 
 	// Define resource files
-	ResourceListDesc resourceLists = {
+	ResourceListDesc resourceDesc = {
 		.resourceFile = "luna.rres",
-		.resourcePassword = "password12345",
-		.resourceName = "default"
+		.resourcePassword = "password12345"
 	};
 
 	// Initialize game state
-	CreateGame(settings, &resourceLists, 1);
+	CreateGame(settings, resourceDesc);
 	GameRegisterScenes();
 
 	// Run game

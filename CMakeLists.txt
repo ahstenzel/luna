@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.13)
 project(luna)
 
 # Add source files
@@ -50,17 +50,18 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIR}")
 add_executable(luna ${game_src} ${luna_src} ${raylib_src} ${ext_src})
 
 # Add dependencies
-target_include_directories(luna PUBLIC "src")
-find_library(
-	RAYLIB_LIB NAMES 
-	"libraylib"
-	PATHS "lib/${OS}/${GEN}"
-)
-target_link_libraries(luna PUBLIC ${RAYLIB_LIB} opengl32 gdi32 winmm)
+set(LIB_DIR "${PROJECT_SOURCE_DIR}/lib/${OS}/${GEN}/$<IF:$<CONFIG:Debug>,Debug,Release>")
+target_include_directories(luna PUBLIC "${PROJECT_SOURCE_DIR}/src")
+target_link_directories(luna PUBLIC ${LIB_DIR})
+target_link_libraries(luna PUBLIC raylib opengl32 gdi32 winmm)
 
 # Copy resource files
+set(DEPLOY_FILES
+	${game_rsc}
+	"$<IF:$<CONFIG:Debug>,${LIB_DIR}/raylib.pdb,>"
+)
 add_custom_command(TARGET luna POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy ${game_rsc} "${OUTPUT_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E copy ${DEPLOY_FILES} "${OUTPUT_DIR}"
 )
 
 # Platform configuration
