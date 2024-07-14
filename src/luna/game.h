@@ -33,9 +33,10 @@ typedef struct {
 extern Game* _luna_game_instance;
 
 /// @brief Create a game instance using the provided settings and resource files.
+/// @param _name Window title bar name
 /// @param _settingsList Structure containing all game settings
 /// @param _resourceDesc Resource list descriptors
-void CreateGame(SettingsList* _settingsList, ResourceListDesc _resourceDesc);
+void CreateGame(const char* _name, SettingsList* _settingsList, ResourceListDesc _resourceDesc);
 
 /// @brief Deallocate a game instance.
 void DestroyGame();

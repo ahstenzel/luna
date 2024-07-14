@@ -3,7 +3,7 @@
 
 Game* _luna_game_instance = NULL;
 
-void CreateGame(SettingsList* _settingsList, ResourceListDesc _resourceDesc) {
+void CreateGame(const char* _name, SettingsList* _settingsList, ResourceListDesc _resourceDesc) {
 	LUNA_RETURN_CLEAR;
 	LUNA_DEBUG_LOG("===Creating game state===");
 	Game* game = calloc(1, sizeof *game);
@@ -39,7 +39,7 @@ void CreateGame(SettingsList* _settingsList, ResourceListDesc _resourceDesc) {
 	InitWindow(
 		(int)game->_settingsList->_videoSettingsList->_width, 
 		(int)game->_settingsList->_videoSettingsList->_height, 
-		"GAME"
+		_name
 	);
 	SetTargetFPS(60);
 	return;

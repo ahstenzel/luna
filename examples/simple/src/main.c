@@ -1,4 +1,8 @@
-#include "scenes.h"
+#include "luna/game.h"
+
+void scene_first_fn_push(SceneID _id);
+void scene_first_fn_update(SceneID _id, float _dt);
+void scene_first_fn_pop(SceneID _id);
 
 SceneID scene_first;
 SceneDesc scene_first_desc = {
@@ -144,4 +148,28 @@ void scene_first_fn_update(SceneID _id, float _dt) {
 
 void scene_first_fn_pop(SceneID _id) {
 	LUNA_DEBUG_LOG("Pop!");
+}
+
+int main() {
+	// Load settings
+	SettingsList* settings = GenerateDefaultSettings();
+	LoadSettingsFile("settings.ini", settings);
+
+	// Define resource files
+	ResourceListDesc resourceDesc = {
+		.resourceFile = "example_simple.rres",
+		.resourcePassword = "password12345"
+	};
+
+	// Initialize game state
+	CreateGame("Simple", settings, resourceDesc);
+	GameRegisterScenes();
+
+	// Run game
+	UpdateGame();
+	DestroyGame();
+
+	// Cleanup
+	free(settings);
+	return 0;
 }
