@@ -4,11 +4,11 @@
 
 #if defined(LUNA_DEBUG) && !defined(LUNA_SUPPRESS_LOG)
 	#include <stdio.h>
-	#if defined(LUNA_CMP_MSVC)
+	#if defined(LUNA_OS_WINDOWS)
 		#define WIN32_LEAN_AND_MEAN
 		#include <Windows.h>
 		#undef WIN32_LEAN_AND_MEAN
-	#elif defined(LUNA_CMP_GCC) || defined(LUNA_CMP_CLANG)
+	#else
 		#include <execinfo.h>
 	#endif
 #endif
