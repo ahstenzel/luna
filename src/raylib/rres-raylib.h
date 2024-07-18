@@ -202,7 +202,7 @@ void *LoadDataFromResource(rresResourceChunk chunk, unsigned int *size)
 char *LoadTextFromResource(rresResourceChunk chunk)
 {
     char *text = NULL;
-    int codeLang = 0;
+    unsigned int codeLang = 0;
 
     if (rresGetDataType(chunk.info.type) == RRES_DATA_TEXT)       // Text data
     {

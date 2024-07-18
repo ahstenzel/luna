@@ -11,6 +11,9 @@
 			"binaryDir": "${sourceDir}/out/build/${presetName}",
 			"cacheVariables": {
 				"CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+			},
+			"warnings": {
+				"unusedCli": false
 			}
 		},
 		{
@@ -42,7 +45,7 @@
 			}
 		},
 		{
-			"name": "base-gen-msvc",
+			"name": "base-gen-msvc2022",
 			"hidden": true,
 			"generator": "Visual Studio 17 2022",
 			"cacheVariables": {
@@ -54,7 +57,31 @@
 			"hidden": true,
 			"generator": "MinGW Makefiles",
 			"cacheVariables": {
-				"GEN": "mingw"
+				"GEN": "mingw",
+				"CMAKE_C_COMPILER": "gcc",
+				"CMAKE_CXX_COMPILER": "g++"
+			},
+			"environment": {
+				"PATH": "C:/msys64/ucrt64/bin;$penv{PATH}"
+			}
+		},
+		{
+			"name": "base-gen-clang",
+			"hidden": true,
+			"generator": "MinGW Makefiles",
+			"cacheVariables": {
+				"GEN": "clang",
+				"CMAKE_C_COMPILER": "clang",
+				"CMAKE_CXX_COMPILER": "clang++",
+				"CMAKE_C_FLAGS": "-Wno-pointer-sign"
+			},
+			"environment": {
+				"PATH": "C:/msys64/clang64/bin;$penv{PATH}"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"intelliSenseMode": "windows-clang-x64"
+				}
 			}
 		},
 		{
@@ -103,8 +130,8 @@
 		},
 		{
 			"name": "windows-mingw-debug",
-			"displayName": "Windows (MinGW) [Debug]",
-			"description": "Target Windows with a MinGW environment.",
+			"displayName": "Windows (MSYS MinGW) [Debug]",
+			"description": "Target Windows with an MSYS MinGW environment.",
 			"inherits": [
 				"base",
 				"base-os-windows",
@@ -114,8 +141,8 @@
 		},
 		{
 			"name": "windows-mingw-release",
-			"displayName": "Windows (MinGW) [Release]",
-			"description": "Target Windows with a MinGW environment.",
+			"displayName": "Windows (MSYS MinGW) [Release]",
+			"description": "Target Windows with an MSYS MinGW environment.",
 			"inherits": [
 				"base",
 				"base-os-windows",
@@ -124,23 +151,45 @@
 			]
 		},
 		{
-			"name": "windows-msvc-debug",
-			"displayName": "Windows (MSVC) [Debug]",
-			"description": "Target Windows with a Visual Studio environment.",
+			"name": "windows-clang-debug",
+			"displayName": "Windows (MSYS Clang) [Debug]",
+			"description": "Target Windows with an MSYS Clang environment.",
 			"inherits": [
 				"base",
 				"base-os-windows",
-				"base-gen-msvc"
+				"base-gen-clang",
+				"base-cfg-debug"
+			]
+		},
+		{
+			"name": "windows-clang-release",
+			"displayName": "Windows (MSYS Clang) [Release]",
+			"description": "Target Windows with an MSYS Clang environment.",
+			"inherits": [
+				"base",
+				"base-os-windows",
+				"base-gen-clang",
+				"base-cfg-release"
+			]
+		},
+		{
+			"name": "windows-msvc-debug",
+			"displayName": "Windows (MSVC 2022) [Debug]",
+			"description": "Target Windows with a Visual Studio 17 2022 environment.",
+			"inherits": [
+				"base",
+				"base-os-windows",
+				"base-gen-msvc2022"
 			]
 		},
 		{
 			"name": "windows-msvc-release",
-			"displayName": "Windows (MSVC) [Release]",
-			"description": "Target Windows with a Visual Studio environment.",
+			"displayName": "Windows (MSVC 2022) [Release]",
+			"description": "Target Windows with a Visual Studio 17 2022 environment.",
 			"inherits": [
 				"base",
 				"base-os-windows",
-				"base-gen-msvc"
+				"base-gen-msvc2022"
 			]
 		}
 	],
@@ -148,29 +197,43 @@
 		{
 			"name": "windows-msvc-debug",
 			"displayName": "Windows Executable (Debug)",
-			"description": "Build with Debug configuration in Visual Studio environment.",
+			"description": "Build with Debug configuration in Visual Studio 17 2022 environment.",
 			"configurePreset": "windows-msvc-debug",
 			"configuration": "Debug"
 		},
 		{
 			"name": "windows-msvc-release",
 			"displayName": "Windows Executable (Release)",
-			"description": "Build with Release configuration in Visual Studio environment.",
+			"description": "Build with Release configuration in Visual Studio 17 2022 environment.",
 			"configurePreset": "windows-msvc-release",
 			"configuration": "Release"
 		},
 		{
 			"name": "windows-mingw-debug",
 			"displayName": "Windows Executable (Debug)",
-			"description": "Build with Debug configuration in MinGW environment.",
+			"description": "Build with Debug configuration in an MSYS MinGW environment.",
 			"configurePreset": "windows-mingw-debug",
 			"configuration": "Debug"
 		},
 		{
 			"name": "windows-mingw-release",
 			"displayName": "Windows Executable (Release)",
-			"description": "Build with Release configuration in MinGW environment.",
+			"description": "Build with Release configuration in an MSYS MinGW environment.",
 			"configurePreset": "windows-mingw-release",
+			"configuration": "Release"
+		},
+		{
+			"name": "windows-clang-debug",
+			"displayName": "Windows Executable (Debug)",
+			"description": "Build with Debug configuration in an MSYS Clang environment.",
+			"configurePreset": "windows-clang-debug",
+			"configuration": "Debug"
+		},
+		{
+			"name": "windows-clang-release",
+			"displayName": "Windows Executable (Release)",
+			"description": "Build with Release configuration in an MSYS Clang environment.",
+			"configurePreset": "windows-clang-release",
 			"configuration": "Release"
 		},
 		{

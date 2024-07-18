@@ -56,5 +56,11 @@ if (OS STREQUAL "windows")
 			LINK_FLAGS_DEBUG "-Wl,-subsystem,console"
 			LINK_FLAGS_RELEASE "-Wl,-subsystem,windows"
 		)
+	elseif(GEN STREQUAL "clang")
+		set_target_properties(
+			example_simple PROPERTIES 
+			LINK_FLAGS_DEBUG "-Wl,/subsystem:console"
+			LINK_FLAGS_RELEASE "-Wl,/subsystem:windows,/entry:mainCRTStartup"
+		)
 	endif()
 endif()
