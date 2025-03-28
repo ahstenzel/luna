@@ -1,0 +1,11 @@
+set(SDL_TEST OFF)
+add_subdirectory(SDL EXCLUDE_FROM_ALL)
+
+list(APPEND CMAKE_MODULE_PATH ${SDL_SDL_INSTALL_CMAKEDIR})
+set(FPHSA_NAME_MISMATCHED ON)
+set(SDLSHADERCROSS_VENDORED ON)
+set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
+add_subdirectory(SDL_shadercross EXCLUDE_FROM_ALL)
+
+add_library(vendor INTERFACE)
+target_link_libraries(vendor INTERFACE SDL3_shadercross::SDL3_shadercross SDL3::SDL3)
