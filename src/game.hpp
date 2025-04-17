@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common.hpp"
+#include "resources.hpp"
 
 class Game {
 public:
@@ -14,12 +15,12 @@ public:
 private:
 	static void Cleanup();
 
-	static bool quitFlag;
-	static SDL_Window* sdlWindow;
-	static SDL_GPUDevice* sdlGPUDevice;
-	static SDL_GPUSampler* sdlGPUSampler;
-	static SDL_GPUTexture* sdlGPUTexture;
-	static SDL_GPUGraphicsPipeline* sdlSpriteRenderPipeline;
-	static SDL_GPUTransferBuffer* sdlSpriteDataTransferBuffer;
-	static SDL_GPUBuffer* sdlSpriteDataBuffer;
+	static bool m_quitFlag;
+	static SDL_Window* m_sdlWindow;
+	static SDL_GPUDevice* m_sdlGPUDevice;
+	static SDL_GPUSampler* m_sdlGPUSampler;
+	static SDL_GPUTexture* m_sdlGPUTexture;
+	static SDL_GPUGraphicsPipeline* m_sdlSpriteRenderPipeline;
+	static SDL_GPUTransferBuffer* m_sdlSpriteDataTransferBuffer;
+	static SDL_GPUBuffer* m_sdlSpriteDataBuffer;
 };

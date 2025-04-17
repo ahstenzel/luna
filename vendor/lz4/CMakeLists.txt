@@ -1,0 +1,1 @@
+add_library(liblz4 STATIC "lz4.c")

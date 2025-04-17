@@ -1,7 +1,10 @@
-[submodule "vendor/SDL"]
+[submodule "SDL"]
 	path = vendor/SDL
 	url = https://github.com/libsdl-org/SDL.git
-[submodule "vendor/SDL_shadercross"]
+	branch = main
+	ignore = dirty
+[submodule "SDL_shadercross"]
 	path = vendor/SDL_shadercross
 	url = https://github.com/libsdl-org/SDL_shadercross.git
+	branch = main
 	ignore = dirty
