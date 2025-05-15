@@ -88,29 +88,6 @@ if exist "vendor\SDL_shadercross\external\Get-GitModules.ps1" (
 	powershell -executionpolicy remotesigned -File "vendor\SDL_shadercross\external\Get-GitModules.ps1"
 )
 
-rem Modify SDL CMake policy (temp workaround for outdated behavior)
-set target_file="vendor\SDL_shadercross\CMakeLists.txt"
-if not exist %target_file% (
-	echo Could not find SDL_shadercross CMakeLists
-	goto :MODIFY_SDL_DONE
-)
-set temp_file="vendor\SDL_shadercross\CMakeLists.txt.tmp"
-if exist %temp_file% (
-	goto :MODIFY_SDL_DONE
-)
-
-echo Modifying SDL_shadercross CMakeLists...
-ren %target_file% CMakeLists.txt.tmp
-set prev=
-for /f "usebackq tokens=*" %%L in (%temp_file%) do (
-	echo !prev! | >nul findstr /R "cmake_minimum_required" && (
-		echo(cmake_policy^(SET CMP0024 OLD^) >> %target_file%
-	)
-	echo %%L >> %target_file%
-	set prev=%%L
-)
-:MODIFY_SDL_DONE
-
 rem Modify base64 CMake policy (temp workaround for outdated behavior)
 set target_file="vendor\base64\CMakeLists.txt"
 if not exist %target_file% (
