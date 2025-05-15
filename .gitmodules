@@ -8,3 +8,13 @@
 	url = https://github.com/libsdl-org/SDL_shadercross.git
 	branch = main
 	ignore = dirty
+[submodule "base64"]
+	path = vendor/base64
+	url = https://github.com/aklomp/base64.git
+	branch = master
+	ignore = dirty
+[submodule "json"]
+	path = vendor/json
+	url = https://github.com/nlohmann/json.git
+	branch = develop
+	ignore = dirty

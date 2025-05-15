@@ -2,6 +2,9 @@
 
 #include "common.hpp"
 #include "resources.hpp"
+#include "render.hpp"
+
+namespace luna {
 
 class Game {
 public:
@@ -18,9 +21,8 @@ private:
 	static bool m_quitFlag;
 	static SDL_Window* m_sdlWindow;
 	static SDL_GPUDevice* m_sdlGPUDevice;
-	static SDL_GPUSampler* m_sdlGPUSampler;
-	static SDL_GPUTexture* m_sdlGPUTexture;
-	static SDL_GPUGraphicsPipeline* m_sdlSpriteRenderPipeline;
-	static SDL_GPUTransferBuffer* m_sdlSpriteDataTransferBuffer;
-	static SDL_GPUBuffer* m_sdlSpriteDataBuffer;
+	static Renderer* m_renderer;
+	
 };
+
+} // luna

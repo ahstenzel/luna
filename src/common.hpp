@@ -21,24 +21,15 @@
 #define ECB 0
 #define CTR 0
 #include <aes/aes.h>
+#include <libbase64.h>
 
-// =========================================================================== Defines
-// Engine version
-#define LUNA_VERSION_MAJOR 1
-#define LUNA_VERSION_MINOR 0
-#define LUNA_VERSION_PATCH 0
+// Luna includes
+#include "std/platform.hpp"
+#include "std/itsort.hpp"
+#include "std/buffer.hpp"
+#include "std/sorted_list.hpp"
 
-// Resource file version
-#define APOLLO_VERSION_MAJOR 1
-#define APOLLO_VERSION_MINOR 0
-#define APOLLO_VERSION_PATCH 0
-
-#define STRINGIFY_(X) #X
-#define STRINGIFY(X) STRINGIFY_(X)
-#define MAKE_VERSION_STR(major, minor, patch) (STRINGIFY(major) "." STRINGIFY(minor) "." STRINGIFY(patch))
-
-#define LUNA_VERSION_STR MAKE_VERSION_STR(LUNA_VERSION_MAJOR, LUNA_VERSION_MINOR, LUNA_VERSION_PATCH)
-#define APOLLO_VERSION_STR MAKE_VERSION_STR(APOLLO_VERSION_MAJOR, APOLLO_VERSION_MINOR, APOLLO_VERSION_PATCH)
+namespace luna {
 
 // =========================================================================== Helper Functions
 /// <summary>
@@ -55,6 +46,15 @@ std::uint64_t RoundUp(std::uint64_t num, std::uint64_t multiple);
 /// <param name="num"></param>
 /// <returns></returns>
 std::uint64_t NextPow2(std::uint64_t num);
+
+/// <summary>
+/// Wrap the given value around the range [lower, upper), handling negative values.
+/// </summary>
+/// <param name="val">Value to wrap</param>
+/// <param name="lower">Lower bound (inclusive)</param>
+/// <param name="upper">Upper bound (exclusive)</param>
+/// <returns></returns>
+std::int32_t Wrap(std::int32_t val, std::int32_t lower, std::int32_t upper);
 
 /// <summary>
 /// Tokenize a string using the given delimiter.
@@ -83,3 +83,5 @@ bool VersionStringMatch(const std::string& v1, const std::string& v2, bool exact
 std::uint32_t Crc32Calculate(const void* data, std::size_t length, std::uint32_t previousCRC = 0);
 
 extern const std::uint32_t crc32Lookup[256];
+
+} // luna

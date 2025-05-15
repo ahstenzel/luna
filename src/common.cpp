@@ -1,5 +1,7 @@
 #include "common.hpp"
 
+namespace luna {
+
 std::uint64_t RoundUp(std::uint64_t num, std::uint64_t multiple) {
 	if (multiple == 0) { return num; }
 	std::uint64_t r = num % multiple;
@@ -20,11 +22,17 @@ std::uint64_t NextPow2(std::uint64_t num) {
 	return num;
 }
 
+std::int32_t Wrap(std::int32_t val, std::int32_t lower, std::int32_t upper) {
+	std::int32_t range = upper - lower + 1;
+	if (val < lower) { val += range * ((lower - val) / range + 1); }
+	return lower + (val - lower) % range;
+}
+
 std::vector<std::string> StringSplit(const std::string& str, const std::string& delim) {
 	std::vector<std::string> tokens;
 	std::size_t last = 0;
 	std::size_t next = 0;
-	while ((next = str.find(delim, last)) != std::string::npos) { 
+	while ((next = str.find(delim, last)) != std::string::npos) {
 		tokens.push_back(str.substr(last, next - last));
 		last = next + 1;
 	}
@@ -92,3 +100,5 @@ const std::uint32_t crc32Lookup[256] = {
 	0xBDBDF21C,0xCABAC28A,0x53B39330,0x24B4A3A6,0xBAD03605,0xCDD70693,0x54DE5729,0x23D967BF,
 	0xB3667A2E,0xC4614AB8,0x5D681B02,0x2A6F2B94,0xB40BBE37,0xC30C8EA1,0x5A05DF1B,0x2D02EF8D,
 };
+
+} // luna

@@ -1,5 +1,54 @@
 #include "resources.hpp"
 
+namespace luna {
+
+static Buffer ProcessAssetBlock(const Buffer& block) {
+	// Get header data
+	std::uint32_t headerCRC = block.get_uint32(4);
+	std::string headerName = block.get_string(16, 32);
+	std::uint64_t headerUncompressedSize = block.get_uint64(64);
+	std::uint64_t headerCompressedSize = block.get_uint64(72);
+
+	// Decompress data
+	Buffer assetData = block.get_chunk(80, headerCompressedSize);
+	if (headerUncompressedSize != headerCompressedSize) {
+		Buffer uncompressedAssetData(headerUncompressedSize, 0);
+		if (LZ4_decompress_safe((char*)assetData.data(), (char*)uncompressedAssetData.data(), (int)headerCompressedSize, (int)headerUncompressedSize) != headerUncompressedSize) {
+			std::stringstream msg;
+			msg << "Failed to decompress asset (" << headerName << ")";
+			throw std::exception(msg.str().c_str());
+		}
+		using detail::swap;
+		swap(assetData, uncompressedAssetData);
+	}
+
+	// Verify CRC
+	std::uint32_t dataCRC = Crc32Calculate(assetData.data(), headerUncompressedSize);
+	if (headerCRC != dataCRC) {
+		std::stringstream msg;
+		msg << "Failed to decode asset (" << headerName << ")";
+		throw std::exception(msg.str().c_str());
+	}
+
+	return assetData;
+}
+
+ResourceID ResourceBase::GetID() const {
+	return m_resourceID;
+}
+
+ResourceID ResourceBase::GetFileID() const {
+	return m_resourceFileID;
+}
+
+void ResourceBase::SetID(ResourceID id) {
+	m_resourceID = id;
+}
+
+void ResourceBase::SetFileID(ResourceID id) {
+	m_resourceFileID = id;
+}
+
 std::string ResourceBase::ErrorMessage() const {
 	return m_errorMessage;
 }
@@ -10,41 +59,14 @@ void ResourceTexture::Load(ResourceFile* file, const Buffer& block) {
 
 	try {
 		// Validate
-		if (!file) {
-			throw std::exception("Invalid resource file reference");
-		}
-
-		// Get header data
-		std::uint32_t headerCRC = block.get_uint32(4);
-		std::string headerName = block.get_string(16, 32);
-		std::uint64_t headerUncompressedSize = block.get_uint64(64);
-		std::uint64_t headerCompressedSize = block.get_uint64(72);
-
-		// Decompress data
-		Buffer assetData = block.get_chunk(80, headerCompressedSize);
-		if (headerUncompressedSize != headerCompressedSize) {
-			Buffer uncompressedAssetData(headerUncompressedSize, 0);
-			if (LZ4_decompress_safe((char*)assetData.data(), (char*)uncompressedAssetData.data(), (int)headerCompressedSize, (int)headerUncompressedSize) != headerUncompressedSize) {
-				std::stringstream msg;
-				msg << "Failed to decompress asset (" << headerName << ")";
-				throw std::exception(msg.str().c_str());
-			}
-			using detail::swap;
-			swap(assetData, uncompressedAssetData);
-		}
-
-		// Verify CRC
-		std::uint32_t dataCRC = Crc32Calculate(assetData.data(), headerUncompressedSize);
-		if (headerCRC != dataCRC) {
-			std::stringstream msg;
-			msg << "Failed to decode asset (" << headerName << ")";
-			throw std::exception(msg.str().c_str());
-		}
+		if (!file) { throw std::exception("Invalid resource file reference"); }
+		Buffer assetData = ProcessAssetBlock(block);
 
 		// Validate texture page
+		m_resourceFileID = file->GetID();
 		m_texturePageIndex = assetData.get_uint32(0);
 		m_texturePage = file->GetTexturePage(m_texturePageIndex);
-		if (!m_texturePage) { 
+		if (!m_texturePage) {
 			std::stringstream msg;
 			msg << "Invalid texture page (" << m_texturePageIndex << ")";
 			throw std::exception(msg.str().c_str());
@@ -94,16 +116,70 @@ std::size_t ResourceTexture::GetTexturePageIndex() const {
 	return m_texturePageIndex;
 }
 
+std::uint32_t ResourceTexture::GetXOffset(std::int32_t animationFrame) const {
+	if (animationFrame < 0) { return m_texturePageXOffset; }
+	else {
+		std::uint32_t i = (std::uint32_t)animationFrame % m_animationFrameCount;
+		std::uint32_t cols = (std::uint32_t)std::ceilf((float)m_animationFrameCount / m_animationFramesPerRow);
+		std::uint32_t x = i % cols;
+		return m_texturePageXOffset + (x * (m_frameWidth + m_animationXSpacing));
+	}
+}
+
+std::uint32_t ResourceTexture::GetYOffset(std::int32_t animationFrame) const {
+	if (animationFrame < 0) { return m_texturePageXOffset; }
+	else {
+		std::uint32_t i = (std::uint32_t)animationFrame % m_animationFrameCount;
+		std::uint32_t cols = (std::uint32_t)std::ceilf((float)m_animationFrameCount / m_animationFramesPerRow);
+		std::uint32_t y = i / cols;
+		return m_texturePageYOffset + (y * (m_frameHeight + m_animationYSpacing));
+	}
+}
+
+bool ResourceSound::IsValid() const {
+	return false;
+}
+
 void ResourceSound::Load(ResourceFile* file, const Buffer& block) {
 
+}
+
+bool ResourceMesh::IsValid() const {
+	return false;
 }
 
 void ResourceMesh::Load(ResourceFile* file, const Buffer& block) {
 
 }
 
-void ResourceText::Load(ResourceFile* file, const Buffer& block) {
+bool ResourceText::IsValid() const {
+	return !m_contents.empty();
+}
 
+std::string ResourceText::GetContents() const {
+	return m_contents;
+}
+
+void ResourceText::Load(ResourceFile* file, const Buffer& block) {
+	m_errorMessage.clear();
+	m_contents = "";
+
+	try {
+		// Validate
+		if (!file) { throw std::exception("Invalid resource file reference"); }
+		Buffer assetData = ProcessAssetBlock(block);
+
+		// Extract contents
+		m_contents = std::string((char*)assetData.data(), assetData.size());
+	}
+	catch (std::exception& e) {
+		m_errorMessage = e.what();
+		m_contents.clear();
+	}
+}
+
+bool ResourceBinary::IsValid() const {
+	return false;
 }
 
 void ResourceBinary::Load(ResourceFile* file, const Buffer& block) {
@@ -143,6 +219,14 @@ SDL_Color TexturePage::GetPixel(unsigned int x, unsigned int y) const {
 	return color;
 }
 
+std::uint32_t TexturePage::GetWidth() const {
+	return m_width;
+}
+
+std::uint32_t TexturePage::GetHeight() const {
+	return m_height;
+}
+
 void TexturePage::Load(ResourceFile* file, const Buffer& block) {
 	SDL_UNUSED(file);
 	m_errorMessage.clear();
@@ -179,6 +263,10 @@ void TexturePage::Load(ResourceFile* file, const Buffer& block) {
 		m_errorMessage = msg.str();
 		return;
 	}
+	if (headerFormat == 0) {
+		m_errorMessage = "Unknown image format";
+		return;
+	}
 
 	// Save data
 	m_name = headerName;
@@ -186,10 +274,12 @@ void TexturePage::Load(ResourceFile* file, const Buffer& block) {
 	m_width = headerWidth;
 	m_height = headerHeight;
 	m_buffer = imageData;
+	m_resourceFileID = file->GetID();
 }
 
-ResourceFile::ResourceFile(const std::string& filename, const std::string& password) :
-	m_filename(filename) {
+ResourceFile::ResourceFile(ResourceID resourceFileID, const std::string& filename, const std::string& password) :
+	m_filename(filename),
+	m_resourceFileID(resourceFileID) {
 	m_errorMessage.clear();
 
 	try {
@@ -226,6 +316,9 @@ ResourceFile::ResourceFile(const std::string& filename, const std::string& passw
 			}
 		}
 		if (encoded) {
+			// Check for password
+			if (password.empty()) { throw std::exception("File is encrypted, password must not be empty"); }
+
 			// Pad out password to 32 characters
 			uint8_t key[32] = { 0 };
 			for (size_t i = 0; i < password.size(); ++i) { key[i] = (uint8_t)password[i]; }
@@ -237,8 +330,8 @@ ResourceFile::ResourceFile(const std::string& filename, const std::string& passw
 		// Parse CRC
 		std::uint32_t headerCRC = fileBuffer.get_uint32(8);
 		std::uint32_t fileCRC = Crc32Calculate(fileBuffer.data(48), fileBuffer.size() - 48);
-		if (headerCRC != fileCRC) { throw std::exception("Invalid CRC"); }
-		std::uint64_t offsetTexturePages = fileBuffer.get_uint64(48); 
+		if (headerCRC != fileCRC) { throw std::exception("Invalid password"); }
+		std::uint64_t offsetTexturePages = fileBuffer.get_uint64(48);
 		std::uint64_t offsetDataChunks = fileBuffer.get_uint64(56);
 		std::uint64_t offsetAssetTable = fileBuffer.get_uint64(64);
 
@@ -286,7 +379,10 @@ ResourceFile::ResourceFile(const std::string& filename, const std::string& passw
 						msg << "Failed to initialize texture (" << assetName << "); " << assetTexture.ErrorMessage();
 						throw std::exception(msg.str().c_str());
 					}
-					m_resourceMap.insert(std::make_pair(assetName, m_textures.size()));
+					ResourceID id = ResourceManager::GenerateID();
+					assetTexture.SetID(id);
+					m_resourceIDMap.insert(std::make_pair(id, m_textures.size()));
+					m_resourceNameMap.insert(std::make_pair(assetName, m_textures.size()));
 					m_textures.push_back(std::move(assetTexture));
 				}
 				else {
@@ -307,6 +403,10 @@ std::string ResourceFile::GetFilename() const {
 	return m_filename;
 }
 
+ResourceID ResourceFile::GetID() const {
+	return m_resourceFileID;
+}
+
 const TexturePage* ResourceFile::GetTexturePage(std::size_t index) const {
 	return (index < m_texturePages.size()) ? &m_texturePages[index] : nullptr;
 }
@@ -315,9 +415,14 @@ std::size_t ResourceFile::GetTexturePageCount() const {
 	return m_textures.size();
 }
 
-const ResourceTexture* ResourceFile::GetTexture(const std::string& name) const {
-	auto it = m_resourceMap.find(name);
-	return it == m_resourceMap.end() ? nullptr : &m_textures[it->second];
+ResourceID ResourceFile::GetTextureID(const std::string& name) const {
+	auto it = m_resourceNameMap.find(name);
+	return it == m_resourceNameMap.end() ? RESOURCE_ID_NULL : m_textures[it->second].GetID();
+}
+
+const ResourceTexture* ResourceFile::GetTexture(ResourceID resourceTextureID) const {
+	auto it = m_resourceIDMap.find(resourceTextureID);
+	return it == m_resourceIDMap.end() ? nullptr : &m_textures[it->second];
 }
 
 std::size_t ResourceFile::GetTextureCount() const {
@@ -333,10 +438,10 @@ std::string ResourceFile::ErrorMessage() const {
 }
 
 std::string ResourceManager::m_errorMessage = "";
-ResourceFileID ResourceManager::m_resourceFileIDCounter = 0;
-std::unordered_map<ResourceFileID, ResourceFile> ResourceManager::m_resourceFiles = {};
+ResourceID ResourceManager::m_resourceIDCounter = RESOURCE_ID_NULL;
+std::unordered_map<ResourceID, ResourceFile> ResourceManager::m_resourceFiles = {};
 
-ResourceFileID ResourceManager::LoadResourceFile(const std::string& filename, const std::string& password) {
+ResourceID ResourceManager::LoadResourceFile(const std::string& filename, const std::string& password) {
 	m_errorMessage.clear();
 
 	// Check if the file is already loaded
@@ -347,82 +452,126 @@ ResourceFileID ResourceManager::LoadResourceFile(const std::string& filename, co
 	}
 
 	// Create the resource file & check if it initialzed
-	//ResourceFile resourceFile(filename);
-	auto success = m_resourceFiles.emplace(std::make_pair(++m_resourceFileIDCounter, ResourceFile(filename)));
+	ResourceID fileID = GenerateID();
+	auto success = m_resourceFiles.emplace(std::make_pair(fileID, ResourceFile(fileID, filename, password)));
 	if (success.second) {
 		if (success.first->second.IsValid()) {
-			return m_resourceFileIDCounter;
+			return m_resourceIDCounter;
 		}
 		else {
 			std::stringstream msg;
 			msg << "Failed to load resource file (" << filename << "); " << success.first->second.ErrorMessage();
 			m_errorMessage = msg.str();
-			m_resourceFiles.erase(m_resourceFileIDCounter);
-			return RESOURCE_FILE_NULL;
+			m_resourceFiles.erase(m_resourceIDCounter);
+			return RESOURCE_ID_NULL;
 		}
 	}
 	else {
 		std::stringstream msg;
 		msg << "Failed to load resource file (" << filename << "); Could not create object";
 		m_errorMessage = msg.str();
-		return RESOURCE_FILE_NULL;
+		return RESOURCE_ID_NULL;
 	}
 }
 
-void ResourceManager::UnloadResourceFile(ResourceFileID resourceFileID) {
+ResourceFile* ResourceManager::GetResourceFile(ResourceID resourceFileID) {
+	auto it = m_resourceFiles.find(resourceFileID);
+	if (it == m_resourceFiles.end()) {
+		m_errorMessage = "Failed to find resource file";
+		return nullptr;
+	}
+	else if (!it->second.IsValid()) {
+		m_errorMessage = "Resource file is invalid";
+		return nullptr;
+	}
+	else { return &it->second; }
+}
+
+void ResourceManager::UnloadResourceFile(ResourceID resourceFileID) {
 	m_errorMessage.clear();
 	m_resourceFiles.erase(resourceFileID);
 }
 
-bool ResourceManager::ResourceFileExists(ResourceFileID resourceFileID) {
+bool ResourceManager::ResourceFileExists(ResourceID resourceFileID) {
 	m_errorMessage.clear();
 	auto file = GetResourceFile(resourceFileID);
 	return (file != nullptr && file->IsValid());
 }
 
-const TexturePage* ResourceManager::GetTexturePage(ResourceFileID resourceFileID, std::size_t index) {
+ResourceID ResourceManager::GetTextureID(const std::string& name, ResourceID resourceFileID) {
 	m_errorMessage.clear();
-	auto file = GetResourceFile(resourceFileID);
-	if (!file) {
-		m_errorMessage = "Failed to find resource file";
-		return nullptr;
+
+	if (resourceFileID == RESOURCE_ID_NULL) {
+		// Search all resource files
+		ResourceID finalAsset = RESOURCE_ID_NULL;
+		for (auto& pair : m_resourceFiles) {
+			ResourceID asset = pair.second.GetTextureID(name);
+			if (asset) {
+				finalAsset = asset;
+				break;
+			}
+		}
+
+		if (!finalAsset) {
+			m_errorMessage = "Failed to find texture";
+			return RESOURCE_ID_NULL;
+		}
+		return finalAsset;
 	}
-	if (!file->IsValid()) {
-		m_errorMessage = "Resource file is invalid";
-		return nullptr;
+	else {
+		auto file = GetResourceFile(resourceFileID);
+		if (!file) { return RESOURCE_ID_NULL; }
+		ResourceID asset = file->GetTextureID(name);
+		if (!asset) {
+			m_errorMessage = "Failed to find texture";
+			return RESOURCE_ID_NULL;
+		}
+		return asset;
 	}
-	auto texturePage = file->GetTexturePage(index);
-	if (!texturePage) {
-		m_errorMessage = "Failed to find texture page";
-		return nullptr;
-	}
-	return texturePage;
 }
 
-const ResourceTexture* ResourceManager::GetTexture(ResourceFileID resourceFileID, const std::string& name) {
+const ResourceTexture* ResourceManager::GetTexture(ResourceID resourceTextureID, ResourceID resourceFileID) {
 	m_errorMessage.clear();
-	auto file = GetResourceFile(resourceFileID);
-	if (!file) {
-		m_errorMessage = "Failed to find resource file";
+	if (resourceTextureID == RESOURCE_ID_NULL) {
+		m_errorMessage = "Texture ID is null";
 		return nullptr;
 	}
-	if (!file->IsValid()) {
-		m_errorMessage = "Resource file is invalid";
-		return nullptr;
+
+	if (resourceFileID == RESOURCE_ID_NULL) {
+		// Search all resource files
+		const ResourceTexture* finalAsset = nullptr;
+		for (auto& pair : m_resourceFiles) {
+			const ResourceTexture* asset = pair.second.GetTexture(resourceTextureID);
+			if (asset) {
+				finalAsset = asset;
+				break;
+			}
+		}
+
+		if (!finalAsset) {
+			m_errorMessage = "Failed to find texture";
+			return nullptr;
+		}
+		return finalAsset;
 	}
-	auto texture = file->GetTexture(name);
-	if (!texture) {
-		m_errorMessage = "Failed to find texture";
-		return nullptr;
+	else {
+		auto file = GetResourceFile(resourceFileID);
+		if (!file) { return nullptr; }
+		const ResourceTexture* asset = file->GetTexture(resourceTextureID);
+		if (!asset) {
+			m_errorMessage = "Failed to find texture";
+			return nullptr;
+		}
+		return asset;
 	}
-	return texture;
 }
 
-ResourceFile* ResourceManager::GetResourceFile(ResourceFileID resourceFileID) {
-	auto it = m_resourceFiles.find(resourceFileID);
-	return it == m_resourceFiles.end() ? nullptr : &it->second;
+ResourceID ResourceManager::GenerateID() {
+	return ++m_resourceIDCounter;
 }
 
 std::string ResourceManager::ErrorMessage() {
 	return m_errorMessage;
 }
+
+} // luna

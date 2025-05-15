@@ -1,0 +1,37 @@
+# SDL_shadercross
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+	if (MSVC)
+		set(LUNA_SDL_SHADERCROSS_DIR "${PROJECT_SOURCE_DIR}/external/SDL_shadercross/SDL3_shadercross-3.0.0-windows-VC-x64" CACHE PATH "" FORCE)
+		set(LUNA_SDL_SHADERCROSS_LIB "${LUNA_SDL_SHADERCROSS_DIR}/lib/SDL3_shadercross.lib" CACHE PATH "" FORCE)
+		set(LUNA_SDL_SHADERCROSS_SHARED_LIBS
+			"${LUNA_SDL_SHADERCROSS_DIR}/bin/SDL3_shadercross.dll"
+			"${LUNA_SDL_SHADERCROSS_DIR}/bin/dxcompiler.dll"
+			"${LUNA_SDL_SHADERCROSS_DIR}/bin/dxil.dll"
+			"${LUNA_SDL_SHADERCROSS_DIR}/bin/spirv-cross-c-shared.dll"
+			CACHE PATH "" FORCE
+		)
+	elseif(MINGW)
+		set(LUNA_SDL_SHADERCROSS_DIR "${PROJECT_SOURCE_DIR}/external/SDL_shadercross/SDL3_shadercross-3.0.0-windows-mingw-x64" CACHE PATH "" FORCE)
+		set(LUNA_SDL_SHADERCROSS_LIB "${LUNA_SDL_SHADERCROSS_DIR}/bin/libSDL3_shadercross.dll.a" CACHE PATH "" FORCE)
+		set(LUNA_SDL_SHADERCROSS_SHARED_LIBS
+			"${LUNA_SDL_SHADERCROSS_DIR}/bin/SDL3_shadercross.dll"
+			"${LUNA_SDL_SHADERCROSS_DIR}/bin/dxcompiler.dll"
+			"${LUNA_SDL_SHADERCROSS_DIR}/bin/dxil.dll"
+			"${LUNA_SDL_SHADERCROSS_DIR}/bin/libspirv-cross-c-shared.dll"
+			"${LUNA_SDL_SHADERCROSS_DIR}/bin/libgcc_s_seh-1.dll"
+			"${LUNA_SDL_SHADERCROSS_DIR}/bin/libstdc++-6.dll"
+			"${LUNA_SDL_SHADERCROSS_DIR}/bin/libwinpthread-1.dll"
+			CACHE PATH "" FORCE
+		)
+	endif()
+elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+	set(LUNA_SDL_SHADERCROSS_DIR "${PROJECT_SOURCE_DIR}/external/SDL_shadercross/SDL3_shadercross-3.0.0-darwin-arm64-x64" CACHE PATH "" FORCE)
+	set(LUNA_SDL_SHADERCROSS_LIB "${LUNA_SDL_SHADERCROSS_DIR}/lib/libSDL3_shadercross" CACHE PATH "" FORCE)
+elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
+	set(LUNA_SDL_SHADERCROSS_DIR "${PROJECT_SOURCE_DIR}/external/SDL_shadercross/SDL3_shadercross-3.0.0-linux-x64" CACHE PATH "" FORCE)
+	set(LUNA_SDL_SHADERCROSS_LIB "${LUNA_SDL_SHADERCROSS_DIR}/lib/libSDL3_shadercross" CACHE PATH "" FORCE)
+endif()
+set(LUNA_SDL_SHADERCROSS "${LUNA_SDL_SHADERCROSS_DIR}/bin/shadercross" CACHE FILEPATH "" FORCE)
+
+add_library(external INTERFACE)
+target_link_libraries(external INTERFACE ${LUNA_SDL_SHADERCROSS_LIB})

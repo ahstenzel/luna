@@ -1,13 +1,12 @@
 #include "game.hpp"
+#include "SDL3_shadercross/SDL_shadercross.h"
+
+namespace luna {
 
 bool Game::m_quitFlag = false;
 SDL_Window* Game::m_sdlWindow = nullptr;
 SDL_GPUDevice* Game::m_sdlGPUDevice = nullptr;
-SDL_GPUSampler* Game::m_sdlGPUSampler = nullptr;
-SDL_GPUTexture* Game::m_sdlGPUTexture = nullptr;
-SDL_GPUGraphicsPipeline* Game::m_sdlSpriteRenderPipeline = nullptr;
-SDL_GPUTransferBuffer* Game::m_sdlSpriteDataTransferBuffer = nullptr;
-SDL_GPUBuffer* Game::m_sdlSpriteDataBuffer = nullptr;
+Renderer* Game::m_renderer = nullptr;
 
 bool Game::Init() {
 	// Initialize SDL
@@ -29,7 +28,7 @@ bool Game::Init() {
 		Cleanup();
 		return false;
 	}
-	
+
 	// Create GPU device
 	m_sdlGPUDevice = SDL_CreateGPUDevice(
 		SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL,
@@ -71,6 +70,13 @@ bool Game::Init() {
 	);
 
 	// Create shader pipelines
+	SDL_ShaderCross_Init();
+	m_renderer = new SpriteRenderer(m_sdlGPUDevice, m_sdlWindow);
+	if (!m_renderer || !m_renderer->IsValid()) {
+		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SpriteRenderer creation failed!");
+		Cleanup();
+		return false;
+	}
 
 	return true;
 }
@@ -99,7 +105,14 @@ void Game::Quit() {
 }
 
 void Game::Cleanup() {
+	SDL_ShaderCross_Quit();
+	if (m_renderer) { delete m_renderer; }
 	if (m_sdlGPUDevice && m_sdlWindow) { SDL_ReleaseWindowFromGPUDevice(m_sdlGPUDevice, m_sdlWindow); }
 	if (m_sdlWindow) { SDL_DestroyWindow(m_sdlWindow); }
 	if (m_sdlGPUDevice) { SDL_DestroyGPUDevice(m_sdlGPUDevice); }
+	m_renderer = nullptr;
+	m_sdlGPUDevice = nullptr;
+	m_sdlWindow = nullptr;
 }
+
+} // luna

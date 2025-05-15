@@ -89,15 +89,14 @@ if exist "vendor\SDL_shadercross\external\Get-GitModules.ps1" (
 )
 
 rem Modify SDL CMake policy (temp workaround for outdated behavior)
-:MODIFY
 set target_file="vendor\SDL_shadercross\CMakeLists.txt"
 if not exist %target_file% (
 	echo Could not find SDL_shadercross CMakeLists
-	goto :MODIFY_DONE
+	goto :MODIFY_SDL_DONE
 )
 set temp_file="vendor\SDL_shadercross\CMakeLists.txt.tmp"
 if exist %temp_file% (
-	goto :MODIFY_DONE
+	goto :MODIFY_SDL_DONE
 )
 
 echo Modifying SDL_shadercross CMakeLists...
@@ -110,7 +109,30 @@ for /f "usebackq tokens=*" %%L in (%temp_file%) do (
 	echo %%L >> %target_file%
 	set prev=%%L
 )
-:MODIFY_DONE
+:MODIFY_SDL_DONE
+
+rem Modify base64 CMake policy (temp workaround for outdated behavior)
+set target_file="vendor\base64\CMakeLists.txt"
+if not exist %target_file% (
+	echo Could not find base64 CMakeLists
+	goto :MODIFY_BASE64_DONE
+)
+set temp_file="vendor\base64\CMakeLists.txt.tmp"
+if exist %temp_file% (
+	goto :MODIFY_BASE64_DONE
+)
+
+echo Modifying base64 CMakeLists...
+ren %target_file% CMakeLists.txt.tmp
+set prev=
+for /f "usebackq tokens=*" %%L in (%temp_file%) do (
+	echo !prev! | >nul findstr /R "cmake_minimum_required" && (
+		echo(cmake_policy^(SET CMP0077 NEW^) >> %target_file%
+	)
+	echo %%L >> %target_file%
+	set prev=%%L
+)
+:MODIFY_BASE64_DONE
 
 rem Run CMake
 echo Running CMake...
