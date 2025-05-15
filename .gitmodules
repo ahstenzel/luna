@@ -3,16 +3,13 @@
 	url = https://github.com/libsdl-org/SDL.git
 	branch = main
 	ignore = dirty
-[submodule "base64"]
+[submodule "vendor/base64"]
 	path = vendor/base64
 	url = https://github.com/aklomp/base64.git
 	branch = master
 	ignore = dirty
-[submodule "json"]
+[submodule "vendor/json"]
 	path = vendor/json
 	url = https://github.com/nlohmann/json.git
 	branch = develop
 	ignore = dirty
-[submodule "vendor/base64"]
-	path = vendor/base64
-	url = https://github.com/aklomp/base64.git
