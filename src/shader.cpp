@@ -74,6 +74,10 @@ SpriteBatchShaderPipeline::SpriteBatchShaderPipeline(SDL_GPUDevice* device, SDL_
 	createInfo.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
 	createInfo.target_info = targetInfo;
 	m_pipeline = SDL_CreateGPUGraphicsPipeline(m_device, &createInfo);
+	SDL_ReleaseGPUShader(m_device, m_fragShader);
+	SDL_ReleaseGPUShader(m_device, m_vertShader);
+	m_fragShader = nullptr;
+	m_vertShader = nullptr;
 }
 
 SpriteBatchShaderPipeline::~SpriteBatchShaderPipeline() {

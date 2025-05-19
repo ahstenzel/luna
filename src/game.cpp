@@ -20,6 +20,7 @@ bool Game::Init() {
 		Cleanup();
 		return false;
 	}
+	SDL_srand(0);
 
 	// Create window
 	m_sdlWindow = SDL_CreateWindow("luna", 1366, 768, 0);

@@ -2,7 +2,7 @@ struct SpriteData {
     float3 Position;
     float Rotation;
     float2 Scale;
-    float2 Padding;
+    float2 _Padding;
     float TexU, TexV, TexW, TexH;
     float4 Color;
 };

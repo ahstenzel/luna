@@ -29,8 +29,20 @@ add_subdirectory(vex)
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(json)
 
+# glm
+set(GLM_BUILD_TESTS OFF CACHE INTERNAL "")
+add_subdirectory(glm)
+
 add_library(vendor INTERFACE)
-target_link_libraries(vendor INTERFACE nlohmann_json::nlohmann_json libcppvex base64 libaes liblz4 SDL3::SDL3)
+target_link_libraries(vendor INTERFACE 
+	nlohmann_json::nlohmann_json 
+	libcppvex 
+	base64 
+	libaes 
+	liblz4 
+	SDL3::SDL3 
+	glm::glm
+)
 set_target_properties(
 	libaes 
 	liblz4
@@ -39,5 +51,6 @@ set_target_properties(
 	libcppvex
 	SDL_uclibc
 	SDL3-shared
+	glm
 	PROPERTIES FOLDER "Vendor"
 )

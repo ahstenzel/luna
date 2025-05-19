@@ -90,7 +90,7 @@ public:
 		if (!result.second) { return SPRITE_ID_NULL; }
 		else { result.first->second.SetSpriteList(this); }
 		m_spriteOrder.push_back(id);
-		m_dirty = true;
+		MarkDirty();
 		return id;
 	}
 

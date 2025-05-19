@@ -1,2 +1,2 @@
 # luna
- Game framework written in C, built on SDL3.
+ Game framework written in C++, built on SDL3.
