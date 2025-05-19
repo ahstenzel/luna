@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include <exception>
 #include <vector>
-#include "itsort.hpp"
+#include <luna/detail/std/itsort.hpp>
 
 namespace luna {
 

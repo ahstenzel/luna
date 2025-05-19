@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
 			std::cerr << "Failed to open output file (" << output_source_file_name << ")" << std::endl;
 			return 1;
 		}
-		output_source_file << "#include " << std::filesystem::path(output_header_file_name).filename() << "" << std::endl;
+		output_source_file << "#include <luna/detail/shader/" << std::filesystem::path(output_header_file_name).filename().string() << ">" << std::endl;
 	}
 	for (auto& input_file_name : input_file_names) {
 		std::cout << "Reading file (" << input_file_name << ")..." << std::endl;

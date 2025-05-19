@@ -1,4 +1,4 @@
-#include "render.hpp"
+#include <luna/detail/render.hpp>
 
 namespace luna {
 

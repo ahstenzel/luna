@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common.hpp"
-#include "SDL3_shadercross/SDL_shadercross.h"
+#include <luna/detail/common.hpp>
+#include <SDL3_shadercross/SDL_shadercross.h>
 
 namespace luna {
 

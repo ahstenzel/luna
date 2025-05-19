@@ -1,4 +1,4 @@
-#include "resources.hpp"
+#include <luna/detail/resources.hpp>
 
 namespace luna {
 

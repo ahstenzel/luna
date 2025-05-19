@@ -1,4 +1,4 @@
-#include "sprite.hpp"
+#include <luna/detail/sprite.hpp>
 
 namespace luna {
 

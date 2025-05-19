@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common.hpp"
-#include "resources.hpp"
+#include <luna/detail/common.hpp>
+#include <luna/detail/resources.hpp>
 
 namespace luna {
 

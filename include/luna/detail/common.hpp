@@ -24,10 +24,10 @@
 #include <libbase64.h>
 
 // Luna includes
-#include "std/platform.hpp"
-#include "std/itsort.hpp"
-#include "std/buffer.hpp"
-#include "std/sorted_list.hpp"
+#include <luna/detail/std/platform.hpp>
+#include <luna/detail/std/itsort.hpp>
+#include <luna/detail/std/buffer.hpp>
+#include <luna/detail/std/sorted_list.hpp>
 
 namespace luna {
 

@@ -1,11 +1,11 @@
-#include "game.hpp"
-#include <SDL3/SDL_main.h>
+#include <luna/luna.hpp>
 
 using namespace luna;
 
 int main(int argc, char** argv) {
 	if (!Game::Init()) { return 1; }
 
+	/*
 	auto testFile = ResourceManager::LoadResourceFile("test.arc", "password");
 	if (testFile == RESOURCE_ID_NULL) {
 		SDL_Log(ResourceManager::ErrorMessage().c_str());
@@ -25,6 +25,7 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
+	*/
 	
 	return Game::Run();
 }

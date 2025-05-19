@@ -4,6 +4,7 @@ set(SDL_TEST_LIBRARY OFF)
 set(SDL_EXAMPLES OFF)
 set(SDL_SHARED ON)
 add_subdirectory(SDL EXCLUDE_FROM_ALL)
+set(LUNA_RUNTIME_SHARED "${LUNA_RUNTIME_SHARED};$<TARGET_FILE:SDL3::SDL3>" CACHE PATH "" FORCE)
 
 # AES
 add_subdirectory(aes)
@@ -30,3 +31,13 @@ add_subdirectory(json)
 
 add_library(vendor INTERFACE)
 target_link_libraries(vendor INTERFACE nlohmann_json::nlohmann_json libcppvex base64 libaes liblz4 SDL3::SDL3)
+set_target_properties(
+	libaes 
+	liblz4
+	base64 
+	libcvex
+	libcppvex
+	SDL_uclibc
+	SDL3-shared
+	PROPERTIES FOLDER "Vendor"
+)

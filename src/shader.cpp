@@ -1,5 +1,5 @@
-#include "shader.hpp"
-#include "shader/out/shader_encoded.hpp"
+#include <luna/detail/shader.hpp>
+#include <luna/detail/shader/shader_encoded.hpp>
 
 namespace luna {
 

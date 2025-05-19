@@ -1,4 +1,4 @@
-#include "common.hpp"
+#include <luna/detail/common.hpp>
 
 namespace luna {
 

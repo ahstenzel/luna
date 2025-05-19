@@ -1,5 +1,5 @@
-#include "game.hpp"
-#include "SDL3_shadercross/SDL_shadercross.h"
+#include <luna/detail/game.hpp>
+#include <SDL3_shadercross/SDL_shadercross.h>
 
 namespace luna {
 
