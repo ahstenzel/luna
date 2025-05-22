@@ -10,7 +10,7 @@ public:
 	virtual bool IsValid() const = 0;
 	virtual void Clear() = 0;
 
-	virtual const SDL_GPUGraphicsPipeline* GetPipeline() const = 0;
+	virtual SDL_GPUGraphicsPipeline* GetPipeline() const = 0;
 
 protected:
 	SDL_GPUGraphicsPipeline* m_pipeline = nullptr;
@@ -22,7 +22,7 @@ public:
 	SpriteBatchShaderPipeline(SDL_GPUDevice* device, SDL_Window* window);
 	~SpriteBatchShaderPipeline();
 
-	const SDL_GPUGraphicsPipeline* GetPipeline() const override;
+	SDL_GPUGraphicsPipeline* GetPipeline() const override;
 
 	void Clear();
 	bool IsValid() const override;

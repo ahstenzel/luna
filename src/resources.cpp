@@ -198,8 +198,8 @@ std::string TexturePage::GetName() const {
 	return m_name;
 }
 
-Buffer TexturePage::GetBuffer() const {
-	return m_buffer;
+std::uint8_t* TexturePage::GetData() const {
+	return m_buffer.data();
 }
 
 SDL_PixelFormat TexturePage::GetFormat() const {

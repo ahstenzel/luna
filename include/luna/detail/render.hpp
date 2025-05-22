@@ -3,12 +3,16 @@
 #include <luna/detail/common.hpp>
 #include <luna/detail/shader.hpp>
 #include <luna/detail/sprite.hpp>
+#include <luna/detail/camera.hpp>
 
 namespace luna {
 
 class Renderer {
 public:
 	virtual bool IsValid() const = 0;
+
+protected:
+	SDL_GPUDevice* m_device = nullptr;
 };
 
 class SpriteRenderer : public Renderer {
@@ -18,7 +22,7 @@ public:
 
 	bool IsValid() const override;
 
-	void RenderSpriteList(const SpriteList& spriteList);
+	void RenderSpriteList(SDL_Window* window, SpriteList* spriteList);
 
 protected:
 	struct SpriteBatchInfo {
@@ -32,11 +36,10 @@ protected:
 	const std::uint32_t m_maxSpriteCount = 8192;
 
 private:
-	float m_uCoords[4] = { 0.0f, 0.5f, 0.0f, 0.5f };
-	float m_vCoords[4] = { 0.0f, 0.0f, 0.5f, 0.5f };
+	void RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, SDL_GPUTexture* swapchainTexture, glm::mat4x4* cameraMatrix, SpriteList* spriteList, std::size_t spriteBegin, std::size_t spriteCount);
+	void SetTexturePage(const TexturePage* texturePage);
 
-	void SetTextureAtlas(const ResourceTexture* texture);
-
+	std::uint32_t m_lastSpriteBatchSize = 0;
 	SDL_GPUSampler* m_sdlGPUSampler = nullptr;
 	SDL_GPUTexture* m_sdlGPUTexture = nullptr;
 	SDL_GPUTransferBuffer* m_sdlSpriteDataTransferBuffer = nullptr;

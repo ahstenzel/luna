@@ -84,7 +84,7 @@ SpriteBatchShaderPipeline::~SpriteBatchShaderPipeline() {
 	Clear();
 }
 
-const SDL_GPUGraphicsPipeline* SpriteBatchShaderPipeline::GetPipeline() const {
+SDL_GPUGraphicsPipeline* SpriteBatchShaderPipeline::GetPipeline() const {
 	return m_pipeline;
 }
 

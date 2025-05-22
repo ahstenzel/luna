@@ -12,12 +12,19 @@ constexpr SpriteID SPRITE_ID_NULL = 0;
 class SpriteList;
 struct SpriteComp;
 
+struct SpriteTextureCoords {
+	float textureU;
+	float textureV;
+	float textureW;
+	float textureH;
+};
+
 /// <summary>
 /// Instance of a texture in the world, with position, scale, rotation, and animation.
 /// </summary>
 class Sprite {
 public:
-	Sprite(const ResourceID textureID, float x, float y, int32_t image = 0, int32_t depth = 0, float scaleX = 1.f, float scaleY = 1.f, float rotation = 0.f);
+	Sprite(const ResourceID textureID, float x, float y, int32_t image = 0, int32_t depth = 0, float scaleX = 1.f, float scaleY = 1.f, float rotation = 0.f, SDL_Color blend = {255, 255, 255, 255});
 
 	bool IsValid() const;
 
@@ -26,10 +33,15 @@ public:
 	float GetScaleX() const;
 	float GetScaleY() const;
 	float GetRotation() const;
+	float GetWidth() const;
+	float GetHeight() const;
 	int32_t GetImage() const;
 	int32_t GetNumImages() const;
 	int32_t GetDepth() const;
 	ResourceID GetTextureID() const;
+	SpriteTextureCoords GetTextureCoords() const;
+	const TexturePage* GetTexturePage() const;
+	SDL_Color GetBlend() const;
 
 	void SetPositionX(float x);
 	void SetPositionY(float y);
@@ -38,6 +50,7 @@ public:
 	void SetRotation(float rotation);
 	void SetImage(int32_t image);
 	void SetDepth(int32_t depth);
+	void SetBlend(const SDL_Color& blend);
 
 protected:
 	friend class SpriteList;
@@ -48,9 +61,14 @@ protected:
 private:
 	void CalculateUVs();
 
+	const ResourceTexture* m_texture = nullptr;
+	SpriteList* m_spriteList = nullptr;
 	ResourceID m_textureID = RESOURCE_ID_NULL;
+	SDL_Color m_blend = {};
 	float m_positionX = 0.f;
 	float m_positionY = 0.f;
+	float m_width = 0.f;
+	float m_height = 0.f;
 	float m_scaleX = 0.f;
 	float m_scaleY = 0.f;
 	float m_rotation = 0.f;
@@ -61,7 +79,6 @@ private:
 	float m_textureW = 0.f;
 	float m_textureH = 0.f;
 	std::int32_t m_depth = 0;
-	SpriteList* m_spriteList = nullptr;
 };
 
 /// <summary>
@@ -102,10 +119,32 @@ public:
 	Sprite* GetSprite(SpriteID spriteID);
 
 	/// <summary>
+	/// Get the sprite ID at the given index.
+	/// </summary>
+	/// <param name="idx">idx</param>
+	/// <returns>Sprite ID</returns>
+	SpriteID GetSpriteID(std::size_t idx);
+
+	/// <summary>
 	/// Remove the sprite associated with the ID from the list.
 	/// </summary>
 	/// <param name="spriteID">Sprite ID</param>
 	void RemoveSprite(SpriteID spriteID);
+
+	/// <summary>
+	/// Get the number of sprites in this list.
+	/// </summary>
+	/// <returns>Number of sprites</returns>
+	std::uint32_t Size() const;
+
+	/// <summary>
+	/// Sort the sprites in the list by texture page & depth, if not already sorted.
+	/// </summary>
+	void Sort();
+
+	std::vector<SpriteID>::const_iterator begin() const;
+
+	std::vector<SpriteID>::const_iterator end() const;
 
 protected:
 	friend class Sprite;

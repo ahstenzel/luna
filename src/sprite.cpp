@@ -2,23 +2,26 @@
 
 namespace luna {
 
-Sprite::Sprite(const ResourceID textureID, float x, float y, int32_t image, int32_t depth, float scaleX, float scaleY, float rotation) :
+Sprite::Sprite(const ResourceID textureID, float x, float y, int32_t image, int32_t depth, float scaleX, float scaleY, float rotation, SDL_Color blend) :
 	m_textureID(textureID),
 	m_positionX(x),
 	m_positionY(y),
 	m_depth(depth),
 	m_scaleX(scaleX),
 	m_scaleY(scaleY),
-	m_rotation(rotation) {
+	m_rotation(rotation),
+	m_blend(blend) {
 	// Verify texture
-	auto texture = ResourceManager::GetTexture(m_textureID);
-	if (!texture) {
+	m_texture = ResourceManager::GetTexture(m_textureID);
+	if (!m_texture) {
 		m_textureID = RESOURCE_ID_NULL;
 		return;
 	}
+	m_width = (float)m_texture->GetWidth();
+	m_height = (float)m_texture->GetHeight();
 
 	// Calculate sprite properties
-	m_animationFrame = (float)Wrap(image, 0, (std::int32_t)texture->GetNumFrames());
+	m_animationFrame = (float)Wrap(image, 0, (std::int32_t)m_texture->GetNumFrames());
 	CalculateUVs();
 }
 
@@ -46,14 +49,20 @@ float Sprite::GetRotation() const {
 	return m_rotation;
 }
 
+float Sprite::GetWidth() const {
+	return m_width;
+}
+
+float Sprite::GetHeight() const {
+	return m_height;
+}
+
 int32_t Sprite::GetImage() const {
 	return (std::int32_t)std::floorf(m_animationFrame);
 }
 
 int32_t Sprite::GetNumImages() const {
-	auto texture = ResourceManager::GetTexture(m_textureID);
-	if (!texture) { return -1; }
-	else { return (std::int32_t)texture->GetNumFrames(); }
+	return (m_texture) ? (std::int32_t)m_texture->GetNumFrames() : -1;
 }
 
 int32_t Sprite::GetDepth() const {
@@ -62,6 +71,25 @@ int32_t Sprite::GetDepth() const {
 
 ResourceID Sprite::GetTextureID() const {
 	return m_textureID;
+}
+
+SpriteTextureCoords Sprite::GetTextureCoords() const {
+	SpriteTextureCoords coords = {};
+	coords.textureU = m_textureU;
+	coords.textureV = m_textureV;
+	coords.textureW = m_textureW;
+	coords.textureH = m_textureH;
+	return coords;
+}
+
+const TexturePage* Sprite::GetTexturePage() const {
+	auto resourceFile = ResourceManager::GetResourceFile(m_texture->GetFileID());
+	auto texturePage = resourceFile->GetTexturePage(m_texture->GetTexturePageIndex());
+	return texturePage;
+}
+
+SDL_Color Sprite::GetBlend() const {
+	return m_blend;
 }
 
 void Sprite::SetPositionX(float x) {
@@ -93,6 +121,10 @@ void Sprite::SetDepth(int32_t depth) {
 	if (m_spriteList) { m_spriteList->MarkDirty(); }
 }
 
+void Sprite::SetBlend(const SDL_Color& blend) {
+	m_blend = blend;
+}
+
 bool Sprite::Tick(float dt) {
 	// Check if sprite is no longer valid
 	auto texture = ResourceManager::GetTexture(m_textureID);
@@ -114,15 +146,13 @@ void Sprite::SetSpriteList(SpriteList* spriteList) {
 
 void Sprite::CalculateUVs() {
 	std::uint32_t currFrame = (std::uint32_t)std::floorf(m_animationFrame);
-	auto texture = ResourceManager::GetTexture(m_textureID);
-	auto resourceFile = ResourceManager::GetResourceFile(texture->GetFileID());
-	auto texturePage = resourceFile->GetTexturePage(texture->GetTexturePageIndex());
+	auto texturePage = GetTexturePage();
 	float pageWidth = (float)texturePage->GetWidth();
 	float pageHeight = (float)texturePage->GetHeight();
-	m_textureW = (float)texture->GetWidth() / pageWidth;
-	m_textureH = (float)texture->GetHeight() / pageHeight;
-	m_textureU = (float)texture->GetXOffset(currFrame) / pageWidth;
-	m_textureV = (float)texture->GetYOffset(currFrame) / pageHeight;
+	m_textureW = (float)m_texture->GetWidth() / pageWidth;
+	m_textureH = (float)m_texture->GetHeight() / pageHeight;
+	m_textureU = (float)m_texture->GetXOffset(currFrame) / pageWidth;
+	m_textureV = (float)m_texture->GetYOffset(currFrame) / pageHeight;
 }
 
 SpriteID SpriteList::m_spriteIDCounter = SPRITE_ID_NULL;
@@ -134,9 +164,10 @@ SpriteList::SpriteList() {
 bool SpriteList::SpriteComp::operator()(SpriteID lhs, SpriteID rhs) {
 	auto& lhsTexture = m_list->at(lhs);
 	auto& rhsTexture = m_list->at(rhs);
-	auto lhsTexturePageIndex = ResourceManager::GetTexture(lhsTexture.GetTextureID())->GetTexturePageIndex();
-	auto rhsTexturePageIndex = ResourceManager::GetTexture(rhsTexture.GetTextureID())->GetTexturePageIndex();
-	return (lhsTexturePageIndex < rhsTexturePageIndex) || (lhsTexturePageIndex == rhsTexturePageIndex && lhsTexture.GetDepth() < rhsTexture.GetDepth());
+	//auto lhsTexturePageIndex = ResourceManager::GetTexture(lhsTexture.GetTextureID())->GetTexturePageIndex();
+	//auto rhsTexturePageIndex = ResourceManager::GetTexture(rhsTexture.GetTextureID())->GetTexturePageIndex();
+	//return (lhsTexturePageIndex < rhsTexturePageIndex) || (lhsTexturePageIndex == rhsTexturePageIndex && lhsTexture.GetDepth() < rhsTexture.GetDepth());
+	return lhsTexture.GetDepth() < rhsTexture.GetDepth();
 }
 
 SpriteID SpriteList::AddSprite(const Sprite& sprite) { 
@@ -150,12 +181,36 @@ SpriteID SpriteList::AddSprite(const Sprite& sprite) {
 }
 
 Sprite* SpriteList::GetSprite(SpriteID spriteID) {
-	return nullptr;
+	auto pair = m_sprites.find(spriteID);
+	return (pair == m_sprites.end()) ? nullptr : &pair->second;
+}
+
+SpriteID SpriteList::GetSpriteID(std::size_t idx) {
+	if (idx >= m_spriteOrder.size()) { return SPRITE_ID_NULL; }
+	return m_spriteOrder[idx];
 }
 
 void SpriteList::RemoveSprite(SpriteID spriteID) {
 	m_sprites.erase(spriteID);
 	m_spriteOrder.erase(std::find(m_spriteOrder.begin(), m_spriteOrder.end(), spriteID));
+}
+
+std::uint32_t SpriteList::Size() const {
+	return m_spriteOrder.size();
+}
+
+void SpriteList::Sort() {
+	if (m_dirty) {
+		intro_sort(m_spriteOrder.begin(), m_spriteOrder.end(), m_comparator);
+	}
+}
+
+std::vector<SpriteID>::const_iterator SpriteList::begin() const {
+	return m_spriteOrder.begin();
+}
+
+std::vector<SpriteID>::const_iterator SpriteList::end() const {
+	return m_spriteOrder.end();
 }
 
 void SpriteList::MarkDirty() {

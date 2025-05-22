@@ -139,7 +139,7 @@ public:
 	std::string ErrorMessage() const;
 
 	std::string GetName() const;
-	Buffer GetBuffer() const;
+	std::uint8_t* GetData() const;
 	SDL_PixelFormat GetFormat() const;
 	SDL_Color GetPixel(unsigned int x, unsigned int y) const;
 	std::uint32_t GetWidth() const;
