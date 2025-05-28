@@ -34,12 +34,12 @@ add_custom_command(
 	DEPENDS ${APP_SHADER_SRC} ${APP_SHATER_META}
 	COMMAND headerencoder -i ${APP_SHADER_SRC} -o ${APP_SHADER_HEADER} -s
 )
-add_custom_target(luna_shader ALL
+add_custom_target(libluna_shader ALL
 	SOURCES ${APP_SHADER_SRC}
 	DEPENDS ${APP_SHADER_HEADER}
 )
 add_custom_command(
-	TARGET luna_shader POST_BUILD
+	TARGET libluna_shader POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E rename
 		"${APP_SHADER_HEADER}"
 		"${PROJECT_SOURCE_DIR}/include/luna/detail/shader/shader_encoded.hpp"

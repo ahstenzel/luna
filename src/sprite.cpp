@@ -84,7 +84,7 @@ SpriteTextureCoords Sprite::GetTextureCoords() const {
 
 const TexturePage* Sprite::GetTexturePage() const {
 	auto resourceFile = ResourceManager::GetResourceFile(m_texture->GetFileID());
-	auto texturePage = resourceFile->GetTexturePage(m_texture->GetTexturePageIndex());
+	auto texturePage = resourceFile->GetTexturePage(m_texture->GetTexturePageID());
 	return texturePage;
 }
 

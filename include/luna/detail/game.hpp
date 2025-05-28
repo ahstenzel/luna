@@ -6,23 +6,50 @@
 
 namespace luna {
 
+struct GameInit {
+	unsigned int ticksPerSecond = 120;
+	unsigned int windowW = 1366;
+	unsigned int windowH = 768;
+	std::string windowTitle = "luna";
+	std::string appName = "luna";
+	std::string appVersion = "1.0.0";
+	std::string appIdentifier = "com.luna";
+	std::function<void()> startFunc = []() {};
+	std::function<void()> endFunc =   []() {};
+	std::function<void(float)> preTickFunc =  [](float) {};
+	std::function<void(float)> postTickFunc = [](float) {};
+	std::function<void(Renderer*)> preDrawFunc =  [](Renderer*) {};
+	std::function<void(Renderer*)> postDrawFunc = [](Renderer*) {};
+	detail::AbstractRendererFactory* rendererFactory = {};
+};
+
 class Game {
 public:
-	Game() = delete;
-	~Game() = delete;
+	LUNA_API Game() = delete;
+	LUNA_API ~Game() = delete;
 
-	static bool Init();
-	static int Run();
-	static void Quit();
+	LUNA_API static bool Init(GameInit* init = nullptr);
+	LUNA_API static int Run();
+	LUNA_API static void Quit();
+	LUNA_API static SDL_Window* GetWindow();
+	LUNA_API static SDL_GPUDevice* GetGPUDevice();
+	LUNA_API static Renderer* GetRenderer();
 
 private:
 	static void Cleanup();
 
+	static std::function<void()> m_startFunc;
+	static std::function<void()> m_endFunc;
+	static std::function<void(float)> m_preTickFunc;
+	static std::function<void(float)> m_postTickFunc;
+	static std::function<void(Renderer*)> m_preDrawFunc;
+	static std::function<void(Renderer*)> m_postDrawFunc;
+
 	static bool m_quitFlag;
+	static unsigned int m_ticksPerSecond;
 	static SDL_Window* m_sdlWindow;
 	static SDL_GPUDevice* m_sdlGPUDevice;
 	static Renderer* m_renderer;
-	
 };
 
 } // luna

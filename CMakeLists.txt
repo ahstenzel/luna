@@ -30,11 +30,11 @@ else()
 endif()
 
 # Set options
-cmake_dependent_option(LUNA_SHARED "Build a shared version of the library" ${LUNA_SHARED_DEFAULT} ${LUNA_SHARED_AVAILABLE} OFF)
-cmake_dependent_option(LUNA_STATIC "Build a static version of the library" ${LUNA_STATIC_DEFAULT} ${LUNA_STATIC_AVAILABLE} OFF)
+cmake_dependent_option(LUNA_BUILD_SHARED "Build a shared version of the library" ${LUNA_SHARED_DEFAULT} ${LUNA_SHARED_AVAILABLE} OFF)
+cmake_dependent_option(LUNA_BUILD_STATIC "Build a static version of the library" ${LUNA_STATIC_DEFAULT} ${LUNA_STATIC_AVAILABLE} OFF)
 option(LUNA_EXAMPLES "Build the examples directory" ${LUNA_MAINPROJECT})
-if(NOT(LUNA_SHARED OR LUNA_STATIC))
-	message(FATAL_ERROR "LUNA_SHARED and LUNA_STATIC cannot both be disabled")
+if(NOT(LUNA_BUILD_SHARED OR LUNA_BUILD_STATIC))
+	message(FATAL_ERROR "LUNA_BUILD_SHARED and LUNA_BUILD_STATIC cannot both be disabled")
 endif()
 
 # Add components

@@ -16,8 +16,8 @@ class TexturePage;
 /// </summary>
 class ResourceBase {
 public:
-	ResourceID GetID() const;
-	ResourceID GetFileID() const;
+	LUNA_API ResourceID GetID() const;
+	LUNA_API ResourceID GetFileID() const;
 
 protected:
 	void SetID(ResourceID id);
@@ -35,16 +35,16 @@ protected:
 /// </summary>
 class ResourceTexture : public ResourceBase {
 public:
-	ResourceTexture() = default;
+	LUNA_API ResourceTexture() = default;
 
-	bool IsValid() const override;
+	LUNA_API bool IsValid() const override;
 
-	std::uint32_t GetWidth() const;
-	std::uint32_t GetHeight() const;
-	std::uint32_t GetNumFrames() const;
-	std::size_t GetTexturePageIndex() const;
-	std::uint32_t GetXOffset(std::int32_t animationFrame = -1) const;
-	std::uint32_t GetYOffset(std::int32_t animationFrame = -1) const;
+	LUNA_API std::uint32_t GetWidth() const;
+	LUNA_API std::uint32_t GetHeight() const;
+	LUNA_API std::uint32_t GetNumFrames() const;
+	LUNA_API std::size_t GetTexturePageID() const;
+	LUNA_API std::uint32_t GetXOffset(std::int32_t animationFrame = -1) const;
+	LUNA_API std::uint32_t GetYOffset(std::int32_t animationFrame = -1) const;
 
 protected:
 	friend class ResourceFile;
@@ -73,13 +73,13 @@ private:
 /// </summary>
 class ResourceSound : public ResourceBase {
 public:
-	ResourceSound() = default;
+	LUNA_API ResourceSound() = default;
 
-	bool IsValid() const override;
+	LUNA_API bool IsValid() const override;
 
 protected:
 	friend class ResourceFile;
-	void Load(ResourceFile* file, const Buffer& block) override;
+	LUNA_API void Load(ResourceFile* file, const Buffer& block) override;
 };
 
 /// <summary>
@@ -87,13 +87,13 @@ protected:
 /// </summary>
 class ResourceMesh : public ResourceBase {
 public:
-	ResourceMesh() = default;
+	LUNA_API ResourceMesh() = default;
 
-	bool IsValid() const override;
+	LUNA_API bool IsValid() const override;
 
 protected:
 	friend class ResourceFile;
-	void Load(ResourceFile* file, const Buffer& block) override;
+	LUNA_API void Load(ResourceFile* file, const Buffer& block) override;
 };
 
 /// <summary>
@@ -101,14 +101,14 @@ protected:
 /// </summary>
 class ResourceText : public ResourceBase {
 public:
-	ResourceText() = default;
+	LUNA_API ResourceText() = default;
 
-	bool IsValid() const override;
-	std::string GetContents() const;
+	LUNA_API bool IsValid() const override;
+	LUNA_API std::string GetContents() const;
 
 protected:
 	friend class ResourceFile;
-	void Load(ResourceFile* file, const Buffer& block) override;
+	LUNA_API void Load(ResourceFile* file, const Buffer& block) override;
 
 private:
 	std::string m_contents = "";
@@ -119,13 +119,13 @@ private:
 /// </summary>
 class ResourceBinary : public ResourceBase {
 public:
-	ResourceBinary() = default;
+	LUNA_API ResourceBinary() = default;
 
-	bool IsValid() const override;
+	LUNA_API bool IsValid() const override;
 
 protected:
 	friend class ResourceFile;
-	void Load(ResourceFile* file, const Buffer& block) override;
+	LUNA_API void Load(ResourceFile* file, const Buffer& block) override;
 };
 
 /// <summary>
@@ -133,21 +133,22 @@ protected:
 /// </summary>
 class TexturePage {
 public:
-	TexturePage() = default;
+	LUNA_API TexturePage() = default;
 
-	bool IsValid() const;
-	std::string ErrorMessage() const;
+	LUNA_API bool IsValid() const;
+	LUNA_API std::string ErrorMessage() const;
 
-	std::string GetName() const;
-	std::uint8_t* GetData() const;
-	SDL_PixelFormat GetFormat() const;
-	SDL_Color GetPixel(unsigned int x, unsigned int y) const;
-	std::uint32_t GetWidth() const;
-	std::uint32_t GetHeight() const;
+	LUNA_API std::string GetName() const;
+	LUNA_API std::uint8_t* GetData() const;
+	LUNA_API SDL_PixelFormat GetFormat() const;
+	LUNA_API SDL_Color GetPixel(unsigned int x, unsigned int y) const;
+	LUNA_API std::uint32_t GetWidth() const;
+	LUNA_API std::uint32_t GetHeight() const;
+	LUNA_API bool WriteToFile(std::filesystem::path outputFile = "");
 
 protected:
 	friend class ResourceFile;
-	void Load(ResourceFile* file, const Buffer& block);
+	LUNA_API void Load(ResourceFile* file, const Buffer& block);
 
 private:
 	ResourceID m_resourceFileID = RESOURCE_ID_NULL;
@@ -165,18 +166,20 @@ private:
 /// </summary>
 class ResourceFile {
 public:
-	ResourceFile(ResourceID resourceFileID, const std::string& filename, const std::string& password);
+	LUNA_API ResourceFile(ResourceID resourceFileID, const std::string& filename, const std::string& password);
 
-	bool IsValid() const;
-	std::string ErrorMessage() const;
-	std::string GetFilename() const;
-	ResourceID GetID() const;
+	LUNA_API bool IsValid() const;
+	LUNA_API std::string ErrorMessage() const;
+	LUNA_API std::string GetFilename() const;
+	LUNA_API ResourceID GetID() const;
 
-	const TexturePage* GetTexturePage(std::size_t index) const;
-	std::size_t GetTexturePageCount() const;
-	ResourceID GetTextureID(const std::string& name) const;
-	const ResourceTexture* GetTexture(ResourceID resourceTextureID) const;
-	std::size_t GetTextureCount() const;
+	LUNA_API std::size_t GetTexturePageID(const std::string& name) const;
+	LUNA_API const TexturePage* GetTexturePage(std::size_t index) const;
+	LUNA_API std::size_t GetTexturePageCount() const;
+
+	LUNA_API ResourceID GetTextureID(const std::string& name) const;
+	LUNA_API const ResourceTexture* GetTexture(ResourceID resourceTextureID) const;
+	LUNA_API std::size_t GetTextureCount() const;
 
 private:
 	ResourceID m_resourceFileID;
@@ -193,25 +196,27 @@ private:
 /// </summary>
 class ResourceManager {
 public:
-	ResourceManager() = delete;
-	~ResourceManager() = delete;
+	LUNA_API ResourceManager() = delete;
+	LUNA_API ~ResourceManager() = delete;
 
-	static std::string ErrorMessage();
+	LUNA_API static std::string ErrorMessage();
 
-	static ResourceID LoadResourceFile(const std::string& filename, const std::string& password = "");
-	static ResourceFile* GetResourceFile(ResourceID resourceFileID);
-	static void UnloadResourceFile(ResourceID resourceFileID);
-	static bool ResourceFileExists(ResourceID resourceFileID);
+	LUNA_API static ResourceID LoadResourceFile(const std::string& filename, const std::string& password = "");
+	LUNA_API static ResourceFile* GetResourceFile(ResourceID resourceFileID);
+	LUNA_API static void UnloadResourceFile(ResourceID resourceFileID);
+	LUNA_API static bool ResourceFileExists(ResourceID resourceFileID);
 
-	static ResourceID GetTextureID(const std::string& name, ResourceID resourceFileID = RESOURCE_ID_NULL);
-	static const ResourceTexture* GetTexture(ResourceID resourceTextureID, ResourceID resourceFileID = RESOURCE_ID_NULL);
+	LUNA_API static std::size_t GetTexturePageID(const std::string& name, ResourceID resourceFileID = RESOURCE_ID_NULL);
+	LUNA_API static const TexturePage* GetTexturePage(std::size_t texturePageID, ResourceID resourceFileID = RESOURCE_ID_NULL);
+
+	LUNA_API static ResourceID GetTextureID(const std::string& name, ResourceID resourceFileID = RESOURCE_ID_NULL);
+	LUNA_API static const ResourceTexture* GetTexture(ResourceID resourceTextureID, ResourceID resourceFileID = RESOURCE_ID_NULL);
 
 protected:
 	friend class ResourceFile;
 	static ResourceID GenerateID();
 
 private:
-
 	static std::string m_errorMessage;
 	static ResourceID m_resourceIDCounter;
 	static std::unordered_map<ResourceID, ResourceFile> m_resourceFiles;

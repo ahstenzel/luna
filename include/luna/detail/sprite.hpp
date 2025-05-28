@@ -9,6 +9,7 @@ typedef std::uint32_t SpriteID;
 constexpr SpriteID SPRITE_ID_NULL = 0;
 
 // Forward declarations
+class RoomManager;
 class SpriteList;
 struct SpriteComp;
 
@@ -24,33 +25,33 @@ struct SpriteTextureCoords {
 /// </summary>
 class Sprite {
 public:
-	Sprite(const ResourceID textureID, float x, float y, int32_t image = 0, int32_t depth = 0, float scaleX = 1.f, float scaleY = 1.f, float rotation = 0.f, SDL_Color blend = {255, 255, 255, 255});
+	LUNA_API Sprite(const ResourceID textureID, float x, float y, int32_t image = 0, int32_t depth = 0, float scaleX = 1.f, float scaleY = 1.f, float rotation = 0.f, SDL_Color blend = {255, 255, 255, 255});
 
-	bool IsValid() const;
+	LUNA_API bool IsValid() const;
 
-	float GetPositionX() const;
-	float GetPositionY() const;
-	float GetScaleX() const;
-	float GetScaleY() const;
-	float GetRotation() const;
-	float GetWidth() const;
-	float GetHeight() const;
-	int32_t GetImage() const;
-	int32_t GetNumImages() const;
-	int32_t GetDepth() const;
-	ResourceID GetTextureID() const;
-	SpriteTextureCoords GetTextureCoords() const;
-	const TexturePage* GetTexturePage() const;
-	SDL_Color GetBlend() const;
+	LUNA_API float GetPositionX() const;
+	LUNA_API float GetPositionY() const;
+	LUNA_API float GetScaleX() const;
+	LUNA_API float GetScaleY() const;
+	LUNA_API float GetRotation() const;
+	LUNA_API float GetWidth() const;
+	LUNA_API float GetHeight() const;
+	LUNA_API int32_t GetImage() const;
+	LUNA_API int32_t GetNumImages() const;
+	LUNA_API int32_t GetDepth() const;
+	LUNA_API ResourceID GetTextureID() const;
+	LUNA_API SpriteTextureCoords GetTextureCoords() const;
+	LUNA_API const TexturePage* GetTexturePage() const;
+	LUNA_API SDL_Color GetBlend() const;
 
-	void SetPositionX(float x);
-	void SetPositionY(float y);
-	void SetScaleX(float scaleX);
-	void SetScaleY(float scaleY);
-	void SetRotation(float rotation);
-	void SetImage(int32_t image);
-	void SetDepth(int32_t depth);
-	void SetBlend(const SDL_Color& blend);
+	LUNA_API void SetPositionX(float x);
+	LUNA_API void SetPositionY(float y);
+	LUNA_API void SetScaleX(float scaleX);
+	LUNA_API void SetScaleY(float scaleY);
+	LUNA_API void SetRotation(float rotation);
+	LUNA_API void SetImage(int32_t image);
+	LUNA_API void SetDepth(int32_t depth);
+	LUNA_API void SetBlend(const SDL_Color& blend);
 
 protected:
 	friend class SpriteList;
@@ -86,14 +87,14 @@ private:
 /// </summary>
 class SpriteList {
 public:
-	SpriteList();
+	LUNA_API SpriteList();
 
 	/// <summary>
 	/// Add an existing sprite to this list and return its reference ID.
 	/// </summary>
 	/// <param name="sprite">Sprite object</param>
 	/// <returns>Sprite ID</returns>
-	SpriteID AddSprite(const Sprite& sprite);
+	LUNA_API SpriteID AddSprite(const Sprite& sprite);
 
 	/// <summary>
 	/// Create a new sprite in this list and return its reference ID.
@@ -101,7 +102,7 @@ public:
 	/// <param name="...args">Sprite constructor arguments</param>
 	/// <returns>Sprite ID</returns>
 	template<typename... Args>
-	SpriteID CreateSprite(Args&&... args) {
+	LUNA_API SpriteID CreateSprite(Args&&... args) {
 		SpriteID id = SpriteList::GenerateID();
 		auto result = m_sprites.emplace(std::make_pair(id, Sprite(std::move(args)...)));
 		if (!result.second) { return SPRITE_ID_NULL; }
@@ -116,38 +117,39 @@ public:
 	/// </summary>
 	/// <param name="spriteID">Sprite ID</param>
 	/// <returns>Sprite object</returns>
-	Sprite* GetSprite(SpriteID spriteID);
+	LUNA_API Sprite* GetSprite(SpriteID spriteID);
 
 	/// <summary>
 	/// Get the sprite ID at the given index.
 	/// </summary>
 	/// <param name="idx">idx</param>
 	/// <returns>Sprite ID</returns>
-	SpriteID GetSpriteID(std::size_t idx);
+	LUNA_API SpriteID GetSpriteID(std::size_t idx);
 
 	/// <summary>
 	/// Remove the sprite associated with the ID from the list.
 	/// </summary>
 	/// <param name="spriteID">Sprite ID</param>
-	void RemoveSprite(SpriteID spriteID);
+	LUNA_API void RemoveSprite(SpriteID spriteID);
 
 	/// <summary>
 	/// Get the number of sprites in this list.
 	/// </summary>
 	/// <returns>Number of sprites</returns>
-	std::uint32_t Size() const;
+	LUNA_API std::uint32_t Size() const;
 
 	/// <summary>
 	/// Sort the sprites in the list by texture page & depth, if not already sorted.
 	/// </summary>
-	void Sort();
+	LUNA_API void Sort();
 
-	std::vector<SpriteID>::const_iterator begin() const;
+	LUNA_API std::vector<SpriteID>::const_iterator begin() const;
 
-	std::vector<SpriteID>::const_iterator end() const;
+	LUNA_API std::vector<SpriteID>::const_iterator end() const;
 
 protected:
 	friend class Sprite;
+	friend class RoomManager;
 
 	void MarkDirty();
 	void Tick(float dt);

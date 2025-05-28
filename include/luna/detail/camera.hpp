@@ -5,6 +5,6 @@
 
 namespace luna {
 
-glm::mat4x4 CameraProjectionOrtho(float left, float right, float bottom, float top, float zNear, float zFar);
+LUNA_API glm::mat4x4 CameraProjectionOrtho(float left, float right, float bottom, float top, float zNear, float zFar);
 
 } // luna

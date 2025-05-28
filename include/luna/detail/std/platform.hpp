@@ -59,3 +59,35 @@
 # define LUNA_SIMD_NONE
 
 #endif
+
+// Detect OS
+#if defined(_WIN64) || defined(_WIN32)
+# define LUNA_OS_WINDOWS
+#elif defined(__APPLE__) && defined(__MACH__)
+# define LUNA_OS_MAC
+#elif defined(__linux__)
+# define LUNA_OS_LINUX
+#else
+# define LUNA_OS_UNKNOWN
+#endif
+
+// Shared library interfacing
+#if defined(LUNA_BUILD_SHARED)
+# if defined(LUNA_OS_WINDOWS) && (defined(LUNA_CMP_MSVC) || defined(LUNA_CMP_GCC))
+#  if defined(LUNA_SHARED_EXPORT)
+#   define LUNA_API __declspec(dllexport)
+#  else
+#   define LUNA_API __declspec(dllimport)
+#  endif
+# elif defined(LUNA_CMP_CLANG)
+#  if defined(LUNA_SHARED_EXPORT)
+#   define LUNA_API __attribute__((dllexport))
+#  else
+#   define LUNA_API __attribute__((dllimport))
+#  endif
+# else
+#  define LUNA_API
+# endif
+#else
+# define LUNA_API
+#endif

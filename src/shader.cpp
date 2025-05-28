@@ -98,7 +98,7 @@ void SpriteBatchShaderPipeline::Clear() {
 }
 
 bool SpriteBatchShaderPipeline::IsValid() const {
-	return (m_pipeline && m_fragShader && m_vertShader);
+	return (m_pipeline);
 }
 
 } // luna

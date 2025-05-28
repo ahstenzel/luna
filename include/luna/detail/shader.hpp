@@ -7,10 +7,10 @@ namespace luna {
 
 class ShaderPipeline {
 public:
-	virtual bool IsValid() const = 0;
-	virtual void Clear() = 0;
+	LUNA_API virtual bool IsValid() const = 0;
+	LUNA_API virtual void Clear() = 0;
 
-	virtual SDL_GPUGraphicsPipeline* GetPipeline() const = 0;
+	LUNA_API virtual SDL_GPUGraphicsPipeline* GetPipeline() const = 0;
 
 protected:
 	SDL_GPUGraphicsPipeline* m_pipeline = nullptr;
@@ -19,13 +19,13 @@ protected:
 
 class SpriteBatchShaderPipeline : public ShaderPipeline {
 public:
-	SpriteBatchShaderPipeline(SDL_GPUDevice* device, SDL_Window* window);
-	~SpriteBatchShaderPipeline();
+	LUNA_API SpriteBatchShaderPipeline(SDL_GPUDevice* device, SDL_Window* window);
+	LUNA_API ~SpriteBatchShaderPipeline();
 
-	SDL_GPUGraphicsPipeline* GetPipeline() const override;
+	LUNA_API SDL_GPUGraphicsPipeline* GetPipeline() const override;
 
-	void Clear();
-	bool IsValid() const override;
+	LUNA_API void Clear();
+	LUNA_API bool IsValid() const override;
 
 private:
 	SDL_GPUShader* m_fragShader = nullptr;
