@@ -9,16 +9,6 @@ SpriteRenderer::SpriteRenderer() {
 	SDL_GPUDevice* device = Game::GetGPUDevice();
 	SDL_Window* window = Game::GetWindow();
 	m_pipeline = new SpriteBatchShaderPipeline(device, window);
-
-	// Create GPU resources
-	SDL_GPUSamplerCreateInfo sdlGPUSamplerCreateInfo = {};
-	sdlGPUSamplerCreateInfo.min_filter = SDL_GPU_FILTER_NEAREST;
-	sdlGPUSamplerCreateInfo.mag_filter = SDL_GPU_FILTER_NEAREST;
-	sdlGPUSamplerCreateInfo.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
-	sdlGPUSamplerCreateInfo.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-	sdlGPUSamplerCreateInfo.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-	sdlGPUSamplerCreateInfo.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-	m_sdlGPUSampler = SDL_CreateGPUSampler(device, &sdlGPUSamplerCreateInfo);
 }
 
 SpriteRenderer::~SpriteRenderer() {
@@ -29,6 +19,7 @@ SpriteRenderer::~SpriteRenderer() {
 	SDL_ReleaseGPUBuffer(device, m_sdlSpriteDataBuffer);
 	SDL_ReleaseGPUTransferBuffer(device, m_sdlSpriteDataTransferBuffer);
 	SDL_ReleaseGPUBuffer(device, m_sdlSpriteDataBuffer);
+	SDL_ReleaseGPUTransferBuffer(device, m_sdlTextureTransferBuffer);
 }
 
 bool SpriteRenderer::IsValid() const {
@@ -42,7 +33,7 @@ void SpriteRenderer::Draw() {
 
 void SpriteRenderer::RenderSpriteList(SDL_Window* window, SpriteList* spriteList) {
 	// Get camera
-	glm::mat4x4 cameraMatrix = CameraProjectionOrtho(0.0f, 1366.0f, 768.0f, 0.0f, 0.0f, -1.0f);
+	glm::mat4 cameraMatrix = CameraProjectionOrtho(0.0f, 1366.0f, 768.0f, 0.0f, 1.0f, -1.0f);
 
 	// Get GPU resources
 	SDL_GPUDevice* device = Game::GetGPUDevice();
@@ -60,13 +51,15 @@ void SpriteRenderer::RenderSpriteList(SDL_Window* window, SpriteList* spriteList
 		// Partition list into texture page batches
 		std::size_t spriteBegin = 0;
 		std::size_t spriteCount = 0;
-		ResourceID lastTexturePageID = RESOURCE_ID_NULL;
 		spriteList->Sort();
-		for(std::size_t i = 0; i < spriteList->Size(); ++i) {
+
+		for (std::size_t i = 0; i < spriteList->Size(); ++i) {
 			SpriteID spriteID = spriteList->GetSpriteID(i);
 			Sprite* sprite = spriteList->GetSprite(spriteID);
-			ResourceID texturePageID = sprite->GetTextureID();
-			if (texturePageID != lastTexturePageID) {
+			TexturePageID texturePageID = sprite->GetTexturePageID();
+			if (texturePageID != m_lastTexturePageID) {
+				m_lastTexturePageID = texturePageID;
+
 				// Render current batch
 				if (spriteCount > 0) {
 					RenderSpriteListBatch(commandBuffer, swapchainTexture, &cameraMatrix, spriteList, spriteBegin, spriteCount);
@@ -78,7 +71,7 @@ void SpriteRenderer::RenderSpriteList(SDL_Window* window, SpriteList* spriteList
 
 				// Swap to new texture page
 				const TexturePage* texturePage = sprite->GetTexturePage();
-				SetTexturePage(texturePage);
+				SetTexturePage(commandBuffer, texturePage);
 			}
 			else { spriteCount++; }
 		}
@@ -90,7 +83,9 @@ void SpriteRenderer::RenderSpriteList(SDL_Window* window, SpriteList* spriteList
 	SDL_SubmitGPUCommandBuffer(commandBuffer);
 }
 
-void SpriteRenderer::RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, SDL_GPUTexture* swapchainTexture, glm::mat4x4* cameraMatrix, SpriteList* spriteList, std::size_t spriteBegin, std::size_t spriteCount) {
+void SpriteRenderer::RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, SDL_GPUTexture* swapchainTexture, glm::mat4* cameraMatrix, SpriteList* spriteList, std::size_t spriteBegin, std::size_t spriteCount) {
+	if (spriteCount == 0) { return; }
+
 	// Resize transfer buffer if needed
 	SDL_GPUDevice* device = Game::GetGPUDevice();
 	if (spriteCount != m_lastSpriteBatchSize) {
@@ -111,7 +106,10 @@ void SpriteRenderer::RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, 
 
 	// Build sprite instance buffer
 	SpriteBatchInfo* dataPtr = (SpriteBatchInfo*)SDL_MapGPUTransferBuffer(device, m_sdlSpriteDataTransferBuffer, true);
-	std::size_t i = 0;
+	if (!dataPtr) {
+		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Failed to map GPU transfer buffer: %s", SDL_GetError());
+		return;
+	}
 	for(std::size_t i = 0; i < spriteCount; ++i) {
 		SpriteID spriteID = spriteList->GetSpriteID(spriteBegin + i);
 		Sprite* sprite = spriteList->GetSprite(spriteID);
@@ -121,8 +119,8 @@ void SpriteRenderer::RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, 
 		dataPtr[i].y = sprite->GetPositionY();
 		dataPtr[i].z = 0.0f;
 		dataPtr[i].rotation = sprite->GetRotation();
-		dataPtr[i].w = sprite->GetWidth();
-		dataPtr[i].h = sprite->GetHeight();
+		dataPtr[i].w = sprite->GetWidth() * sprite->GetScaleX();
+		dataPtr[i].h = sprite->GetHeight() * sprite->GetScaleY();
 		dataPtr[i].texU = spriteTextureCoords.textureU;
 		dataPtr[i].texV = spriteTextureCoords.textureV;
 		dataPtr[i].texW = spriteTextureCoords.textureW;
@@ -160,28 +158,19 @@ void SpriteRenderer::RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, 
 	sdlGPUTextureSamplerBinding.texture = m_sdlGPUTexture;
 	sdlGPUTextureSamplerBinding.sampler = m_sdlGPUSampler;
 	SDL_BindGPUFragmentSamplers(renderPass, 0, &sdlGPUTextureSamplerBinding, 1);
-	SDL_PushGPUVertexUniformData(commandBuffer, 0, &cameraMatrix[0][0], sizeof(glm::mat4x4));
+	SDL_PushGPUVertexUniformData(commandBuffer, 0, &(cameraMatrix[0][0]), sizeof(glm::mat4));
 	SDL_DrawGPUPrimitives(renderPass, spriteCount * 6, 1, 0, 0);
 	SDL_EndGPURenderPass(renderPass);
 }
 
-void SpriteRenderer::SetTexturePage(const TexturePage* texturePage) {
-	// Upload image data to transfer buffer
+void SpriteRenderer::SetTexturePage(SDL_GPUCommandBuffer* commandBuffer, const TexturePage* texturePage) {
 	SDL_GPUDevice* device = Game::GetGPUDevice();
-	std::uint32_t bufferSize = texturePage->GetWidth() * texturePage->GetHeight() * 4u;
-	SDL_GPUTransferBufferCreateInfo textureTransferBufferCreateInfo = {};
-	textureTransferBufferCreateInfo.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
-	textureTransferBufferCreateInfo.size = bufferSize;
-	SDL_GPUTransferBuffer* textureTransferBuffer = SDL_CreateGPUTransferBuffer(device, &textureTransferBufferCreateInfo);
-	Uint8* textureTransferPtr = (Uint8*)SDL_MapGPUTransferBuffer(device, textureTransferBuffer, false);
-	SDL_memcpy(textureTransferPtr, texturePage->GetData(), bufferSize);
-	SDL_UnmapGPUTransferBuffer(device, textureTransferBuffer);
 
-	// Get GPU texture
+	// Create GPU texture
 	if (m_sdlGPUTexture) { SDL_ReleaseGPUTexture(device, m_sdlGPUTexture); }
 	SDL_GPUTextureCreateInfo textureCreateInfo = {};
 	textureCreateInfo.type = SDL_GPU_TEXTURETYPE_2D;
-	textureCreateInfo.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+	textureCreateInfo.format = SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM;
 	textureCreateInfo.width = texturePage->GetWidth();
 	textureCreateInfo.height = texturePage->GetHeight();
 	textureCreateInfo.layer_count_or_depth = 1;
@@ -189,11 +178,33 @@ void SpriteRenderer::SetTexturePage(const TexturePage* texturePage) {
 	textureCreateInfo.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
 	m_sdlGPUTexture = SDL_CreateGPUTexture(device, &textureCreateInfo);
 
+	// Create GPU sampler
+	if (m_sdlGPUSampler) { SDL_ReleaseGPUSampler(device, m_sdlGPUSampler); }
+	SDL_GPUSamplerCreateInfo sdlGPUSamplerCreateInfo = {};
+	sdlGPUSamplerCreateInfo.min_filter = SDL_GPU_FILTER_NEAREST;
+	sdlGPUSamplerCreateInfo.mag_filter = SDL_GPU_FILTER_NEAREST;
+	sdlGPUSamplerCreateInfo.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
+	sdlGPUSamplerCreateInfo.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+	sdlGPUSamplerCreateInfo.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+	sdlGPUSamplerCreateInfo.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+	m_sdlGPUSampler = SDL_CreateGPUSampler(device, &sdlGPUSamplerCreateInfo);
+
+	// Upload image data to transfer buffer
+	if (m_sdlTextureTransferBuffer) { SDL_ReleaseGPUTransferBuffer(device, m_sdlTextureTransferBuffer); }
+	std::uint32_t bufferSize = texturePage->GetWidth() * texturePage->GetHeight() * 4u;
+	SDL_GPUTransferBufferCreateInfo textureTransferBufferCreateInfo = {};
+	textureTransferBufferCreateInfo.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+	textureTransferBufferCreateInfo.size = bufferSize;
+	m_sdlTextureTransferBuffer = SDL_CreateGPUTransferBuffer(device, &textureTransferBufferCreateInfo);
+	Uint8* textureTransferPtr = (Uint8*)SDL_MapGPUTransferBuffer(device, m_sdlTextureTransferBuffer, false);
+	std::uint8_t* data = texturePage->GetData();
+	SDL_memcpy(textureTransferPtr, texturePage->GetData(), bufferSize);
+	SDL_UnmapGPUTransferBuffer(device, m_sdlTextureTransferBuffer);
+
 	// Use transfer buffer to copy data to texture
-	SDL_GPUCommandBuffer* commandBuffer = SDL_AcquireGPUCommandBuffer(device);
 	SDL_GPUCopyPass* copyPass = SDL_BeginGPUCopyPass(commandBuffer);
 	SDL_GPUTextureTransferInfo textureTransferInfo = {};
-	textureTransferInfo.transfer_buffer = textureTransferBuffer;
+	textureTransferInfo.transfer_buffer = m_sdlTextureTransferBuffer;
 	textureTransferInfo.offset = 0;
 	SDL_GPUTextureRegion textureRegion = {};
 	textureRegion.texture = m_sdlGPUTexture;
@@ -202,8 +213,6 @@ void SpriteRenderer::SetTexturePage(const TexturePage* texturePage) {
 	textureRegion.d = 1;
 	SDL_UploadToGPUTexture(copyPass, &textureTransferInfo, &textureRegion, false);
 	SDL_EndGPUCopyPass(copyPass);
-	SDL_SubmitGPUCommandBuffer(commandBuffer);
-	SDL_ReleaseGPUTransferBuffer(device, textureTransferBuffer);
 }
 
 } // luna

@@ -6,6 +6,12 @@ set(SDL_SHARED ON)
 add_subdirectory(SDL EXCLUDE_FROM_ALL)
 set(LUNA_RUNTIME_SHARED "${LUNA_RUNTIME_SHARED};$<TARGET_FILE:SDL3::SDL3>" CACHE PATH "" FORCE)
 
+# SDL_image
+set(SDLIMAGE_AVIF OFF)
+set(SDLIMAGE_TIF OFF)
+add_subdirectory(SDL_image EXCLUDE_FROM_ALL)
+set(LUNA_RUNTIME_SHARED "${LUNA_RUNTIME_SHARED};$<TARGET_FILE:SDL3_image::SDL3_image>" CACHE PATH "" FORCE)
+
 # AES
 add_subdirectory(aes)
 
@@ -21,6 +27,7 @@ set(BASE64_WITH_AVX2 ON)
 set(BASE64_WITH_AVX512 ON)
 set(BASE64_WITH_NEON64 ON)
 add_subdirectory(base64)
+set(LUNA_RUNTIME_SHARED "${LUNA_RUNTIME_SHARED};$<TARGET_FILE:base64>" CACHE PATH "" FORCE)
 
 # vex
 add_subdirectory(vex)
@@ -41,6 +48,7 @@ target_link_libraries(vendor INTERFACE
 	libaes 
 	liblz4 
 	SDL3::SDL3 
+	SDL3_image::SDL3_image
 	glm::glm
 )
 set_target_properties(
@@ -51,6 +59,14 @@ set_target_properties(
 	libcppvex
 	SDL_uclibc
 	SDL3-shared
+	SDL3_image-shared
+	sharpyuv
+	webp
+	webpdecode
+	webpdemux
+	webpdsp
+	webpencode
+	webputils
 	glm
 	PROPERTIES FOLDER "Vendor"
 )

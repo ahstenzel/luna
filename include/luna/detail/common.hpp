@@ -17,6 +17,7 @@
 
 // SDL includes
 #include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
 
 // External libraries
 #define LZ4_HEAPMODE 1

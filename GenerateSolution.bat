@@ -83,9 +83,9 @@ for /F "tokens=*" %%L in (.gitmodules) do (
 )
 
 rem Run generator scripts for submodules
-if exist "vendor\SDL_shadercross\external\Get-GitModules.ps1" (
-	echo Running gen script for SDL_shadercross...
-	powershell -executionpolicy remotesigned -File "vendor\SDL_shadercross\external\Get-GitModules.ps1"
+if exist "vendor\SDL_image\external\Get-GitModules.ps1" (
+	echo Running gen script for SDL_image...
+	powershell -executionpolicy remotesigned -File "vendor\SDL_image\external\Get-GitModules.ps1"
 )
 
 rem Modify base64 CMake policy (temp workaround for outdated behavior)

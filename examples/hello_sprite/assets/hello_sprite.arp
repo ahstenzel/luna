@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE arp>
+<arp version="1.0.0">
+ <useEncryption>false</useEncryption>
+ <encryptionPassword/>
+ <asset descriptor="Group#(root)" group="true" root="true">
+  <asset descriptor="Texture#ravioli1#C:/Users/alexh/Downloads/ravioli1.png#0#1#1#0#0#1#0#0"/>
+  <asset descriptor="Texture#ravioli2#C:/Users/alexh/Downloads/ravioli2.png#0#1#1#0#0#1#0#0"/>
+  <asset descriptor="Texture#ravioli3#C:/Users/alexh/Downloads/ravioli3.png#0#1#1#0#0#1#0#0"/>
+  <asset descriptor="Texture#ravioli4#C:/Users/alexh/Downloads/ravioli4.png#0#1#1#0#0#1#0#0"/>
+ </asset>
+ <textureGroups count="0" groups=""/>
+</arp>

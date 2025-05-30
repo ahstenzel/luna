@@ -64,11 +64,11 @@ void ResourceTexture::Load(ResourceFile* file, const Buffer& block) {
 
 		// Validate texture page
 		m_resourceFileID = file->GetID();
-		m_texturePageIndex = assetData.get_uint32(0);
-		m_texturePage = file->GetTexturePage(m_texturePageIndex);
+		m_texturePageID = TexturePageID(assetData.get_uint32(0));
+		m_texturePage = file->GetTexturePage(m_texturePageID);
 		if (!m_texturePage) {
 			std::stringstream msg;
-			msg << "Invalid texture page (" << m_texturePageIndex << ")";
+			msg << "Invalid texture page (" << m_texturePageID << ")";
 			throw std::exception(msg.str().c_str());
 		}
 
@@ -112,8 +112,8 @@ std::uint32_t ResourceTexture::GetNumFrames() const {
 	return m_animationFrameCount;
 }
 
-std::size_t ResourceTexture::GetTexturePageID() const {
-	return m_texturePageIndex;
+TexturePageID ResourceTexture::GetTexturePageID() const {
+	return m_texturePageID;
 }
 
 std::uint32_t ResourceTexture::GetXOffset(std::int32_t animationFrame) const {
@@ -227,20 +227,20 @@ std::uint32_t TexturePage::GetHeight() const {
 	return m_height;
 }
 
-bool TexturePage::WriteToFile(std::filesystem::path outputFile) {
+bool TexturePage::WriteToFile(std::filesystem::path outputFile) const {
 	// Set default output path
 	if (outputFile.empty()) {
 		outputFile = std::filesystem::current_path();
 		outputFile /= (m_name + ".png");
 	}
+	SDL_Log("Writing texture page to: %s", outputFile.string().c_str());
 
 	// Write image to surface
 	SDL_Surface* surface = SDL_CreateSurfaceFrom(int(m_width), int(m_height), m_format, (void*)(m_buffer.data()), int(m_width) * 4);
-	if (!surface) {
-		m_errorMessage = "Failed to create surface";
-		return false;
-	}
-	//IMG_SavePNG()
+	if (!surface) { return false; }
+	IMG_SavePNG(surface, outputFile.string().c_str());
+	SDL_DestroySurface(surface);
+	return true;
 }
 
 void TexturePage::Load(ResourceFile* file, const Buffer& block) {
@@ -423,17 +423,17 @@ ResourceID ResourceFile::GetID() const {
 	return m_resourceFileID;
 }
 
-std::size_t ResourceFile::GetTexturePageID(const std::string& name) const {
-	std::size_t index = 0;
+TexturePageID ResourceFile::GetTexturePageID(const std::string& name) const {
+	TexturePageID index = TEXTURE_PAGE_ID_NULL;
 	for (auto& texturePage : m_texturePages) {
 		if (texturePage.GetName() == name) { return index; }
 		else { index++; }
 	}
-	return std::numeric_limits<std::size_t>::max();
+	return TEXTURE_PAGE_ID_NULL;
 }
 
-const TexturePage* ResourceFile::GetTexturePage(std::size_t index) const {
-	return (index < m_texturePages.size()) ? &m_texturePages[index] : nullptr;
+const TexturePage* ResourceFile::GetTexturePage(TexturePageID texturePageID) const {
+	return (texturePageID < 0 || texturePageID >= m_texturePages.size()) ? nullptr : &m_texturePages[std::size_t(texturePageID)];
 }
 
 std::size_t ResourceFile::GetTexturePageCount() const {
@@ -523,39 +523,39 @@ bool ResourceManager::ResourceFileExists(ResourceID resourceFileID) {
 	return (file != nullptr && file->IsValid());
 }
 
-std::size_t ResourceManager::GetTexturePageID(const std::string& name, ResourceID resourceFileID) {
+TexturePageID ResourceManager::GetTexturePageID(const std::string& name, ResourceID resourceFileID) {
 	m_errorMessage.clear();
 
 	if (resourceFileID == RESOURCE_ID_NULL) {
 		// Search all resource files
-		std::size_t finalIndex = std::numeric_limits<std::size_t>::max();
+		TexturePageID finalIndex = TEXTURE_PAGE_ID_NULL;
 		for (auto& pair : m_resourceFiles) {
-			std::size_t index = pair.second.GetTexturePageID(name);
-			if (index < finalIndex) {
+			TexturePageID index = pair.second.GetTexturePageID(name);
+			if (index != TEXTURE_PAGE_ID_NULL) {
 				finalIndex = index;
 				break;
 			}
 		}
 
-		if (finalIndex == std::numeric_limits<std::size_t>::max()) {
+		if (finalIndex == TEXTURE_PAGE_ID_NULL) {
 			m_errorMessage = "Failed to find texture page";
 		}
 		return finalIndex;
 	}
 	else {
 		auto file = GetResourceFile(resourceFileID);
-		if (!file) { return std::numeric_limits<std::size_t>::max(); }
+		if (!file) { return TEXTURE_PAGE_ID_NULL; }
 		std::size_t index = file->GetTexturePageID(name);
-		if (index == std::numeric_limits<std::size_t>::max()) {
+		if (index == TEXTURE_PAGE_ID_NULL) {
 			m_errorMessage = "Failed to find texture page";
 		}
 		return index;
 	}
 }
 
-const TexturePage* ResourceManager::GetTexturePage(std::size_t texturePageID, ResourceID resourceFileID) {
+const TexturePage* ResourceManager::GetTexturePage(TexturePageID texturePageID, ResourceID resourceFileID) {
 	m_errorMessage.clear();
-	if (texturePageID == std::numeric_limits<std::size_t>::max()) {
+	if (texturePageID == TEXTURE_PAGE_ID_NULL) {
 		m_errorMessage = "Texture page ID is null";
 		return nullptr;
 	}

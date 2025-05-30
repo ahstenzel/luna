@@ -41,6 +41,7 @@ public:
 	LUNA_API int32_t GetDepth() const;
 	LUNA_API ResourceID GetTextureID() const;
 	LUNA_API SpriteTextureCoords GetTextureCoords() const;
+	LUNA_API TexturePageID GetTexturePageID() const;
 	LUNA_API const TexturePage* GetTexturePage() const;
 	LUNA_API SDL_Color GetBlend() const;
 

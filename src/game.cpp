@@ -11,6 +11,7 @@ std::function<void(float)> Game::m_postTickFunc = {};
 std::function<void(Renderer*)> Game::m_preDrawFunc = {};
 std::function<void(Renderer*)> Game::m_postDrawFunc = {};
 
+bool Game::m_enableGraphicsDebugging = false;
 bool Game::m_quitFlag = false;
 unsigned int Game::m_ticksPerSecond = 0;
 SDL_Window* Game::m_sdlWindow = nullptr;
@@ -20,6 +21,7 @@ Renderer* Game::m_renderer = nullptr;
 bool Game::Init(GameInit* init) {
 	// Save init values
 	if (!init || !init->rendererFactory) { return false; }
+	m_enableGraphicsDebugging = init->enableGraphicsDebugging;
 	m_startFunc = init->startFunc;
 	m_endFunc = init->endFunc;
 	m_preTickFunc = init->preTickFunc;
@@ -52,7 +54,7 @@ bool Game::Init(GameInit* init) {
 	// Create GPU device
 	m_sdlGPUDevice = SDL_CreateGPUDevice(
 		SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL,
-		false,
+		m_enableGraphicsDebugging,
 		nullptr
 	);
 	if (!m_sdlGPUDevice) {
@@ -160,6 +162,10 @@ SDL_GPUDevice* Game::GetGPUDevice() {
 
 Renderer* Game::GetRenderer() {
 	return m_renderer;
+}
+
+bool Game::GetGraphicsDebuggingEnabled() {
+	return m_enableGraphicsDebugging;
 }
 
 void Game::Cleanup() {

@@ -51,6 +51,7 @@ target_include_directories(libluna PRIVATE
 	"${PROJECT_SOURCE_DIR}/include"
 	"${PROJECT_SOURCE_DIR}/vendor"
 	"${PROJECT_SOURCE_DIR}/vendor/SDL/include"
+	"${PROJECT_SOURCE_DIR}/vendor/SDL_image/include"
 	"${PROJECT_SOURCE_DIR}/vendor/base64/include"
 	"${PROJECT_SOURCE_DIR}/vendor/json/include"
 	"${PROJECT_SOURCE_DIR}/vendor/glm"

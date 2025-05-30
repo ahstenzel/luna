@@ -40,14 +40,16 @@ protected:
 
 private:
 	void RenderSpriteList(SDL_Window* window, SpriteList* spriteList);
-	void RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, SDL_GPUTexture* swapchainTexture, glm::mat4x4* cameraMatrix, SpriteList* spriteList, std::size_t spriteBegin, std::size_t spriteCount);
-	void SetTexturePage(const TexturePage* texturePage);
+	void RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, SDL_GPUTexture* swapchainTexture, glm::mat4* cameraMatrix, SpriteList* spriteList, std::size_t spriteBegin, std::size_t spriteCount);
+	void SetTexturePage(SDL_GPUCommandBuffer* commandBuffer, const TexturePage* texturePage);
 
 	std::uint32_t m_lastSpriteBatchSize = 0;
+	TexturePageID m_lastTexturePageID = TEXTURE_PAGE_ID_NULL;
 	SDL_GPUSampler* m_sdlGPUSampler = nullptr;
 	SDL_GPUTexture* m_sdlGPUTexture = nullptr;
 	SDL_GPUTransferBuffer* m_sdlSpriteDataTransferBuffer = nullptr;
 	SDL_GPUBuffer* m_sdlSpriteDataBuffer = nullptr;
+	SDL_GPUTransferBuffer* m_sdlTextureTransferBuffer = nullptr;
 	SpriteBatchShaderPipeline* m_pipeline = nullptr;
 };
 

@@ -10,6 +10,7 @@ struct GameInit {
 	unsigned int ticksPerSecond = 120;
 	unsigned int windowW = 1366;
 	unsigned int windowH = 768;
+	bool enableGraphicsDebugging = false;
 	std::string windowTitle = "luna";
 	std::string appName = "luna";
 	std::string appVersion = "1.0.0";
@@ -34,6 +35,7 @@ public:
 	LUNA_API static SDL_Window* GetWindow();
 	LUNA_API static SDL_GPUDevice* GetGPUDevice();
 	LUNA_API static Renderer* GetRenderer();
+	LUNA_API static bool GetGraphicsDebuggingEnabled();
 
 private:
 	static void Cleanup();
@@ -45,6 +47,7 @@ private:
 	static std::function<void(Renderer*)> m_preDrawFunc;
 	static std::function<void(Renderer*)> m_postDrawFunc;
 
+	static bool m_enableGraphicsDebugging;
 	static bool m_quitFlag;
 	static unsigned int m_ticksPerSecond;
 	static SDL_Window* m_sdlWindow;

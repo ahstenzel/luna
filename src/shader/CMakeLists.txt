@@ -27,21 +27,21 @@ foreach(FILE ${APP_SHADER_SRC})
 endforeach()
 
 # Encode into header
-set(APP_SHADER_HEADER "${PROJECT_SOURCE_DIR}/src/shader/shader_encoded.hpp")
-set(APP_SHADER_SOURCE "${PROJECT_SOURCE_DIR}/src/shader/shader_encoded.cpp")
+set(APP_SHADER_OUTPUT_HEADER "${PROJECT_SOURCE_DIR}/src/shader/shader_encoded.hpp")
+set(APP_SHADER_OUTPUT_SOURCE "${PROJECT_SOURCE_DIR}/src/shader/shader_encoded.cpp")
 add_custom_command(
-	OUTPUT ${APP_SHADER_HEADER}
+	OUTPUT ${APP_SHADER_OUTPUT_HEADER}
 	DEPENDS ${APP_SHADER_SRC} ${APP_SHATER_META}
-	COMMAND headerencoder -i ${APP_SHADER_SRC} -o ${APP_SHADER_HEADER} -s
+	COMMAND headerencoder -i ${APP_SHADER_SRC} -o ${APP_SHADER_OUTPUT_HEADER} -s
 )
 add_custom_target(libluna_shader ALL
 	SOURCES ${APP_SHADER_SRC}
-	DEPENDS ${APP_SHADER_HEADER}
+	DEPENDS ${APP_SHADER_OUTPUT_HEADER}
 )
 add_custom_command(
 	TARGET libluna_shader POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E rename
-		"${APP_SHADER_HEADER}"
+		"${APP_SHADER_OUTPUT_HEADER}"
 		"${PROJECT_SOURCE_DIR}/include/luna/detail/shader/shader_encoded.hpp"
 )
 source_group("Source Files" FILES ${APP_SHADER_SRC})

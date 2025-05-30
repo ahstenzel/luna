@@ -20,12 +20,15 @@ int main(int argc, char** argv) {
 	RoomManager::PushRoom({});
 
 	// Create sprite
-	ResourceID texRavioli = ResourceManager::GetTextureID("ravioli1");
-	if (texRavioli == RESOURCE_ID_NULL) {
-		SDL_Log("Failed to find texture (ravioli1)");
-		return 1;
-	}
-	Sprite sprRavioli1(texRavioli, 32.f, 32.f);
+	Sprite sprRavioli4(ResourceManager::GetTextureID("ravioli4"), 0.f, 0.f, 0, 0, 4.0f, 4.0f);
+	Sprite sprRavioli3(ResourceManager::GetTextureID("ravioli3"), 64.f, 0.f, 0, 0, 4.0f, 4.0f);
+	Sprite sprRavioli2(ResourceManager::GetTextureID("ravioli2"), 0.f, 64.f, 0, 0, 4.0f, 4.0f);
+	Sprite sprRavioli1(ResourceManager::GetTextureID("ravioli1"), 64.f, 64.f, 0, 0, 4.0f, 4.0f);
+	//const TexturePage* ravioliTexturePage = sprRavioli1.GetTexturePage();
+	//ravioliTexturePage->WriteToFile();
+	RoomManager::CurrentRoom()->GetSpriteList()->AddSprite(sprRavioli4);
+	RoomManager::CurrentRoom()->GetSpriteList()->AddSprite(sprRavioli3);
+	RoomManager::CurrentRoom()->GetSpriteList()->AddSprite(sprRavioli2);
 	RoomManager::CurrentRoom()->GetSpriteList()->AddSprite(sprRavioli1);
 
 	return Game::Run();

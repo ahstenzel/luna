@@ -1,4 +1,5 @@
-struct SpriteData {
+struct SpriteData 
+{
     float3 Position;
     float Rotation;
     float2 Scale;
@@ -7,9 +8,8 @@ struct SpriteData {
     float4 Color;
 };
 
-StructuredBuffer<SpriteData> DataBuffer : register(t0, space0);
-
-struct Output {
+struct Output 
+{
     float2 Texcoord : TEXCOORD0;
     float4 Color : TEXCOORD1;
     float4 Position : SV_Position;
@@ -23,13 +23,17 @@ static const float2 vertexPos[4] = {
     { 1.0f, 1.0f }
 };
 
-cbuffer UniformBlock : register(b0, space1) {
+StructuredBuffer<SpriteData> DataBuffer : register(t0, space0);
+
+cbuffer UniformBlock : register(b0, space1) 
+{
     float4x4 ViewProjectionMatrix : packoffset(c0);
 };
 
-Output main(uint id : SV_VertexID) {
+Output main(uint id : SV_VertexID) 
+{
     uint spriteIndex = id / 6;
-    uint vert = triangleIndices[spriteIndex % 6];
+    uint vert = triangleIndices[id % 6];
     SpriteData sprite = DataBuffer[spriteIndex];
 
     float2 texcoord[4] = {
@@ -50,7 +54,7 @@ Output main(uint id : SV_VertexID) {
     float3 coordWithDepth = float3(coord + sprite.Position.xy, sprite.Position.z);
 
     Output output;
-
+    
     output.Position = mul(ViewProjectionMatrix, float4(coordWithDepth, 1.0f));
     output.Texcoord = texcoord[vert];
     output.Color = sprite.Color;

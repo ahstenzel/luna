@@ -1,9 +1,8 @@
 #include <luna/detail/shader.hpp>
 #include <luna/detail/shader/shader_encoded.hpp>
+#include <luna/detail/game.hpp>
 
 namespace luna {
-
-static bool g_enableShaderDebug = false;
 
 static SDL_GPUShader* CompileDefaultShaderHLSL(SDL_GPUDevice* device, const ShaderInfo& shader, SDL_ShaderCross_ShaderStage shaderStage, const std::string& entrypoint = "main", SDL_ShaderCross_HLSL_Define* defines = nullptr) {
 	// Validate info
@@ -24,7 +23,7 @@ static SDL_GPUShader* CompileDefaultShaderHLSL(SDL_GPUDevice* device, const Shad
 	shader_info.entrypoint = entrypoint.c_str();
 	shader_info.defines = defines;
 	shader_info.shader_stage = shaderStage;
-	shader_info.enable_debug = g_enableShaderDebug;
+	shader_info.enable_debug = Game::GetGraphicsDebuggingEnabled();
 	shader_info.name = shader.m_name.c_str();
 	SDL_ShaderCross_GraphicsShaderMetadata shader_metadata{};
 	shader_metadata.num_samplers = (Uint32)shader.m_samplers;

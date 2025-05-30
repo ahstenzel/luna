@@ -6,6 +6,8 @@ namespace luna {
 
 typedef std::uint32_t ResourceID;
 constexpr ResourceID RESOURCE_ID_NULL = 0;
+typedef std::int32_t TexturePageID;
+constexpr TexturePageID TEXTURE_PAGE_ID_NULL = -1;
 
 // Forward declarations
 class ResourceFile;
@@ -42,7 +44,7 @@ public:
 	LUNA_API std::uint32_t GetWidth() const;
 	LUNA_API std::uint32_t GetHeight() const;
 	LUNA_API std::uint32_t GetNumFrames() const;
-	LUNA_API std::size_t GetTexturePageID() const;
+	LUNA_API TexturePageID GetTexturePageID() const;
 	LUNA_API std::uint32_t GetXOffset(std::int32_t animationFrame = -1) const;
 	LUNA_API std::uint32_t GetYOffset(std::int32_t animationFrame = -1) const;
 
@@ -52,7 +54,7 @@ protected:
 
 private:
 	const TexturePage* m_texturePage = nullptr;
-	std::size_t m_texturePageIndex = 0;
+	TexturePageID m_texturePageID = 0;
 	std::uint32_t m_texturePageXOffset = 0;
 	std::uint32_t m_texturePageYOffset = 0;
 	std::uint32_t m_texturePageWidth = 0;
@@ -144,7 +146,7 @@ public:
 	LUNA_API SDL_Color GetPixel(unsigned int x, unsigned int y) const;
 	LUNA_API std::uint32_t GetWidth() const;
 	LUNA_API std::uint32_t GetHeight() const;
-	LUNA_API bool WriteToFile(std::filesystem::path outputFile = "");
+	LUNA_API bool WriteToFile(std::filesystem::path outputFile = "") const;
 
 protected:
 	friend class ResourceFile;
@@ -173,8 +175,8 @@ public:
 	LUNA_API std::string GetFilename() const;
 	LUNA_API ResourceID GetID() const;
 
-	LUNA_API std::size_t GetTexturePageID(const std::string& name) const;
-	LUNA_API const TexturePage* GetTexturePage(std::size_t index) const;
+	LUNA_API TexturePageID GetTexturePageID(const std::string& name) const;
+	LUNA_API const TexturePage* GetTexturePage(TexturePageID texturePageID) const;
 	LUNA_API std::size_t GetTexturePageCount() const;
 
 	LUNA_API ResourceID GetTextureID(const std::string& name) const;
@@ -206,8 +208,8 @@ public:
 	LUNA_API static void UnloadResourceFile(ResourceID resourceFileID);
 	LUNA_API static bool ResourceFileExists(ResourceID resourceFileID);
 
-	LUNA_API static std::size_t GetTexturePageID(const std::string& name, ResourceID resourceFileID = RESOURCE_ID_NULL);
-	LUNA_API static const TexturePage* GetTexturePage(std::size_t texturePageID, ResourceID resourceFileID = RESOURCE_ID_NULL);
+	LUNA_API static TexturePageID GetTexturePageID(const std::string& name, ResourceID resourceFileID = RESOURCE_ID_NULL);
+	LUNA_API static const TexturePage* GetTexturePage(TexturePageID texturePageID, ResourceID resourceFileID = RESOURCE_ID_NULL);
 
 	LUNA_API static ResourceID GetTextureID(const std::string& name, ResourceID resourceFileID = RESOURCE_ID_NULL);
 	LUNA_API static const ResourceTexture* GetTexture(ResourceID resourceTextureID, ResourceID resourceFileID = RESOURCE_ID_NULL);
