@@ -88,6 +88,11 @@ if exist "vendor\SDL_image\external\Get-GitModules.ps1" (
 	powershell -executionpolicy remotesigned -File "vendor\SDL_image\external\Get-GitModules.ps1"
 )
 
+if exist "vendor\SDL_ttf\external\Get-GitModules.ps1" (
+	echo Running gen script for SDL_ttf...
+	powershell -executionpolicy remotesigned -File "vendor\SDL_tff\external\Get-GitModules.ps1"
+)
+
 rem Modify base64 CMake policy (temp workaround for outdated behavior)
 set target_file="vendor\base64\CMakeLists.txt"
 if not exist %target_file% (

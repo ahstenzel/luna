@@ -22,8 +22,8 @@
 	url = https://github.com/libsdl-org/SDL_image.git
 	branch = main
 	ignore = dirty
-[submodule "vendor/SDL3_ttf"]
-	path = vendor/SDL3_ttf
+[submodule "vendor/SDL_ttf"]
+	path = vendor/SDL_ttf
 	url = https://github.com/libsdl-org/SDL_ttf.git
 	branch = main
 	ignore = dirty

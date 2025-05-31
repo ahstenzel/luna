@@ -6,6 +6,11 @@ set(SDL_SHARED ON)
 add_subdirectory(SDL EXCLUDE_FROM_ALL)
 set(LUNA_RUNTIME_SHARED "${LUNA_RUNTIME_SHARED};$<TARGET_FILE:SDL3::SDL3>" CACHE PATH "" FORCE)
 
+# SDL_ttf
+set(SDLTTF_VENDORED ON)
+add_subdirectory(SDL_ttf EXCLUDE_FROM_ALL)
+set(LUNA_RUNTIME_SHARED "${LUNA_RUNTIME_SHARED};$<TARGET_FILE:SDL3_ttf::SDL3_ttf>" CACHE PATH "" FORCE)
+
 # SDL_image
 set(SDLIMAGE_AVIF OFF)
 set(SDLIMAGE_TIF OFF)
@@ -48,6 +53,7 @@ target_link_libraries(vendor INTERFACE
 	libaes 
 	liblz4 
 	SDL3::SDL3 
+	SDL3_ttf::SDL3_ttf
 	SDL3_image::SDL3_image
 	glm::glm
 )
@@ -59,6 +65,11 @@ set_target_properties(
 	libcppvex
 	SDL_uclibc
 	SDL3-shared
+	SDL3_ttf-shared
+	plutosvg
+	plutovg
+	harfbuzz
+	freetype
 	SDL3_image-shared
 	sharpyuv
 	webp
