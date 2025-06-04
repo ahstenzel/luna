@@ -20,10 +20,10 @@ int main(int argc, char** argv) {
 	RoomManager::PushRoom({});
 
 	// Create sprite
-	Sprite sprRavioli4(ResourceManager::GetTextureID("ravioli4"), 0.f, 0.f, 0, 0, 4.0f, 4.0f);
-	Sprite sprRavioli3(ResourceManager::GetTextureID("ravioli3"), 64.f, 0.f, 0, 0, 4.0f, 4.0f);
-	Sprite sprRavioli2(ResourceManager::GetTextureID("ravioli2"), 0.f, 64.f, 0, 0, 4.0f, 4.0f);
-	Sprite sprRavioli1(ResourceManager::GetTextureID("ravioli1"), 64.f, 64.f, 0, 0, 4.0f, 4.0f);
+	Sprite sprRavioli4(ResourceManager::GetTextureID("ravioli4"), 0.f, 0.f, 0, 4, 4.0f, 4.0f);
+	Sprite sprRavioli3(ResourceManager::GetTextureID("ravioli3"), 32.f, 0.f, 0, 3, 4.0f, 4.0f);
+	Sprite sprRavioli2(ResourceManager::GetTextureID("ravioli2"), 64.f, 0.f, 0, 99, 4.0f, 4.0f);
+	Sprite sprRavioli1(ResourceManager::GetTextureID("ravioli1"), 96.f, 0.f, 0, 1, 4.0f, 4.0f);
 	//const TexturePage* ravioliTexturePage = sprRavioli1.GetTexturePage();
 	//ravioliTexturePage->WriteToFile();
 	RoomManager::CurrentRoom()->GetSpriteList()->AddSprite(sprRavioli4);

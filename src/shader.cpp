@@ -41,8 +41,9 @@ static SDL_GPUShader* CompileDefaultShaderHLSL(SDL_GPUDevice* device, const Shad
 	return shaderCompiled;
 }
 
-SpriteBatchShaderPipeline::SpriteBatchShaderPipeline(SDL_GPUDevice* device, SDL_Window* window) {
-	m_device = device;
+SpriteBatchShaderPipeline::SpriteBatchShaderPipeline() {
+	SDL_GPUDevice* device = Game::GetGPUDevice();
+	SDL_Window* window = Game::GetWindow();
 
 	// Decode & compile shaders
 	m_fragShader = CompileDefaultShaderHLSL(device, SpriteBatch_frag_hlsl, SDL_SHADERCROSS_SHADERSTAGE_FRAGMENT);
@@ -52,31 +53,75 @@ SpriteBatchShaderPipeline::SpriteBatchShaderPipeline(SDL_GPUDevice* device, SDL_
 		return; 
 	}
 
+	// Determine depth stencil format
+	if (SDL_GPUTextureSupportsFormat(
+		device,
+		SDL_GPU_TEXTUREFORMAT_D24_UNORM_S8_UINT,
+		SDL_GPU_TEXTURETYPE_2D,
+		SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET
+	)) { m_depthStencilFormat = SDL_GPU_TEXTUREFORMAT_D24_UNORM_S8_UINT; }
+	else if (SDL_GPUTextureSupportsFormat(
+		device,
+		SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT,
+		SDL_GPU_TEXTURETYPE_2D,
+		SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET
+	)) { m_depthStencilFormat = SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT; }
+	else { m_depthStencilFormat = SDL_GPU_TEXTUREFORMAT_D16_UNORM; }
+
 	// Build pipeline
-	SDL_GPUColorTargetBlendState colorTargetBlendState{};
-	colorTargetBlendState.enable_blend = true;
-	colorTargetBlendState.color_blend_op = SDL_GPU_BLENDOP_ADD;
-	colorTargetBlendState.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
-	colorTargetBlendState.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
-	colorTargetBlendState.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
-	colorTargetBlendState.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
-	colorTargetBlendState.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
 	SDL_GPUColorTargetDescription colorTargetDescription{};
-	colorTargetDescription.format = SDL_GetGPUSwapchainTextureFormat(m_device, window);
-	colorTargetDescription.blend_state = colorTargetBlendState;
-	SDL_GPUGraphicsPipelineTargetInfo targetInfo{};
-	targetInfo.num_color_targets = 1;
-	targetInfo.color_target_descriptions = &colorTargetDescription;
+	colorTargetDescription.format = SDL_GetGPUSwapchainTextureFormat(device, window);
+	colorTargetDescription.blend_state = {};
+	colorTargetDescription.blend_state.enable_blend = true;
+	colorTargetDescription.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+	colorTargetDescription.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+	colorTargetDescription.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+	colorTargetDescription.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+	colorTargetDescription.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+	colorTargetDescription.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+	
 	SDL_GPUGraphicsPipelineCreateInfo createInfo{};
 	createInfo.vertex_shader = m_vertShader;
 	createInfo.fragment_shader = m_fragShader;
 	createInfo.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
-	createInfo.target_info = targetInfo;
-	m_pipeline = SDL_CreateGPUGraphicsPipeline(m_device, &createInfo);
-	SDL_ReleaseGPUShader(m_device, m_fragShader);
-	SDL_ReleaseGPUShader(m_device, m_vertShader);
+
+	createInfo.target_info = {};
+	createInfo.target_info.num_color_targets = 1;
+	createInfo.target_info.color_target_descriptions = &colorTargetDescription;
+	createInfo.target_info.has_depth_stencil_target = true;
+	createInfo.target_info.depth_stencil_format = m_depthStencilFormat;
+	
+	createInfo.depth_stencil_state = {};
+	createInfo.depth_stencil_state.front_stencil_state = {};
+	createInfo.depth_stencil_state.front_stencil_state.compare_op = SDL_GPU_COMPAREOP_NEVER;
+	createInfo.depth_stencil_state.front_stencil_state.fail_op = SDL_GPU_STENCILOP_REPLACE;
+	createInfo.depth_stencil_state.front_stencil_state.pass_op = SDL_GPU_STENCILOP_KEEP;
+	createInfo.depth_stencil_state.front_stencil_state.depth_fail_op = SDL_GPU_STENCILOP_KEEP;
+	createInfo.depth_stencil_state.back_stencil_state = {};
+	createInfo.depth_stencil_state.back_stencil_state.compare_op = SDL_GPU_COMPAREOP_NEVER;
+	createInfo.depth_stencil_state.back_stencil_state.fail_op = SDL_GPU_STENCILOP_REPLACE;
+	createInfo.depth_stencil_state.back_stencil_state.pass_op = SDL_GPU_STENCILOP_KEEP;
+	createInfo.depth_stencil_state.back_stencil_state.depth_fail_op = SDL_GPU_STENCILOP_KEEP;
+	createInfo.depth_stencil_state.write_mask = 0xFF;
+	createInfo.depth_stencil_state.compare_op = SDL_GPU_COMPAREOP_LESS;
+	createInfo.depth_stencil_state.enable_depth_test = true;
+	createInfo.depth_stencil_state.enable_depth_write = true;
+	createInfo.depth_stencil_state.enable_stencil_test = false;
+
+	createInfo.rasterizer_state = {};
+	createInfo.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
+	createInfo.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+	createInfo.rasterizer_state.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
+
+	m_pipeline = SDL_CreateGPUGraphicsPipeline(device, &createInfo);
+	SDL_ReleaseGPUShader(device, m_fragShader);
+	SDL_ReleaseGPUShader(device, m_vertShader);
 	m_fragShader = nullptr;
 	m_vertShader = nullptr;
+}
+
+SDL_GPUTextureFormat SpriteBatchShaderPipeline::GetDepthStencilFormat() const {
+	return m_depthStencilFormat;
 }
 
 SpriteBatchShaderPipeline::~SpriteBatchShaderPipeline() {
@@ -88,9 +133,10 @@ SDL_GPUGraphicsPipeline* SpriteBatchShaderPipeline::GetPipeline() const {
 }
 
 void SpriteBatchShaderPipeline::Clear() {
-	if (m_pipeline) { SDL_ReleaseGPUGraphicsPipeline(m_device, m_pipeline); }
-	if (m_fragShader) { SDL_ReleaseGPUShader(m_device, m_fragShader); }
-	if (m_vertShader) { SDL_ReleaseGPUShader(m_device, m_vertShader); }
+	SDL_GPUDevice* device = Game::GetGPUDevice();
+	if (m_pipeline) { SDL_ReleaseGPUGraphicsPipeline(device, m_pipeline); }
+	if (m_fragShader) { SDL_ReleaseGPUShader(device, m_fragShader); }
+	if (m_vertShader) { SDL_ReleaseGPUShader(device, m_vertShader); }
 	m_pipeline = nullptr;
 	m_fragShader = nullptr;
 	m_vertShader = nullptr;
