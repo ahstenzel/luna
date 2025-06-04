@@ -13,6 +13,8 @@ std::function<void(Renderer*)> Game::m_postDrawFunc = {};
 
 bool Game::m_enableGraphicsDebugging = false;
 bool Game::m_quitFlag = false;
+unsigned int Game::m_windowW = 0;
+unsigned int Game::m_windowH = 0;
 unsigned int Game::m_ticksPerSecond = 0;
 SDL_Window* Game::m_sdlWindow = nullptr;
 SDL_GPUDevice* Game::m_sdlGPUDevice = nullptr;
@@ -21,6 +23,8 @@ Renderer* Game::m_renderer = nullptr;
 bool Game::Init(GameInit* init) {
 	// Save init values
 	if (!init || !init->rendererFactory) { return false; }
+	m_windowW = init->windowW;
+	m_windowH = init->windowH;
 	m_enableGraphicsDebugging = init->enableGraphicsDebugging;
 	m_startFunc = init->startFunc;
 	m_endFunc = init->endFunc;
@@ -154,6 +158,14 @@ void Game::Quit() {
 
 SDL_Window* Game::GetWindow() {
 	return m_sdlWindow;
+}
+
+unsigned int Game::GetWindowWidth() {
+	return m_windowW;
+}
+
+unsigned int Game::GetWindowHeight() {
+	return m_windowH;
 }
 
 SDL_GPUDevice* Game::GetGPUDevice() {

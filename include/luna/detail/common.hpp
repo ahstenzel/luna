@@ -18,6 +18,7 @@
 // SDL includes
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 // External libraries
 #define LZ4_HEAPMODE 1
@@ -87,6 +88,30 @@ LUNA_API bool VersionStringMatch(const std::string& v1, const std::string& v2, b
 /// <returns>CRC value</returns>
 LUNA_API std::uint32_t Crc32Calculate(const void* data, std::size_t length, std::uint32_t previousCRC = 0);
 
-extern const std::uint32_t crc32Lookup[256];
+/// <summary>
+/// Convert the given integer color to normalized floating point color.
+/// </summary>
+/// <param name="color"></param>
+/// <returns></returns>
+LUNA_API SDL_FColor ConvertToFColor(SDL_Color color);
+
+// =========================================================================== Global Definitions
+constexpr SDL_Color LunaColorClear = { 0, 0, 0, 255 };
+constexpr SDL_Color LunaColorWhite = {255, 255, 255, 255};
+constexpr SDL_Color LunaColorLightGray = { 170, 170, 170, 255 };
+constexpr SDL_Color LunaColorDarkGray = { 85, 85, 85, 255 };
+constexpr SDL_Color LunaColorBlack = { 0, 0, 0, 255 };
+constexpr SDL_Color LunaColorRed = { 255, 0, 0, 255 };
+constexpr SDL_Color LunaColorOrange = { 255, 170, 0, 255 };
+constexpr SDL_Color LunaColorYellow = { 255, 255, 0, 255 };
+constexpr SDL_Color LunaColorLightGreen = { 170, 255, 0, 255 };
+constexpr SDL_Color LunaColorGreen = { 0, 255, 0, 255 };
+constexpr SDL_Color LunaColorCyan = { 0, 170, 170, 255 };
+constexpr SDL_Color LunaColorLightBlue = { 85, 255, 255, 255 };
+constexpr SDL_Color LunaColorBlue = { 0, 0, 255, 255 };
+constexpr SDL_Color LunaColorMagenta = { 170, 0, 255, 255 };
+constexpr SDL_Color LunaColorPurple = { 85, 0, 255, 255 };
+constexpr SDL_Color LunaColorPink = { 255, 170, 255, 255 };
+constexpr SDL_Color LunaColorBrown = { 100, 50, 0, 255 };
 
 } // luna

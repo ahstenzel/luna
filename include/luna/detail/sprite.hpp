@@ -25,7 +25,7 @@ struct SpriteTextureCoords {
 /// </summary>
 class Sprite {
 public:
-	LUNA_API Sprite(const ResourceID textureID, float x, float y, int32_t image = 0, int32_t depth = 0, float scaleX = 1.f, float scaleY = 1.f, float rotation = 0.f, SDL_Color blend = {255, 255, 255, 255});
+	LUNA_API Sprite(const ResourceID textureID, float x, float y, int32_t image = 0, int32_t depth = 0, float scaleX = 1.f, float scaleY = 1.f, float rotation = 0.f, SDL_Color blend = LunaColorWhite);
 
 	LUNA_API bool IsValid() const;
 

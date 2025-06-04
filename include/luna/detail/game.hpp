@@ -33,6 +33,8 @@ public:
 	LUNA_API static int Run();
 	LUNA_API static void Quit();
 	LUNA_API static SDL_Window* GetWindow();
+	LUNA_API static unsigned int GetWindowWidth();
+	LUNA_API static unsigned int GetWindowHeight();
 	LUNA_API static SDL_GPUDevice* GetGPUDevice();
 	LUNA_API static Renderer* GetRenderer();
 	LUNA_API static bool GetGraphicsDebuggingEnabled();
@@ -49,6 +51,8 @@ private:
 
 	static bool m_enableGraphicsDebugging;
 	static bool m_quitFlag;
+	static unsigned int m_windowW;
+	static unsigned int m_windowH;
 	static unsigned int m_ticksPerSecond;
 	static SDL_Window* m_sdlWindow;
 	static SDL_GPUDevice* m_sdlGPUDevice;

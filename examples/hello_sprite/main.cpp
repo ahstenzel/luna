@@ -17,7 +17,10 @@ int main(int argc, char** argv) {
 	}
 
 	// Create initial room
-	RoomManager::PushRoom({});
+	RoomInit initFirstRoom = {};
+	initFirstRoom.clearColor = { 0, 0, 85, 0 };
+	RoomManager::PushRoom(initFirstRoom);
+	RoomManager::GetCurrentRoom()->CreateCamera();
 
 	// Create sprite
 	Sprite sprRavioli4(ResourceManager::GetTextureID("ravioli4"), 0.f, 0.f, 0, 4, 4.0f, 4.0f);
@@ -26,10 +29,10 @@ int main(int argc, char** argv) {
 	Sprite sprRavioli1(ResourceManager::GetTextureID("ravioli1"), 96.f, 0.f, 0, 1, 4.0f, 4.0f);
 	//const TexturePage* ravioliTexturePage = sprRavioli1.GetTexturePage();
 	//ravioliTexturePage->WriteToFile();
-	RoomManager::CurrentRoom()->GetSpriteList()->AddSprite(sprRavioli4);
-	RoomManager::CurrentRoom()->GetSpriteList()->AddSprite(sprRavioli3);
-	RoomManager::CurrentRoom()->GetSpriteList()->AddSprite(sprRavioli2);
-	RoomManager::CurrentRoom()->GetSpriteList()->AddSprite(sprRavioli1);
+	RoomManager::GetCurrentRoom()->GetSpriteList()->AddSprite(sprRavioli4);
+	RoomManager::GetCurrentRoom()->GetSpriteList()->AddSprite(sprRavioli3);
+	RoomManager::GetCurrentRoom()->GetSpriteList()->AddSprite(sprRavioli2);
+	RoomManager::GetCurrentRoom()->GetSpriteList()->AddSprite(sprRavioli1);
 
 	return Game::Run();
 }

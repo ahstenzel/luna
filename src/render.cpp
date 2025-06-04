@@ -26,13 +26,23 @@ bool SpriteRenderer::IsValid() const {
 }
 
 void SpriteRenderer::Draw() {
-	Room* currentRoom = RoomManager::CurrentRoom();
-	if (currentRoom) { RenderSpriteList(Game::GetWindow(), currentRoom->GetSpriteList()); }
+	Room* currentRoom = RoomManager::GetCurrentRoom();
+	if (!currentRoom) {
+		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Room stack is empty!");
+		return;
+	}
+	Camera* currentCamera = currentRoom->GetActiveCamera();
+	if (!currentCamera) {
+		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Rooms active camera is invalid!");
+		return;
+	}
+	RenderSpriteList(Game::GetWindow(), currentRoom->GetSpriteList(), ConvertToFColor(currentRoom->GetClearColor()));
 }
 
-void SpriteRenderer::RenderSpriteList(SDL_Window* window, SpriteList* spriteList) {
+void SpriteRenderer::RenderSpriteList(SDL_Window* window, SpriteList* spriteList, SDL_FColor clearColor) {
 	// Get camera
-	glm::mat4 cameraMatrix = CameraProjectionOrtho(0.0f, 1366.0f, 768.0f, 0.0f, -100.0f, 100.0f);
+	const Camera* roomCamera = RoomManager::GetCurrentRoom()->GetActiveCamera();
+	glm::mat4 cameraMatrix = roomCamera->ProjectionOrtho();
 
 	// Get GPU resources
 	SDL_GPUDevice* device = Game::GetGPUDevice();
@@ -50,18 +60,20 @@ void SpriteRenderer::RenderSpriteList(SDL_Window* window, SpriteList* spriteList
 		// Partition list into texture page batches
 		std::size_t spriteBegin = 0;
 		std::size_t spriteCount = 0;
-		//spriteList->Sort();
 
 		for (std::size_t i = 0; i < spriteList->Size(); ++i) {
+			// Get current sprite
 			SpriteID spriteID = spriteList->GetSpriteID(i);
 			Sprite* sprite = spriteList->GetSprite(spriteID);
 			TexturePageID texturePageID = sprite->GetTexturePageID();
+
+			// Check for GPU state change
 			if (texturePageID != m_lastTexturePageID) {
 				m_lastTexturePageID = texturePageID;
 
 				// Render current batch
 				if (spriteCount > 0) {
-					RenderSpriteListBatch(commandBuffer, swapchainTexture, &cameraMatrix, -100.0f, 100.0f, spriteList, spriteBegin, spriteCount);
+					RenderSpriteListBatch(commandBuffer, clearColor, swapchainTexture, &cameraMatrix, roomCamera->GetNearPlane(), roomCamera->GetFarPlane(), spriteList, spriteBegin, spriteCount);
 				}
 
 				// Reset count
@@ -76,13 +88,13 @@ void SpriteRenderer::RenderSpriteList(SDL_Window* window, SpriteList* spriteList
 		}
 		// Render final batch
 		if (spriteCount > 0) {
-			RenderSpriteListBatch(commandBuffer, swapchainTexture, &cameraMatrix, -100.0f, 100.0f, spriteList, spriteBegin, spriteCount);
+			RenderSpriteListBatch(commandBuffer, clearColor, swapchainTexture, &cameraMatrix, roomCamera->GetNearPlane(), roomCamera->GetFarPlane(), spriteList, spriteBegin, spriteCount);
 		}
 	}
 	SDL_SubmitGPUCommandBuffer(commandBuffer);
 }
 
-void SpriteRenderer::RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, SDL_GPUTexture* swapchainTexture, glm::mat4* cameraMatrix, float zNear, float zFar, SpriteList* spriteList, std::size_t spriteBegin, std::size_t spriteCount) {
+void SpriteRenderer::RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, SDL_FColor clearColor, SDL_GPUTexture* swapchainTexture, glm::mat4* cameraMatrix, float zNear, float zFar, SpriteList* spriteList, std::size_t spriteBegin, std::size_t spriteCount) {
 	if (spriteCount == 0) { return; }
 
 	// Resize transfer buffer if needed
@@ -108,8 +120,8 @@ void SpriteRenderer::RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, 
 		SDL_GPUTextureCreateInfo depthTextureCreateInfo = {};
 		depthTextureCreateInfo.type = SDL_GPU_TEXTURETYPE_2D;
 		depthTextureCreateInfo.format = m_pipeline->GetDepthStencilFormat();
-		depthTextureCreateInfo.width = 1366;
-		depthTextureCreateInfo.height = 768;
+		depthTextureCreateInfo.width = Game::GetWindowWidth();
+		depthTextureCreateInfo.height = Game::GetWindowHeight();
 		depthTextureCreateInfo.layer_count_or_depth = 1;
 		depthTextureCreateInfo.num_levels = 1;
 		depthTextureCreateInfo.sample_count = SDL_GPU_SAMPLECOUNT_1;
@@ -127,7 +139,7 @@ void SpriteRenderer::RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, 
 		SpriteID spriteID = spriteList->GetSpriteID(spriteBegin + i);
 		Sprite* sprite = spriteList->GetSprite(spriteID);
 		SpriteTextureCoords spriteTextureCoords = sprite->GetTextureCoords();
-		SDL_Color spriteColor = sprite->GetBlend();
+		SDL_FColor spriteColor = ConvertToFColor(sprite->GetBlend());
 		dataPtr[i].x = sprite->GetPositionX();
 		dataPtr[i].y = sprite->GetPositionY();
 		dataPtr[i].z = -float(sprite->GetDepth());
@@ -138,10 +150,10 @@ void SpriteRenderer::RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, 
 		dataPtr[i].texV = spriteTextureCoords.textureV;
 		dataPtr[i].texW = spriteTextureCoords.textureW;
 		dataPtr[i].texH = spriteTextureCoords.textureH;
-		dataPtr[i].r = spriteColor.r / 255.f;
-		dataPtr[i].g = spriteColor.g / 255.f;
-		dataPtr[i].b = spriteColor.b / 255.f;
-		dataPtr[i].a = spriteColor.a / 255.f;
+		dataPtr[i].r = spriteColor.r;
+		dataPtr[i].g = spriteColor.g;
+		dataPtr[i].b = spriteColor.b;
+		dataPtr[i].a = spriteColor.a;
 	}
 	SDL_UnmapGPUTransferBuffer(device, m_sdlSpriteDataTransferBuffer);
 
@@ -163,7 +175,7 @@ void SpriteRenderer::RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, 
 	renderColorTargetInfo.cycle = false;
 	renderColorTargetInfo.load_op = SDL_GPU_LOADOP_CLEAR;
 	renderColorTargetInfo.store_op = SDL_GPU_STOREOP_STORE;
-	renderColorTargetInfo.clear_color = { 0.f, 0.f, 0.2f, 1.f };
+	renderColorTargetInfo.clear_color = clearColor;
 	SDL_GPUDepthStencilTargetInfo renderDepthStencilTargetInfo = {};
 	renderDepthStencilTargetInfo.texture = m_sdlGPUDepthTexture;
 	renderDepthStencilTargetInfo.cycle = true;
@@ -181,8 +193,6 @@ void SpriteRenderer::RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, 
 	renderTextureSamplerBinding.sampler = m_sdlGPUSampler;
 	SDL_BindGPUFragmentSamplers(renderPass, 0, &renderTextureSamplerBinding, 1);
 	SDL_PushGPUVertexUniformData(commandBuffer, 0, &(cameraMatrix[0][0]), sizeof(glm::mat4));
-	//float depthPlanes[2] = { 100.0f, -100.0f };
-	//SDL_PushGPUFragmentUniformData(commandBuffer, 0, &depthPlanes[0], sizeof(float) * 2);
 	SDL_DrawGPUPrimitives(renderPass, spriteCount * 6, 1, 0, 0);
 	SDL_EndGPURenderPass(renderPass);
 }

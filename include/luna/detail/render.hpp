@@ -39,8 +39,8 @@ protected:
 	const std::uint32_t m_maxSpriteCount = 8192;
 
 private:
-	void RenderSpriteList(SDL_Window* window, SpriteList* spriteList);
-	void RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, SDL_GPUTexture* swapchainTexture, glm::mat4* cameraMatrix, float zNear, float zFar, SpriteList* spriteList, std::size_t spriteBegin, std::size_t spriteCount);
+	void RenderSpriteList(SDL_Window* window, SpriteList* spriteList, SDL_FColor clearColor);
+	void RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, SDL_FColor clearColor, SDL_GPUTexture* swapchainTexture, glm::mat4* cameraMatrix, float zNear, float zFar, SpriteList* spriteList, std::size_t spriteBegin, std::size_t spriteCount);
 	void SetTexturePage(SDL_GPUCommandBuffer* commandBuffer, const TexturePage* texturePage);
 
 	std::uint32_t m_lastSpriteBatchSize = 0;
