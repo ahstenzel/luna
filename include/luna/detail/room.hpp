@@ -69,6 +69,7 @@ protected:
 	friend class Game;
 	static void Tick(float dt);
 	static void Draw(float dt);
+	static void Clear();
 
 private:
 	static std::stack<Room> m_rooms;

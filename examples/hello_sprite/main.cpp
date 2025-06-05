@@ -28,16 +28,10 @@ protected:
 };
 
 void firstRoomPushFunc(Room* currRoom) {
-	RoomManager::GetCurrentRoom()->GetActorList()->push_back(new ActorRavioli(32.f, 32.f, 4, 4));
-	RoomManager::GetCurrentRoom()->GetActorList()->push_back(new ActorRavioli(64.f, 32.f, 3, 3));
-	RoomManager::GetCurrentRoom()->GetActorList()->push_back(new ActorRavioli(96.f, 32.f, -10, 2));
-	RoomManager::GetCurrentRoom()->GetActorList()->push_back(new ActorRavioli(128.f, 32.f, 1, 1));
-}
-
-void firstRoomPopFunc(Room* currRoom) {
-	for (auto& actor : *currRoom->GetActorList()) {
-		delete actor;
-	}
+	currRoom->GetActorList()->AddActor(new ActorRavioli(32.f, 32.f, 4, 4));
+	currRoom->GetActorList()->AddActor(new ActorRavioli(64.f, 32.f, 3, 3));
+	currRoom->GetActorList()->AddActor(new ActorRavioli(96.f, 32.f, -10, 2));
+	currRoom->GetActorList()->AddActor(new ActorRavioli(128.f, 32.f, 1, 1));
 }
 
 int main(int argc, char** argv) {
@@ -59,7 +53,6 @@ int main(int argc, char** argv) {
 	RoomInit initFirstRoom = {};
 	initFirstRoom.clearColor = { 0, 0, 85, 0 };
 	initFirstRoom.pushFunc = firstRoomPushFunc;
-	initFirstRoom.popFunc = firstRoomPopFunc;
 	RoomManager::PushRoom(initFirstRoom);
 	RoomManager::GetCurrentRoom()->CreateCamera();
 

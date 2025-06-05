@@ -184,6 +184,7 @@ bool Game::GetGraphicsDebuggingEnabled() {
 }
 
 void Game::Cleanup() {
+	RoomManager::Clear();
 	SDL_ShaderCross_Quit();
 	if (m_renderer) { delete m_renderer; }
 	if (m_sdlGPUDevice && m_sdlWindow) { SDL_ReleaseWindowFromGPUDevice(m_sdlGPUDevice, m_sdlWindow); }

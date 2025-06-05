@@ -9,9 +9,9 @@ std::stack<Room> RoomManager::m_rooms;
 Room::Room(RoomInit init) :
 	m_clearColor(init.clearColor),
 	m_pushFunc(init.pushFunc),
-	m_popFunc(init.pushFunc), 
-	m_exposedFunc(init.pushFunc), 
-	m_coveredFunc(init.pushFunc) {}
+	m_popFunc(init.popFunc), 
+	m_exposedFunc(init.exposedFunc), 
+	m_coveredFunc(init.coveredFunc) {}
 
 SDL_Color Room::GetClearColor() const {
 	return m_clearColor;
@@ -125,6 +125,10 @@ void RoomManager::Draw(float dt) {
 	for (auto& actor : *(m_rooms.top().GetActorList())) {
 		actor->Draw(dt);
 	}
+}
+
+void RoomManager::Clear() {
+	while (RoomStackSize() > 0) { PopRoom(); }
 }
 
 } // luna

@@ -14,6 +14,7 @@
 #include <vector>
 #include <stack>
 #include <unordered_map>
+#include <unordered_set>
 
 // SDL includes
 #include <SDL3/SDL.h>
