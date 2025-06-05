@@ -11,6 +11,7 @@ set(APP_SOURCE
 	"${PROJECT_SOURCE_DIR}/src/render.cpp"
 	"${PROJECT_SOURCE_DIR}/src/camera.cpp"
 	"${PROJECT_SOURCE_DIR}/src/room.cpp"
+	"${PROJECT_SOURCE_DIR}/src/actor.cpp"
 	"${PROJECT_SOURCE_DIR}/src/shader/shader_encoded.cpp"
 )
 set(APP_HEADER
@@ -22,6 +23,7 @@ set(APP_HEADER
 	"${PROJECT_SOURCE_DIR}/include/luna/detail/render.hpp"
 	"${PROJECT_SOURCE_DIR}/include/luna/detail/camera.hpp"
 	"${PROJECT_SOURCE_DIR}/include/luna/detail/room.hpp"
+	"${PROJECT_SOURCE_DIR}/include/luna/detail/actor.hpp"
 	"${PROJECT_SOURCE_DIR}/include/luna/detail/shader/shader_encoded.hpp"
 )
 set(APP_HEADER_STD

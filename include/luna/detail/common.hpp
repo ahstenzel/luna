@@ -28,6 +28,7 @@
 #define CTR 0
 #include <aes/aes.h>
 #include <libbase64.h>
+#include <glm/ext/matrix_float4x4.hpp>
 
 // Luna includes
 #include <luna/detail/std/platform.hpp>

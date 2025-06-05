@@ -1,7 +1,6 @@
 #pragma once
 
 #include <luna/detail/common.hpp>
-#include <glm/ext/matrix_float4x4.hpp>
 
 namespace luna {
 
@@ -19,8 +18,8 @@ public:
 	LUNA_API std::int32_t GetRightEdge() const;
 	LUNA_API std::int32_t GetTopEdge() const;
 	LUNA_API std::int32_t GetBottomEdge() const;
-	LUNA_API bool PointOnCamera(std::int32_t x, std::int32_t y) const;
-	LUNA_API int RegionOnCamera(std::int32_t x, std::int32_t y, std::uint32_t width, std::uint32_t height) const;
+	LUNA_API bool PointOnCamera(float x, float y) const;
+	LUNA_API int RegionOnCamera(float left, float right, float top, float bottom) const;
 
 	LUNA_API void SetPositionX(std::int32_t x);
 	LUNA_API void SetPositionY(std::int32_t y);

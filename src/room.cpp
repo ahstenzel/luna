@@ -1,5 +1,6 @@
 #include <luna/detail/room.hpp>
 #include <luna/detail/game.hpp>
+#include <luna/detail/actor.hpp>
 
 namespace luna {
 
@@ -12,16 +13,12 @@ Room::Room(RoomInit init) :
 	m_exposedFunc(init.pushFunc), 
 	m_coveredFunc(init.pushFunc) {}
 
-SpriteList* Room::GetSpriteList() {
-	return &m_spriteList;
-}
-
-const SpriteList* Room::GetSpriteList() const {
-	return &m_spriteList;
-}
-
 SDL_Color Room::GetClearColor() const {
 	return m_clearColor;
+}
+
+ActorList* Room::GetActorList() {
+	return &m_actors;
 }
 
 std::size_t Room::GetActiveCameraIndex() const {
@@ -58,7 +55,7 @@ void Room::DestroyCamera(std::size_t index) {
 }
 
 Camera* Room::CreateCamera() {
-	return CreateCamera(0, 0, Game::GetWindowWidth(), Game::GetWindowHeight(), std::numeric_limits<std::int32_t>::min(), std::numeric_limits<std::int32_t>::max());
+	return CreateCamera(0, 0, Game::GetWindowWidth(), Game::GetWindowHeight(), -1000000, 1000000);
 }
 
 Camera* Room::CreateCamera(Camera camera) {
@@ -80,16 +77,16 @@ Camera* Room::CreateCamera(std::int32_t x, std::int32_t y, std::uint32_t width, 
 }
 
 void RoomManager::PushRoom(RoomInit init) {
-	if (!m_rooms.empty()) { m_rooms.top().m_coveredFunc(); }
+	if (!m_rooms.empty()) { m_rooms.top().m_coveredFunc(&m_rooms.top()); }
 	m_rooms.emplace(init);
-	m_rooms.top().m_pushFunc();
+	m_rooms.top().m_pushFunc(&m_rooms.top());
 }
 
 void RoomManager::PopRoom() {
 	if (!m_rooms.empty()) {
-		m_rooms.top().m_popFunc();
+		m_rooms.top().m_popFunc(&m_rooms.top());
 		m_rooms.pop();
-		if (!m_rooms.empty()) { m_rooms.top().m_exposedFunc(); }
+		if (!m_rooms.empty()) { m_rooms.top().m_exposedFunc(&m_rooms.top()); }
 	}
 }
 
@@ -99,11 +96,11 @@ std::size_t RoomManager::RoomStackSize() {
 
 void RoomManager::GotoRoom(RoomInit init) {
 	if (!m_rooms.empty()) {
-		m_rooms.top().m_popFunc();
+		m_rooms.top().m_popFunc(&m_rooms.top());
 		m_rooms.pop();
 	}
 	m_rooms.emplace(init);
-	m_rooms.top().m_pushFunc();
+	m_rooms.top().m_pushFunc(&m_rooms.top());
 }
 
 Room* RoomManager::GetCurrentRoom() {
@@ -111,8 +108,22 @@ Room* RoomManager::GetCurrentRoom() {
 }
 
 void RoomManager::Tick(float dt) {
-	if (!m_rooms.empty()) {
-		m_rooms.top().m_spriteList.Tick(dt);
+	if (m_rooms.empty()) {
+		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "RoomManager::Tick failed: Room stack is empty!");
+		return;
+	}
+	for (auto& actor : *(m_rooms.top().GetActorList())) {
+		actor->Tick(dt);
+	}
+}
+
+void RoomManager::Draw(float dt) {
+	if (m_rooms.empty()) {
+		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "RoomManager::Draw failed: Room stack is empty!");
+		return;
+	}
+	for (auto& actor : *(m_rooms.top().GetActorList())) {
+		actor->Draw(dt);
 	}
 }
 

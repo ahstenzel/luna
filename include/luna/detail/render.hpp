@@ -1,11 +1,14 @@
 #pragma once
 
 #include <luna/detail/common.hpp>
-#include <luna/detail/shader.hpp>
 #include <luna/detail/sprite.hpp>
-#include <luna/detail/camera.hpp>
 
 namespace luna {
+
+// Forward declarations
+class Game;
+class Camera;
+class SpriteBatchShaderPipeline;
 
 /// <summary>
 /// Abstract rendering base class.
@@ -13,7 +16,13 @@ namespace luna {
 class Renderer {
 public:
 	LUNA_API virtual bool IsValid() const = 0;
+	LUNA_API virtual void DrawSprite(Sprite* sprite) = 0;
+
+protected:
+	friend class Game;
+	LUNA_API virtual void PreDraw() = 0;
 	LUNA_API virtual void Draw() = 0;
+	LUNA_API virtual void PostDraw() = 0;
 };
 
 /// <summary>
@@ -25,9 +34,14 @@ public:
 	LUNA_API ~SpriteRenderer();
 
 	LUNA_API bool IsValid() const override;
-	LUNA_API void Draw() override;
+	LUNA_API void DrawSprite(Sprite* sprite);
 
 protected:
+	friend class Game;
+	LUNA_API void PreDraw() override;
+	LUNA_API void Draw() override;
+	LUNA_API void PostDraw() override;
+
 	struct SpriteBatchInfo {
 		float x, y, z;
 		float rotation;
@@ -36,12 +50,12 @@ protected:
 		float r, g, b, a;
 	};
 
-	const std::uint32_t m_maxSpriteCount = 8192;
-
 private:
 	void RenderSpriteList(SDL_Window* window, SpriteList* spriteList, SDL_FColor clearColor);
 	void RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, SDL_FColor clearColor, SDL_GPUTexture* swapchainTexture, glm::mat4* cameraMatrix, float zNear, float zFar, SpriteList* spriteList, std::size_t spriteBegin, std::size_t spriteCount);
 	void SetTexturePage(SDL_GPUCommandBuffer* commandBuffer, const TexturePage* texturePage);
+
+	SpriteList m_spriteList;
 
 	std::uint32_t m_lastSpriteBatchSize = 0;
 	TexturePageID m_lastTexturePageID = TEXTURE_PAGE_ID_NULL;
@@ -56,6 +70,9 @@ private:
 
 namespace detail {
 
+/// <summary>
+/// Abstract base class for renderer factories.
+/// </summary>
 class AbstractRendererFactory {
 public:
 	LUNA_API virtual Renderer* generate() = 0;
@@ -63,6 +80,10 @@ public:
 
 } // detail
 
+/// <summary>
+/// Factory class template for creating a renderer.
+/// </summary>
+/// <typeparam name="T">Renderer subclass</typeparam>
 template<typename T>
 class RendererFactory : public detail::AbstractRendererFactory {
 public:

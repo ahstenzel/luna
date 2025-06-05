@@ -143,9 +143,12 @@ int Game::Run() {
 		}
 
 		// Draw
+		m_renderer->PreDraw();
 		m_preDrawFunc(m_renderer);
-		m_renderer->Draw();
+		RoomManager::Draw(float(frameTime));
 		m_postDrawFunc(m_renderer);
+		m_renderer->Draw();
+		m_renderer->PostDraw();
 	}
 	m_endFunc();
 	Cleanup();

@@ -2,10 +2,71 @@
 
 namespace luna {
 
-Sprite::Sprite(const ResourceID textureID, float x, float y, int32_t image, int32_t depth, float scaleX, float scaleY, float rotation, SDL_Color blend) :
+Sprite::Sprite() :
+	m_textureID(RESOURCE_ID_NULL),
+	m_positionX(0.f),
+	m_positionY(0.f),
+	m_animationSpeed(0.f),
+	m_depth(0),
+	m_scaleX(1.f),
+	m_scaleY(1.f),
+	m_rotation(0.f),
+	m_blend(LunaColorClear) {
+	m_texture = nullptr;
+	m_width = 0.f;
+	m_height = 0.f;
+	m_animationFrame = 0.f;
+	m_textureU = 0.f;
+	m_textureV = 0.f;
+	m_textureW = 0.f;
+	m_textureH = 0.f;
+}
+
+Sprite::Sprite(const Sprite& sprite) :
+	m_textureID(sprite.m_textureID),
+	m_positionX(sprite.m_positionX),
+	m_positionY(sprite.m_positionY),
+	m_animationSpeed(sprite.m_animationSpeed),
+	m_depth(sprite.m_depth),
+	m_scaleX(sprite.m_scaleX),
+	m_scaleY(sprite.m_scaleY),
+	m_rotation(sprite.m_rotation),
+	m_blend(sprite.m_blend) {
+	m_texture = sprite.m_texture;
+	m_width = sprite.m_width;
+	m_height = sprite.m_height;
+	m_animationFrame = sprite.m_animationFrame;
+	m_textureU = sprite.m_textureU;
+	m_textureV = sprite.m_textureV;
+	m_textureW = sprite.m_textureW;
+	m_textureH = sprite.m_textureH;
+}
+
+Sprite::Sprite(Sprite&& sprite) noexcept :
+	m_textureID(std::move(sprite.m_textureID)),
+	m_positionX(std::move(sprite.m_positionX)),
+	m_positionY(std::move(sprite.m_positionY)),
+	m_animationSpeed(std::move(sprite.m_animationSpeed)),
+	m_depth(std::move(sprite.m_depth)),
+	m_scaleX(std::move(sprite.m_scaleX)),
+	m_scaleY(std::move(sprite.m_scaleY)),
+	m_rotation(std::move(sprite.m_rotation)),
+	m_blend(std::move(sprite.m_blend)) {
+	std::swap(m_texture, sprite.m_texture);
+	std::swap(m_width, sprite.m_width);
+	std::swap(m_height, sprite.m_height);
+	std::swap(m_animationFrame, sprite.m_animationFrame);
+	std::swap(m_textureU, sprite.m_textureU);
+	std::swap(m_textureV, sprite.m_textureV);
+	std::swap(m_textureW, sprite.m_textureW);
+	std::swap(m_textureH, sprite.m_textureH);
+}
+
+Sprite::Sprite(const ResourceID textureID, float x, float y, int32_t image, float imageSpeed, int32_t depth, float scaleX, float scaleY, float rotation, SDL_Color blend) :
 	m_textureID(textureID),
 	m_positionX(x),
 	m_positionY(y),
+	m_animationSpeed(imageSpeed),
 	m_depth(depth),
 	m_scaleX(scaleX),
 	m_scaleY(scaleY),
@@ -123,11 +184,54 @@ void Sprite::SetImage(int32_t image) {
 
 void Sprite::SetDepth(int32_t depth) {
 	m_depth = depth;
-	if (m_spriteList) { m_spriteList->MarkDirty(); }
 }
 
 void Sprite::SetBlend(const SDL_Color& blend) {
 	m_blend = blend;
+}
+
+Sprite& Sprite::operator=(const Sprite& other) {
+	if (this == &other) { return *this; }
+	m_textureID = other.m_textureID;
+	m_positionX = other.m_positionX;
+	m_positionY = other.m_positionY;
+	m_animationSpeed = other.m_animationSpeed;
+	m_depth = other.m_depth;
+	m_scaleX = other.m_scaleX;
+	m_scaleY = other.m_scaleY;
+	m_rotation = other.m_rotation;
+	m_blend = other.m_blend;
+	m_texture = other.m_texture;
+	m_width = other.m_width;
+	m_height = other.m_height;
+	m_animationFrame = other.m_animationFrame;
+	m_textureU = other.m_textureU;
+	m_textureV = other.m_textureV;
+	m_textureW = other.m_textureW;
+	m_textureH = other.m_textureH;
+	return *this;
+}
+
+Sprite& Sprite::operator=(Sprite&& other) noexcept {
+	if (this == &other) { return *this; }
+	std::swap(m_textureID, other.m_textureID);
+	std::swap(m_positionX, other.m_positionX);
+	std::swap(m_positionY, other.m_positionY);
+	std::swap(m_animationSpeed, other.m_animationSpeed);
+	std::swap(m_depth, other.m_depth);
+	std::swap(m_scaleX, other.m_scaleX);
+	std::swap(m_scaleY, other.m_scaleY);
+	std::swap(m_rotation, other.m_rotation);
+	std::swap(m_blend, other.m_blend);
+	std::swap(m_texture, other.m_texture);
+	std::swap(m_width, other.m_width);
+	std::swap(m_height, other.m_height);
+	std::swap(m_animationFrame, other.m_animationFrame);
+	std::swap(m_textureU, other.m_textureU);
+	std::swap(m_textureV, other.m_textureV);
+	std::swap(m_textureW, other.m_textureW);
+	std::swap(m_textureH, other.m_textureH);
+	return *this;
 }
 
 bool Sprite::Tick(float dt) {
@@ -145,10 +249,6 @@ bool Sprite::Tick(float dt) {
 	return true;
 }
 
-void Sprite::SetSpriteList(SpriteList* spriteList) {
-	m_spriteList = spriteList;
-}
-
 void Sprite::CalculateUVs() {
 	std::uint32_t currFrame = (std::uint32_t)std::floorf(m_animationFrame);
 	auto texturePage = GetTexturePage();
@@ -158,78 +258,6 @@ void Sprite::CalculateUVs() {
 	m_textureH = (float)m_texture->GetHeight() / pageHeight;
 	m_textureU = (float)m_texture->GetXOffset(currFrame) / pageWidth;
 	m_textureV = (float)m_texture->GetYOffset(currFrame) / pageHeight;
-}
-
-SpriteID SpriteList::m_spriteIDCounter = SPRITE_ID_NULL;
-
-SpriteList::SpriteList() {
-	m_comparator.m_list = &m_sprites;
-}
-
-bool SpriteList::SpriteComp::operator()(SpriteID lhs, SpriteID rhs) {
-	auto& lhsTexture = m_list->at(lhs);
-	auto& rhsTexture = m_list->at(rhs);
-	//auto lhsTexturePageIndex = ResourceManager::GetTexture(lhsTexture.GetTextureID())->GetTexturePageIndex();
-	//auto rhsTexturePageIndex = ResourceManager::GetTexture(rhsTexture.GetTextureID())->GetTexturePageIndex();
-	//return (lhsTexturePageIndex < rhsTexturePageIndex) || (lhsTexturePageIndex == rhsTexturePageIndex && lhsTexture.GetDepth() < rhsTexture.GetDepth());
-	return lhsTexture.GetDepth() < rhsTexture.GetDepth();
-}
-
-SpriteID SpriteList::AddSprite(const Sprite& sprite) { 
-	SpriteID id = SpriteList::GenerateID();
-	auto result = m_sprites.insert(std::make_pair(id, sprite));
-	if (!result.second) { return SPRITE_ID_NULL; }
-	else { result.first->second.SetSpriteList(this); }
-	m_spriteOrder.push_back(id);
-	MarkDirty();
-	return id;
-}
-
-Sprite* SpriteList::GetSprite(SpriteID spriteID) {
-	auto pair = m_sprites.find(spriteID);
-	return (pair == m_sprites.end()) ? nullptr : &pair->second;
-}
-
-SpriteID SpriteList::GetSpriteID(std::size_t idx) {
-	if (idx >= m_spriteOrder.size()) { return SPRITE_ID_NULL; }
-	return m_spriteOrder[idx];
-}
-
-void SpriteList::RemoveSprite(SpriteID spriteID) {
-	m_sprites.erase(spriteID);
-	m_spriteOrder.erase(std::find(m_spriteOrder.begin(), m_spriteOrder.end(), spriteID));
-}
-
-std::uint32_t SpriteList::Size() const {
-	return m_spriteOrder.size();
-}
-
-void SpriteList::Sort() {
-	if (m_dirty) {
-		intro_sort(m_spriteOrder.begin(), m_spriteOrder.end(), m_comparator);
-	}
-}
-
-std::vector<SpriteID>::const_iterator SpriteList::begin() const {
-	return m_spriteOrder.begin();
-}
-
-std::vector<SpriteID>::const_iterator SpriteList::end() const {
-	return m_spriteOrder.end();
-}
-
-void SpriteList::MarkDirty() {
-	m_dirty = true;
-}
-
-void SpriteList::Tick(float dt) {
-	for (auto& [key, value] : m_sprites) {
-		value.Tick(dt);
-	}
-}
-
-SpriteID SpriteList::GenerateID() {
-	return ++m_spriteIDCounter;
 }
 
 } // luna

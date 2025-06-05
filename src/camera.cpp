@@ -50,19 +50,19 @@ std::int32_t Camera::GetBottomEdge() const {
 	return m_cameraY + std::int32_t(m_cameraH);
 }
 
-bool Camera::PointOnCamera(std::int32_t x, std::int32_t y) const {
+bool Camera::PointOnCamera(float x, float y) const {
 	return (
-		x >= m_cameraX && x < (m_cameraX + std::int32_t(m_cameraW)) &&
-		y >= m_cameraY && y < (m_cameraY + std::int32_t(m_cameraH))
+		x >= float(m_cameraX) && x < (float(m_cameraX) + float(m_cameraW)) &&
+		y >= float(m_cameraY) && y < (float(m_cameraY) + float(m_cameraH))
 	);
 }
 
-int Camera::RegionOnCamera(std::int32_t x, std::int32_t y, std::uint32_t width, std::uint32_t height) const {
+int Camera::RegionOnCamera(float left, float right, float top, float bottom) const {
 	int v = 0;
-	if (PointOnCamera(x, y)) { v++; }
-	if (PointOnCamera(x + std::int32_t(width), y)) { v++; }
-	if (PointOnCamera(x, y + std::int32_t(height))) { v++; }
-	if (PointOnCamera(x + std::int32_t(width), y + std::int32_t(height))) { v++; }
+	if (PointOnCamera(left, top)) { v++; }
+	if (PointOnCamera(right, top)) { v++; }
+	if (PointOnCamera(left, bottom)) { v++; }
+	if (PointOnCamera(right, bottom)) { v++; }
 	if (v == 0) { return 0; }
 	else if (v < 4) { return 1; }
 	else { return 2; }

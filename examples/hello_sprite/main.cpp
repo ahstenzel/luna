@@ -2,8 +2,44 @@
 
 using namespace luna;
 
+class ActorRavioli : public Actor {
+public:
+	ActorRavioli(float x, float y, std::int32_t depth, int ravioliNum) {
+		ResourceID textureID = RESOURCE_ID_NULL;
+		switch (ravioliNum) {
+		case 1: textureID = ResourceManager::GetTextureID("ravioli1"); break;
+		case 2: textureID = ResourceManager::GetTextureID("ravioli2"); break;
+		case 3: textureID = ResourceManager::GetTextureID("ravioli3"); break;
+		default: textureID = ResourceManager::GetTextureID("ravioli4"); break;
+		}
+		sprRavioli = Sprite(textureID, x, y, 0, 0.f, depth, 4.0f, 4.0f);
+	}
+protected:
+	void Tick(float dt) override {}
+
+	void Draw(float dt) override {
+		Game::GetRenderer()->DrawSprite(&sprRavioli);
+	}
+
+	Sprite sprRavioli;
+};
+
+void firstRoomPushFunc(Room* currRoom) {
+	RoomManager::GetCurrentRoom()->GetActorList()->push_back(new ActorRavioli(0.f, 0.f, 4, 4));
+	RoomManager::GetCurrentRoom()->GetActorList()->push_back(new ActorRavioli(32.f, 0.f, 3, 3));
+	RoomManager::GetCurrentRoom()->GetActorList()->push_back(new ActorRavioli(64.f, 0.f, -10, 2));
+	RoomManager::GetCurrentRoom()->GetActorList()->push_back(new ActorRavioli(96.f, 0.f, 1, 1));
+}
+
+void firstRoomPopFunc(Room* currRoom) {
+	for (auto& actor : *currRoom->GetActorList()) {
+		free(actor);
+	}
+}
+
 int main(int argc, char** argv) {
 	GameInit init = {};
+	init.windowTitle = "Hello Sprite";
 	init.appName = "hello_sprite";
 	init.appIdentifier = "com.hello_sprite";
 	init.rendererFactory = new SpriteRendererFactory;
@@ -19,20 +55,10 @@ int main(int argc, char** argv) {
 	// Create initial room
 	RoomInit initFirstRoom = {};
 	initFirstRoom.clearColor = { 0, 0, 85, 0 };
+	initFirstRoom.pushFunc = firstRoomPushFunc;
+	initFirstRoom.popFunc = firstRoomPopFunc;
 	RoomManager::PushRoom(initFirstRoom);
 	RoomManager::GetCurrentRoom()->CreateCamera();
-
-	// Create sprite
-	Sprite sprRavioli4(ResourceManager::GetTextureID("ravioli4"), 0.f, 0.f, 0, 4, 4.0f, 4.0f);
-	Sprite sprRavioli3(ResourceManager::GetTextureID("ravioli3"), 32.f, 0.f, 0, 3, 4.0f, 4.0f);
-	Sprite sprRavioli2(ResourceManager::GetTextureID("ravioli2"), 64.f, 0.f, 0, 99, 4.0f, 4.0f);
-	Sprite sprRavioli1(ResourceManager::GetTextureID("ravioli1"), 96.f, 0.f, 0, 1, 4.0f, 4.0f);
-	//const TexturePage* ravioliTexturePage = sprRavioli1.GetTexturePage();
-	//ravioliTexturePage->WriteToFile();
-	RoomManager::GetCurrentRoom()->GetSpriteList()->AddSprite(sprRavioli4);
-	RoomManager::GetCurrentRoom()->GetSpriteList()->AddSprite(sprRavioli3);
-	RoomManager::GetCurrentRoom()->GetSpriteList()->AddSprite(sprRavioli2);
-	RoomManager::GetCurrentRoom()->GetSpriteList()->AddSprite(sprRavioli1);
 
 	return Game::Run();
 }

@@ -3,18 +3,20 @@
 #include <luna/detail/common.hpp>
 #include <luna/detail/camera.hpp>
 #include <luna/detail/sprite.hpp>
+#include <luna/detail/actor.hpp>
 
 namespace luna {
 
 // Forward declarations
 class Game;
+class Room;
 class RoomManager;
 
 struct RoomInit {
-	std::function<void()> pushFunc    = []() {};
-	std::function<void()> popFunc     = []() {};
-	std::function<void()> exposedFunc = []() {};
-	std::function<void()> coveredFunc = []() {};
+	std::function<void(Room*)> pushFunc    = [](Room*) {};
+	std::function<void(Room*)> popFunc     = [](Room*) {};
+	std::function<void(Room*)> exposedFunc = [](Room*) {};
+	std::function<void(Room*)> coveredFunc = [](Room*) {};
 	SDL_Color clearColor = LunaColorWhite;
 };
 
@@ -22,10 +24,9 @@ class Room {
 public:
 	LUNA_API Room(RoomInit init);
 
-	LUNA_API SpriteList* GetSpriteList();
-	LUNA_API const SpriteList* GetSpriteList() const;
-
 	LUNA_API SDL_Color GetClearColor() const;
+
+	LUNA_API ActorList* GetActorList();
 
 	LUNA_API std::size_t GetActiveCameraIndex() const;
 	LUNA_API std::size_t GetNumCameras() const;
@@ -44,13 +45,13 @@ public:
 protected:
 	friend class RoomManager;
 	SDL_Color m_clearColor;
-	SpriteList m_spriteList;
 	std::vector<Camera> m_cameras = {};
 	std::size_t m_activeCameraIndex = 0;
-	std::function<void()> m_pushFunc =    []() {};
-	std::function<void()> m_popFunc =     []() {};
-	std::function<void()> m_exposedFunc = []() {};
-	std::function<void()> m_coveredFunc = []() {};
+	ActorList m_actors;
+	std::function<void(Room*)> m_pushFunc =    [](Room*) {};
+	std::function<void(Room*)> m_popFunc =     [](Room*) {};
+	std::function<void(Room*)> m_exposedFunc = [](Room*) {};
+	std::function<void(Room*)> m_coveredFunc = [](Room*) {};
 };
 
 class RoomManager {
@@ -67,6 +68,7 @@ public:
 protected:
 	friend class Game;
 	static void Tick(float dt);
+	static void Draw(float dt);
 
 private:
 	static std::stack<Room> m_rooms;

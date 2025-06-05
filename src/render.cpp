@@ -1,6 +1,9 @@
 #include <luna/detail/render.hpp>
 #include <luna/detail/game.hpp>
 #include <luna/detail/room.hpp>
+#include <luna/detail/shader.hpp>
+#include <luna/detail/sprite.hpp>
+#include <luna/detail/camera.hpp>
 
 namespace luna {
 
@@ -25,23 +28,46 @@ bool SpriteRenderer::IsValid() const {
 	return (m_pipeline && m_pipeline->IsValid());
 }
 
+void SpriteRenderer::PreDraw() {
+	m_spriteList.clear();
+}
+
 void SpriteRenderer::Draw() {
 	Room* currentRoom = RoomManager::GetCurrentRoom();
 	if (!currentRoom) {
-		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Room stack is empty!");
+		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SpriteRenderer::Draw failed: Room stack is empty!");
 		return;
 	}
-	Camera* currentCamera = currentRoom->GetActiveCamera();
-	if (!currentCamera) {
-		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Rooms active camera is invalid!");
-		return;
+	RenderSpriteList(Game::GetWindow(), &m_spriteList, ConvertToFColor(currentRoom->GetClearColor()));
+}
+
+void SpriteRenderer::PostDraw() {}
+
+void SpriteRenderer::DrawSprite(Sprite* sprite) {
+	// Only draw valid sprites
+	if (!sprite->IsValid()) { return; }
+
+	// Cull sprites outside the camera view
+	Camera* camera = RoomManager::GetCurrentRoom()->GetActiveCamera();
+	if (camera) {
+		float left = sprite->GetPositionX();
+		float top = sprite->GetPositionY();
+		float right = sprite->GetPositionX() + (sprite->GetWidth() * sprite->GetScaleX());
+		float bottom = sprite->GetPositionY() + (sprite->GetHeight() * sprite->GetScaleY());
+		if (!camera->RegionOnCamera(left, right, top, bottom)) { return; }
 	}
-	RenderSpriteList(Game::GetWindow(), currentRoom->GetSpriteList(), ConvertToFColor(currentRoom->GetClearColor()));
+
+	// Add to draw queue
+	m_spriteList.push_back(sprite);
 }
 
 void SpriteRenderer::RenderSpriteList(SDL_Window* window, SpriteList* spriteList, SDL_FColor clearColor) {
 	// Get camera
 	const Camera* roomCamera = RoomManager::GetCurrentRoom()->GetActiveCamera();
+	if (!roomCamera) {
+		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SpriteRenderer::RenderSpriteList failed: Active room camera is invalid!");
+		return;
+	}
 	glm::mat4 cameraMatrix = roomCamera->ProjectionOrtho();
 
 	// Get GPU resources
@@ -61,10 +87,9 @@ void SpriteRenderer::RenderSpriteList(SDL_Window* window, SpriteList* spriteList
 		std::size_t spriteBegin = 0;
 		std::size_t spriteCount = 0;
 
-		for (std::size_t i = 0; i < spriteList->Size(); ++i) {
+		for (std::size_t i = 0; i < spriteList->size(); ++i) {
 			// Get current sprite
-			SpriteID spriteID = spriteList->GetSpriteID(i);
-			Sprite* sprite = spriteList->GetSprite(spriteID);
+			const Sprite* sprite = spriteList->at(i);
 			TexturePageID texturePageID = sprite->GetTexturePageID();
 
 			// Check for GPU state change
@@ -136,8 +161,7 @@ void SpriteRenderer::RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, 
 		return;
 	}
 	for(std::size_t i = 0; i < spriteCount; ++i) {
-		SpriteID spriteID = spriteList->GetSpriteID(spriteBegin + i);
-		Sprite* sprite = spriteList->GetSprite(spriteID);
+		const Sprite* sprite = spriteList->at(spriteBegin + i);
 		SpriteTextureCoords spriteTextureCoords = sprite->GetTextureCoords();
 		SDL_FColor spriteColor = ConvertToFColor(sprite->GetBlend());
 		dataPtr[i].x = sprite->GetPositionX();
