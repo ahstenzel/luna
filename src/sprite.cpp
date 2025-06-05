@@ -20,6 +20,8 @@ Sprite::Sprite() :
 	m_textureV = 0.f;
 	m_textureW = 0.f;
 	m_textureH = 0.f;
+	m_originX = 0;
+	m_originY = 0;
 }
 
 Sprite::Sprite(const Sprite& sprite) :
@@ -40,6 +42,8 @@ Sprite::Sprite(const Sprite& sprite) :
 	m_textureV = sprite.m_textureV;
 	m_textureW = sprite.m_textureW;
 	m_textureH = sprite.m_textureH;
+	m_originX = sprite.m_originX;
+	m_originY = sprite.m_originY;
 }
 
 Sprite::Sprite(Sprite&& sprite) noexcept :
@@ -60,6 +64,8 @@ Sprite::Sprite(Sprite&& sprite) noexcept :
 	std::swap(m_textureV, sprite.m_textureV);
 	std::swap(m_textureW, sprite.m_textureW);
 	std::swap(m_textureH, sprite.m_textureH);
+	std::swap(m_originX, sprite.m_originX);
+	std::swap(m_originY, sprite.m_originY);
 }
 
 Sprite::Sprite(const ResourceID textureID, float x, float y, int32_t image, float imageSpeed, int32_t depth, float scaleX, float scaleY, float rotation, SDL_Color blend) :
@@ -76,13 +82,20 @@ Sprite::Sprite(const ResourceID textureID, float x, float y, int32_t image, floa
 	m_texture = ResourceManager::GetTexture(m_textureID);
 	if (!m_texture) {
 		m_textureID = RESOURCE_ID_NULL;
+		m_width = 0.f;
+		m_height = 0.f;
+		m_originX = 0;
+		m_originY = 0;
+		m_animationFrame = 0.f;
 		return;
 	}
-	m_width = (float)m_texture->GetWidth();
-	m_height = (float)m_texture->GetHeight();
+	m_width = float(m_texture->GetWidth());
+	m_height = float(m_texture->GetHeight());
+	m_originX = float(m_texture->GetOriginX());
+	m_originY = float(m_texture->GetOriginY());
 
 	// Calculate sprite properties
-	m_animationFrame = (float)Wrap(image, 0, (std::int32_t)m_texture->GetNumFrames());
+	m_animationFrame = float(Wrap(image, 0, std::int32_t(m_texture->GetNumFrames())));
 	CalculateUVs();
 }
 
@@ -158,6 +171,14 @@ SDL_Color Sprite::GetBlend() const {
 	return m_blend;
 }
 
+float Sprite::GetOriginX() const {
+	return m_originX;
+}
+
+float Sprite::GetOriginY() const {
+	return m_originY;
+}
+
 void Sprite::SetPositionX(float x) {
 	m_positionX = x;
 }
@@ -190,6 +211,14 @@ void Sprite::SetBlend(const SDL_Color& blend) {
 	m_blend = blend;
 }
 
+void Sprite::SetOriginX(std::int32_t originX) {
+	m_originX = originX;
+}
+
+void Sprite::SetOriginY(std::int32_t originY) {
+	m_originY = originY;
+}
+
 Sprite& Sprite::operator=(const Sprite& other) {
 	if (this == &other) { return *this; }
 	m_textureID = other.m_textureID;
@@ -209,6 +238,8 @@ Sprite& Sprite::operator=(const Sprite& other) {
 	m_textureV = other.m_textureV;
 	m_textureW = other.m_textureW;
 	m_textureH = other.m_textureH;
+	m_originX = other.m_originX;
+	m_originY = other.m_originY;
 	return *this;
 }
 
@@ -231,6 +262,8 @@ Sprite& Sprite::operator=(Sprite&& other) noexcept {
 	std::swap(m_textureV, other.m_textureV);
 	std::swap(m_textureW, other.m_textureW);
 	std::swap(m_textureH, other.m_textureH);
+	std::swap(m_originX, other.m_originX);
+	std::swap(m_originY, other.m_originY);
 	return *this;
 }
 
@@ -256,8 +289,8 @@ void Sprite::CalculateUVs() {
 	float pageHeight = (float)texturePage->GetHeight();
 	m_textureW = (float)m_texture->GetWidth() / pageWidth;
 	m_textureH = (float)m_texture->GetHeight() / pageHeight;
-	m_textureU = (float)m_texture->GetXOffset(currFrame) / pageWidth;
-	m_textureV = (float)m_texture->GetYOffset(currFrame) / pageHeight;
+	m_textureU = (float)m_texture->GetOffsetX(currFrame) / pageWidth;
+	m_textureV = (float)m_texture->GetOffsetY(currFrame) / pageHeight;
 }
 
 } // luna

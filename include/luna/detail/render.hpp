@@ -43,9 +43,9 @@ protected:
 	LUNA_API void PostDraw() override;
 
 	struct SpriteBatchInfo {
-		float x, y, z;
-		float rotation;
+		float x, y, z, rotation;
 		float w, h, _paddingA, _paddingB;
+		float scaleX, scaleY, originX, originY;
 		float texU, texV, texW, texH;
 		float r, g, b, a;
 	};

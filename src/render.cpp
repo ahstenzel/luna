@@ -168,8 +168,12 @@ void SpriteRenderer::RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, 
 		dataPtr[i].y = sprite->GetPositionY();
 		dataPtr[i].z = -float(sprite->GetDepth());
 		dataPtr[i].rotation = sprite->GetRotation();
-		dataPtr[i].w = sprite->GetWidth() * sprite->GetScaleX();
-		dataPtr[i].h = sprite->GetHeight() * sprite->GetScaleY();
+		dataPtr[i].w = sprite->GetWidth();
+		dataPtr[i].h = sprite->GetHeight();
+		dataPtr[i].scaleX = sprite->GetScaleX();
+		dataPtr[i].scaleY = sprite->GetScaleY();
+		dataPtr[i].originX = sprite->GetOriginX();
+		dataPtr[i].originY = sprite->GetOriginY();
 		dataPtr[i].texU = spriteTextureCoords.textureU;
 		dataPtr[i].texV = spriteTextureCoords.textureV;
 		dataPtr[i].texW = spriteTextureCoords.textureW;

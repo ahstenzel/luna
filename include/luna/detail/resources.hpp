@@ -45,8 +45,10 @@ public:
 	LUNA_API std::uint32_t GetHeight() const;
 	LUNA_API std::uint32_t GetNumFrames() const;
 	LUNA_API TexturePageID GetTexturePageID() const;
-	LUNA_API std::uint32_t GetXOffset(std::int32_t animationFrame = -1) const;
-	LUNA_API std::uint32_t GetYOffset(std::int32_t animationFrame = -1) const;
+	LUNA_API std::uint32_t GetOffsetX(std::int32_t animationFrame = -1) const;
+	LUNA_API std::uint32_t GetOffsetY(std::int32_t animationFrame = -1) const;
+	LUNA_API std::int32_t GetOriginX() const;
+	LUNA_API std::int32_t GetOriginY() const;
 
 protected:
 	friend class ResourceFile;
@@ -68,6 +70,8 @@ private:
 	std::uint32_t m_animationYSpacing = 0;
 	std::uint32_t m_frameWidth = 0;
 	std::uint32_t m_frameHeight = 0;
+	std::int32_t m_originX = 0;
+	std::int32_t m_originY = 0;
 };
 
 /// <summary>

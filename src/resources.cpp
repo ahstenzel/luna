@@ -84,6 +84,8 @@ void ResourceTexture::Load(ResourceFile* file, const Buffer& block) {
 		m_animationYOffset = assetData.get_uint32(36);
 		m_animationXSpacing = assetData.get_uint32(40);
 		m_animationYSpacing = assetData.get_uint32(44);
+		m_originX = assetData.get_int32(48);
+		m_originY = assetData.get_int32(52);
 
 		// Calculate size
 		std::uint32_t cols = (std::uint32_t)std::ceilf((float)m_animationFrameCount / m_animationFramesPerRow);
@@ -116,7 +118,7 @@ TexturePageID ResourceTexture::GetTexturePageID() const {
 	return m_texturePageID;
 }
 
-std::uint32_t ResourceTexture::GetXOffset(std::int32_t animationFrame) const {
+std::uint32_t ResourceTexture::GetOffsetX(std::int32_t animationFrame) const {
 	if (animationFrame < 0) { return m_texturePageXOffset; }
 	else {
 		std::uint32_t i = (std::uint32_t)animationFrame % m_animationFrameCount;
@@ -126,7 +128,7 @@ std::uint32_t ResourceTexture::GetXOffset(std::int32_t animationFrame) const {
 	}
 }
 
-std::uint32_t ResourceTexture::GetYOffset(std::int32_t animationFrame) const {
+std::uint32_t ResourceTexture::GetOffsetY(std::int32_t animationFrame) const {
 	if (animationFrame < 0) { return m_texturePageXOffset; }
 	else {
 		std::uint32_t i = (std::uint32_t)animationFrame % m_animationFrameCount;
@@ -134,6 +136,14 @@ std::uint32_t ResourceTexture::GetYOffset(std::int32_t animationFrame) const {
 		std::uint32_t y = i / cols;
 		return m_texturePageYOffset + (y * (m_frameHeight + m_animationYSpacing));
 	}
+}
+
+std::int32_t ResourceTexture::GetOriginX() const {
+	return m_originX;
+}
+
+std::int32_t ResourceTexture::GetOriginY() const {
+	return m_originY;
 }
 
 bool ResourceSound::IsValid() const {

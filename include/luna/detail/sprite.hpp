@@ -37,23 +37,27 @@ public:
 	LUNA_API float GetRotation() const;
 	LUNA_API float GetWidth() const;
 	LUNA_API float GetHeight() const;
-	LUNA_API int32_t GetImage() const;
-	LUNA_API int32_t GetNumImages() const;
-	LUNA_API int32_t GetDepth() const;
+	LUNA_API std::int32_t GetImage() const;
+	LUNA_API std::int32_t GetNumImages() const;
+	LUNA_API std::int32_t GetDepth() const;
 	LUNA_API ResourceID GetTextureID() const;
 	LUNA_API SpriteTextureCoords GetTextureCoords() const;
 	LUNA_API TexturePageID GetTexturePageID() const;
 	LUNA_API const TexturePage* GetTexturePage() const;
 	LUNA_API SDL_Color GetBlend() const;
+	LUNA_API float GetOriginX() const;
+	LUNA_API float GetOriginY() const;
 
 	LUNA_API void SetPositionX(float x);
 	LUNA_API void SetPositionY(float y);
 	LUNA_API void SetScaleX(float scaleX);
 	LUNA_API void SetScaleY(float scaleY);
 	LUNA_API void SetRotation(float rotation);
-	LUNA_API void SetImage(int32_t image);
-	LUNA_API void SetDepth(int32_t depth);
+	LUNA_API void SetImage(std::int32_t image);
+	LUNA_API void SetDepth(std::int32_t depth);
 	LUNA_API void SetBlend(const SDL_Color& blend);
+	LUNA_API void SetOriginX(std::int32_t originX);
+	LUNA_API void SetOriginY(std::int32_t originY);
 
 	LUNA_API Sprite& operator=(const Sprite& other);
 	LUNA_API Sprite& operator=(Sprite&& other) noexcept;
@@ -80,6 +84,8 @@ private:
 	float m_textureV = 0.f;
 	float m_textureW = 0.f;
 	float m_textureH = 0.f;
+	float m_originX = 0;
+	float m_originY = 0;
 	std::int32_t m_depth = 0;
 };
 

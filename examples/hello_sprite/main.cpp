@@ -12,10 +12,13 @@ public:
 		case 3: textureID = ResourceManager::GetTextureID("ravioli3"); break;
 		default: textureID = ResourceManager::GetTextureID("ravioli4"); break;
 		}
+		// These textures are defined in the *.arc file to have a centered origin
 		sprRavioli = Sprite(textureID, x, y, 0, 0.f, depth, 4.0f, 4.0f);
 	}
 protected:
-	void Tick(float dt) override {}
+	void Tick(float dt) override {
+		sprRavioli.SetRotation(sprRavioli.GetRotation() + dt);
+	}
 
 	void Draw(float dt) override {
 		Game::GetRenderer()->DrawSprite(&sprRavioli);
@@ -25,15 +28,15 @@ protected:
 };
 
 void firstRoomPushFunc(Room* currRoom) {
-	RoomManager::GetCurrentRoom()->GetActorList()->push_back(new ActorRavioli(0.f, 0.f, 4, 4));
-	RoomManager::GetCurrentRoom()->GetActorList()->push_back(new ActorRavioli(32.f, 0.f, 3, 3));
-	RoomManager::GetCurrentRoom()->GetActorList()->push_back(new ActorRavioli(64.f, 0.f, -10, 2));
-	RoomManager::GetCurrentRoom()->GetActorList()->push_back(new ActorRavioli(96.f, 0.f, 1, 1));
+	RoomManager::GetCurrentRoom()->GetActorList()->push_back(new ActorRavioli(32.f, 32.f, 4, 4));
+	RoomManager::GetCurrentRoom()->GetActorList()->push_back(new ActorRavioli(64.f, 32.f, 3, 3));
+	RoomManager::GetCurrentRoom()->GetActorList()->push_back(new ActorRavioli(96.f, 32.f, -10, 2));
+	RoomManager::GetCurrentRoom()->GetActorList()->push_back(new ActorRavioli(128.f, 32.f, 1, 1));
 }
 
 void firstRoomPopFunc(Room* currRoom) {
 	for (auto& actor : *currRoom->GetActorList()) {
-		free(actor);
+		delete actor;
 	}
 }
 

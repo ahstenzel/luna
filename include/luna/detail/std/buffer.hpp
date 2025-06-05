@@ -72,6 +72,18 @@ public:
 		return m_data + offset;
 	}
 
+	void push_int8(std::int8_t value) {
+		push_internal<std::int8_t>(value);
+	}
+	void push_int16(std::int16_t value) {
+		push_internal<std::int16_t>(value);
+	}
+	void push_int32(std::int32_t value) {
+		push_internal<std::int32_t>(value);
+	}
+	void push_int64(std::int64_t value) {
+		push_internal<std::int64_t>(value);
+	}
 	void push_uint8(std::uint8_t value) {
 		push_internal<std::uint8_t>(value);
 	}
@@ -95,6 +107,18 @@ public:
 		}
 	}
 
+	void pop_int8() {
+		pop_internal<std::int8_t>();
+	}
+	void pop_int16() {
+		pop_internal<std::int16_t>();
+	}
+	void pop_int32() {
+		pop_internal<std::int32_t>();
+	}
+	void pop_int64() {
+		pop_internal<std::int64_t>();
+	}
 	void pop_uint8() {
 		pop_internal<std::uint8_t>();
 	}
@@ -111,6 +135,18 @@ public:
 		m_size = std::max((std::size_t)0, m_size - len);
 	}
 
+	std::int8_t get_int8(std::size_t pos) const {
+		return get_internal<std::int8_t>(pos);
+	}
+	std::int16_t get_int16(std::size_t pos) const {
+		return get_internal<std::int16_t>(pos);
+	}
+	std::int32_t get_int32(std::size_t pos) const {
+		return get_internal<std::int32_t>(pos);
+	}
+	std::int64_t get_int64(std::size_t pos) const {
+		return get_internal<std::int64_t>(pos);
+	}
 	std::uint8_t get_uint8(std::size_t pos) const {
 		return get_internal<std::uint8_t>(pos);
 	}
