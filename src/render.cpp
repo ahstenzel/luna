@@ -38,6 +38,14 @@ void SpriteRenderer::Draw() {
 		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "SpriteRenderer::Draw failed: Room stack is empty!");
 		return;
 	}
+
+	// Stitch together multiple sprite lists
+
+	// Sort into batches
+	SpriteListComp cmp;
+	intro_sort(m_spriteList.begin(), m_spriteList.end(), cmp);
+
+	// Render batches
 	RenderSpriteList(Game::GetWindow(), &m_spriteList, ConvertToFColor(currentRoom->GetClearColor()));
 }
 
@@ -166,7 +174,7 @@ void SpriteRenderer::RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, 
 		SDL_FColor spriteColor = ConvertToFColor(sprite->GetBlend());
 		dataPtr[i].x = sprite->GetPositionX();
 		dataPtr[i].y = sprite->GetPositionY();
-		dataPtr[i].z = -float(sprite->GetDepth());
+		dataPtr[i].z = float(sprite->GetDepth());
 		dataPtr[i].rotation = sprite->GetRotation();
 		dataPtr[i].w = sprite->GetWidth();
 		dataPtr[i].h = sprite->GetHeight();

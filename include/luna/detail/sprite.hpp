@@ -45,8 +45,10 @@ public:
 	LUNA_API TexturePageID GetTexturePageID() const;
 	LUNA_API const TexturePage* GetTexturePage() const;
 	LUNA_API SDL_Color GetBlend() const;
+	LUNA_API float GetAlpha() const;
 	LUNA_API float GetOriginX() const;
 	LUNA_API float GetOriginY() const;
+	LUNA_API bool GetTranslucent() const;
 
 	LUNA_API void SetPositionX(float x);
 	LUNA_API void SetPositionY(float y);
@@ -56,11 +58,14 @@ public:
 	LUNA_API void SetImage(std::int32_t image);
 	LUNA_API void SetDepth(std::int32_t depth);
 	LUNA_API void SetBlend(const SDL_Color& blend);
+	LUNA_API void SetAlpha(float alpha);
 	LUNA_API void SetOriginX(std::int32_t originX);
 	LUNA_API void SetOriginY(std::int32_t originY);
 
 	LUNA_API Sprite& operator=(const Sprite& other);
 	LUNA_API Sprite& operator=(Sprite&& other) noexcept;
+	LUNA_API bool operator==(const Sprite& other) const;
+	LUNA_API bool operator<(const Sprite& other) const;
 
 protected:
 	bool Tick(float dt);
@@ -90,5 +95,9 @@ private:
 };
 
 using SpriteList = std::vector<const Sprite*>;
+
+struct SpriteListComp {
+	bool operator()(const Sprite* lhs, const Sprite* rhs);
+};
 
 } // luna

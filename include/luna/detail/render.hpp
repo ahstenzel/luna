@@ -20,9 +20,9 @@ public:
 
 protected:
 	friend class Game;
-	LUNA_API virtual void PreDraw() = 0;
-	LUNA_API virtual void Draw() = 0;
-	LUNA_API virtual void PostDraw() = 0;
+	virtual void PreDraw() = 0;
+	virtual void Draw() = 0;
+	virtual void PostDraw() = 0;
 };
 
 /// <summary>
@@ -38,9 +38,9 @@ public:
 
 protected:
 	friend class Game;
-	LUNA_API void PreDraw() override;
-	LUNA_API void Draw() override;
-	LUNA_API void PostDraw() override;
+	void PreDraw() override;
+	void Draw() override;
+	void PostDraw() override;
 
 	struct SpriteBatchInfo {
 		float x, y, z, rotation;

@@ -85,7 +85,7 @@ public:
 
 protected:
 	friend class ResourceFile;
-	LUNA_API void Load(ResourceFile* file, const Buffer& block) override;
+	void Load(ResourceFile* file, const Buffer& block) override;
 };
 
 /// <summary>
@@ -99,7 +99,7 @@ public:
 
 protected:
 	friend class ResourceFile;
-	LUNA_API void Load(ResourceFile* file, const Buffer& block) override;
+	void Load(ResourceFile* file, const Buffer& block) override;
 };
 
 /// <summary>
@@ -114,7 +114,7 @@ public:
 
 protected:
 	friend class ResourceFile;
-	LUNA_API void Load(ResourceFile* file, const Buffer& block) override;
+	void Load(ResourceFile* file, const Buffer& block) override;
 
 private:
 	std::string m_contents = "";
@@ -131,7 +131,7 @@ public:
 
 protected:
 	friend class ResourceFile;
-	LUNA_API void Load(ResourceFile* file, const Buffer& block) override;
+	void Load(ResourceFile* file, const Buffer& block) override;
 };
 
 /// <summary>
@@ -154,7 +154,7 @@ public:
 
 protected:
 	friend class ResourceFile;
-	LUNA_API void Load(ResourceFile* file, const Buffer& block);
+	void Load(ResourceFile* file, const Buffer& block);
 
 private:
 	ResourceID m_resourceFileID = RESOURCE_ID_NULL;

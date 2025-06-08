@@ -36,6 +36,22 @@ void Actor::RemoveTag(const std::string& tag) {
 	m_tags.erase(tag);
 }
 
+bool Actor::GetVisible() const {
+	return m_visible;
+}
+
+void Actor::SetVisible(bool visible) {
+	m_visible = visible;
+}
+
+bool Actor::GetActive() const {
+	return m_active;
+}
+
+void Actor::SetActive(bool active) {
+	m_active = active;
+}
+
 ActorList::ActorList() = default;
 
 ActorList::ActorList(const ActorList& other) :

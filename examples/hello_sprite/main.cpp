@@ -4,34 +4,40 @@ using namespace luna;
 
 class ActorRavioli : public Actor {
 public:
-	ActorRavioli(float x, float y, std::int32_t depth, int ravioliNum) {
-		ResourceID textureID = RESOURCE_ID_NULL;
-		switch (ravioliNum) {
-		case 1: textureID = ResourceManager::GetTextureID("ravioli1"); break;
-		case 2: textureID = ResourceManager::GetTextureID("ravioli2"); break;
-		case 3: textureID = ResourceManager::GetTextureID("ravioli3"); break;
-		default: textureID = ResourceManager::GetTextureID("ravioli4"); break;
-		}
+	ActorRavioli(float x, float y, std::int32_t depth = 0) {
 		// These textures are defined in the *.arc file to have a centered origin
-		sprRavioli = Sprite(textureID, x, y, 0, 0.f, depth, 4.0f, 4.0f);
+		sprRavioli1 = Sprite(ResourceManager::GetTextureID("ravioli1"), x, y, 0, 0.f, depth, 4.0f, 4.0f);
+		sprRavioli2 = Sprite(ResourceManager::GetTextureID("ravioli2"), x + 96.f, y, 0, 0.f, depth, 4.0f, 4.0f);
+		sprRavioli3 = Sprite(ResourceManager::GetTextureID("ravioli3"), x + 192.f, y, 0, 0.f, depth, 4.0f, 4.0f);
+		sprRavioli4 = Sprite(ResourceManager::GetTextureID("ravioli4"), x + 288.f, y, 0, 0.f, depth, 4.0f, 4.0f);
 	}
 protected:
 	void Tick(float dt) override {
-		sprRavioli.SetRotation(sprRavioli.GetRotation() + dt);
+		static float counter = 0.f;
+		counter += dt;
+		while (counter > 1.f) { counter -= 1.f; }
+
+		sprRavioli1.SetRotation(sprRavioli1.GetRotation() + dt);
+		sprRavioli2.SetScaleX(4.f + SDL_sinf(counter * 2.f * SDL_PI_F));
+		sprRavioli2.SetScaleY(4.f + SDL_cosf(counter * 2.f * SDL_PI_F));
+		sprRavioli3.SetAlpha(0.5f + (0.5f * SDL_cosf(counter * 2.f * SDL_PI_F)));
 	}
 
 	void Draw(float dt) override {
-		Game::GetRenderer()->DrawSprite(&sprRavioli);
+		Game::GetRenderer()->DrawSprite(&sprRavioli1);
+		Game::GetRenderer()->DrawSprite(&sprRavioli2);
+		Game::GetRenderer()->DrawSprite(&sprRavioli3);
+		Game::GetRenderer()->DrawSprite(&sprRavioli4);
 	}
 
-	Sprite sprRavioli;
+	Sprite sprRavioli1;
+	Sprite sprRavioli2;
+	Sprite sprRavioli3;
+	Sprite sprRavioli4;
 };
 
 void firstRoomPushFunc(Room* currRoom) {
-	currRoom->GetActorList()->AddActor(new ActorRavioli(32.f, 32.f, 4, 4));
-	currRoom->GetActorList()->AddActor(new ActorRavioli(64.f, 32.f, 3, 3));
-	currRoom->GetActorList()->AddActor(new ActorRavioli(96.f, 32.f, -10, 2));
-	currRoom->GetActorList()->AddActor(new ActorRavioli(128.f, 32.f, 1, 1));
+	currRoom->GetActorList()->AddActor(new ActorRavioli(64.f, 64.f));
 }
 
 int main(int argc, char** argv) {
@@ -51,7 +57,7 @@ int main(int argc, char** argv) {
 
 	// Create initial room
 	RoomInit initFirstRoom = {};
-	initFirstRoom.clearColor = { 0, 0, 85, 0 };
+	initFirstRoom.clearColor = { 0, 0, 85, 255 };
 	initFirstRoom.pushFunc = firstRoomPushFunc;
 	RoomManager::PushRoom(initFirstRoom);
 	RoomManager::GetCurrentRoom()->CreateCamera();

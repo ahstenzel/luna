@@ -11,28 +11,35 @@ class ActorList;
 
 class Actor {
 public:
-	bool HasTag(const std::string& tag);
-	bool HasTagsAny(const std::unordered_set<std::string>& tags);
-	bool HasTagsAll(const std::unordered_set<std::string>& tags);
-	void AddTag(const std::string& tag);
-	void RemoveTag(const std::string& tag);
+	LUNA_API bool HasTag(const std::string& tag);
+	LUNA_API bool HasTagsAny(const std::unordered_set<std::string>& tags);
+	LUNA_API bool HasTagsAll(const std::unordered_set<std::string>& tags);
+	LUNA_API void AddTag(const std::string& tag);
+	LUNA_API void RemoveTag(const std::string& tag);
+
+	LUNA_API bool GetVisible() const;
+	LUNA_API void SetVisible(bool visible);
+	LUNA_API bool GetActive() const;
+	LUNA_API void SetActive(bool active);
 protected:
 	friend class Game;
 	friend class RoomManager;
-	LUNA_API virtual void Tick(float dt) = 0;
-	LUNA_API virtual void Draw(float dt) = 0;
+	virtual void Tick(float dt) = 0;
+	virtual void Draw(float dt) = 0;
 
 	std::unordered_set<std::string> m_tags;
+	bool m_active = true;
+	bool m_visible = true;
 };
 
 //using ActorList = std::vector<Actor*>;
 
 class ActorList {
 public:
-	ActorList();
-	ActorList(const ActorList& other);
-	ActorList(ActorList&& other) noexcept;
-	~ActorList();
+	LUNA_API ActorList();
+	LUNA_API ActorList(const ActorList& other);
+	LUNA_API ActorList(ActorList&& other) noexcept;
+	LUNA_API ~ActorList();
 
 	using ActorItr = std::vector<Actor*>::iterator;
 

@@ -113,7 +113,7 @@ void RoomManager::Tick(float dt) {
 		return;
 	}
 	for (auto& actor : *(m_rooms.top().GetActorList())) {
-		actor->Tick(dt);
+		if (actor->GetActive()) { actor->Tick(dt); }
 	}
 }
 
@@ -123,7 +123,7 @@ void RoomManager::Draw(float dt) {
 		return;
 	}
 	for (auto& actor : *(m_rooms.top().GetActorList())) {
-		actor->Draw(dt);
+		if (actor->GetVisible()) { actor->Draw(dt); }
 	}
 }
 

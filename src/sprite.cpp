@@ -171,12 +171,20 @@ SDL_Color Sprite::GetBlend() const {
 	return m_blend;
 }
 
+float Sprite::GetAlpha() const {
+	return m_blend.a / 255.f;
+}
+
 float Sprite::GetOriginX() const {
 	return m_originX;
 }
 
 float Sprite::GetOriginY() const {
 	return m_originY;
+}
+
+bool Sprite::GetTranslucent() const {
+	return m_blend.a > 0.f && m_blend.a < 1.f;
 }
 
 void Sprite::SetPositionX(float x) {
@@ -209,6 +217,11 @@ void Sprite::SetDepth(int32_t depth) {
 
 void Sprite::SetBlend(const SDL_Color& blend) {
 	m_blend = blend;
+}
+
+void Sprite::SetAlpha(float alpha) {
+	alpha = std::clamp(alpha, 0.f, 1.f);
+	m_blend.a = Uint8(alpha * 255.f);
 }
 
 void Sprite::SetOriginX(std::int32_t originX) {
@@ -267,6 +280,40 @@ Sprite& Sprite::operator=(Sprite&& other) noexcept {
 	return *this;
 }
 
+bool Sprite::operator==(const Sprite& other) const {
+	return (
+		m_textureID == other.m_textureID &&
+		m_positionX == other.m_positionX &&
+		m_positionY == other.m_positionY &&
+		m_animationSpeed == other.m_animationSpeed &&
+		m_depth == other.m_depth &&
+		m_scaleX == other.m_scaleX &&
+		m_scaleY == other.m_scaleY &&
+		m_rotation == other.m_rotation &&
+		m_blend.r == other.m_blend.r &&
+		m_blend.g == other.m_blend.g &&
+		m_blend.b == other.m_blend.b &&
+		m_blend.a == other.m_blend.a &&
+		m_texture == other.m_texture &&
+		m_width == other.m_width &&
+		m_height == other.m_height &&
+		m_animationFrame == other.m_animationFrame &&
+		m_textureU == other.m_textureU &&
+		m_textureV == other.m_textureV &&
+		m_textureW == other.m_textureW &&
+		m_textureH == other.m_textureH &&
+		m_originX == other.m_originX &&
+		m_originY == other.m_originY
+	);
+}
+
+bool Sprite::operator<(const Sprite& other) const {
+	return (
+		(GetTranslucent() && !other.GetTranslucent()) ||
+		(m_texture->GetTexturePageID() < other.m_texture->GetTexturePageID())
+	);
+}
+
 bool Sprite::Tick(float dt) {
 	// Check if sprite is no longer valid
 	auto texture = ResourceManager::GetTexture(m_textureID);
@@ -291,6 +338,10 @@ void Sprite::CalculateUVs() {
 	m_textureH = (float)m_texture->GetHeight() / pageHeight;
 	m_textureU = (float)m_texture->GetOffsetX(currFrame) / pageWidth;
 	m_textureV = (float)m_texture->GetOffsetY(currFrame) / pageHeight;
+}
+
+bool SpriteListComp::operator()(const Sprite* lhs, const Sprite* rhs) {
+	return *lhs < *rhs;
 }
 
 } // luna

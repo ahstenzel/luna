@@ -142,6 +142,12 @@ int Game::Run() {
 			m_postTickFunc(float(frameTime));
 		}
 
+		// Manage current room state
+		Room* currentRoom = RoomManager::GetCurrentRoom();
+		if (currentRoom) {
+			currentRoom->GetActorList()->FlushActors();
+		}
+
 		// Draw
 		m_renderer->PreDraw();
 		m_preDrawFunc(m_renderer);
