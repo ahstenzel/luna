@@ -32,8 +32,6 @@ protected:
 	bool m_visible = true;
 };
 
-//using ActorList = std::vector<Actor*>;
-
 class ActorList {
 public:
 	LUNA_API ActorList();

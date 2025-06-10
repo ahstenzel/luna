@@ -42,8 +42,9 @@ void SpriteRenderer::Draw() {
 	// Stitch together multiple sprite lists
 
 	// Sort into batches
-	SpriteListComp cmp;
-	intro_sort(m_spriteList.begin(), m_spriteList.end(), cmp);
+	merge_sort(m_spriteList.begin(), m_spriteList.end(), SpriteListTexturePageComp());
+	merge_sort(m_spriteList.begin(), m_spriteList.end(), SpriteListDepthComp());
+	merge_sort(m_spriteList.begin(), m_spriteList.end(), SpriteListTranslucentComp());
 
 	// Render batches
 	RenderSpriteList(Game::GetWindow(), &m_spriteList, ConvertToFColor(currentRoom->GetClearColor()));
@@ -174,7 +175,7 @@ void SpriteRenderer::RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, 
 		SDL_FColor spriteColor = ConvertToFColor(sprite->GetBlend());
 		dataPtr[i].x = sprite->GetPositionX();
 		dataPtr[i].y = sprite->GetPositionY();
-		dataPtr[i].z = float(sprite->GetDepth());
+		dataPtr[i].z = -float(sprite->GetDepth());
 		dataPtr[i].rotation = sprite->GetRotation();
 		dataPtr[i].w = sprite->GetWidth();
 		dataPtr[i].h = sprite->GetHeight();
@@ -215,7 +216,7 @@ void SpriteRenderer::RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, 
 	SDL_GPUDepthStencilTargetInfo renderDepthStencilTargetInfo = {};
 	renderDepthStencilTargetInfo.texture = m_sdlGPUDepthTexture;
 	renderDepthStencilTargetInfo.cycle = true;
-	renderDepthStencilTargetInfo.clear_depth = zFar;
+	renderDepthStencilTargetInfo.clear_depth = zNear;
 	renderDepthStencilTargetInfo.clear_stencil = 0;
 	renderDepthStencilTargetInfo.load_op = SDL_GPU_LOADOP_CLEAR;
 	renderDepthStencilTargetInfo.store_op = SDL_GPU_STOREOP_DONT_CARE;

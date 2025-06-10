@@ -184,7 +184,10 @@ float Sprite::GetOriginY() const {
 }
 
 bool Sprite::GetTranslucent() const {
-	return m_blend.a > 0.f && m_blend.a < 1.f;
+	return (
+		(m_blend.a > 0 && m_blend.a < 255) ||
+		m_texture->GetProperties() & 0x01
+	);
 }
 
 void Sprite::SetPositionX(float x) {
@@ -307,13 +310,6 @@ bool Sprite::operator==(const Sprite& other) const {
 	);
 }
 
-bool Sprite::operator<(const Sprite& other) const {
-	return (
-		(GetTranslucent() && !other.GetTranslucent()) ||
-		(m_texture->GetTexturePageID() < other.m_texture->GetTexturePageID())
-	);
-}
-
 bool Sprite::Tick(float dt) {
 	// Check if sprite is no longer valid
 	auto texture = ResourceManager::GetTexture(m_textureID);
@@ -340,8 +336,16 @@ void Sprite::CalculateUVs() {
 	m_textureV = (float)m_texture->GetOffsetY(currFrame) / pageHeight;
 }
 
-bool SpriteListComp::operator()(const Sprite* lhs, const Sprite* rhs) {
-	return *lhs < *rhs;
+bool SpriteListTexturePageComp::operator()(const Sprite* lhs, const Sprite* rhs) {
+	return lhs->GetTexturePageID() < rhs->GetTexturePageID();
+}
+
+bool SpriteListDepthComp::operator()(const Sprite* lhs, const Sprite* rhs) {
+	return lhs->GetDepth() < rhs->GetDepth();
+}
+
+bool SpriteListTranslucentComp::operator()(const Sprite* lhs, const Sprite* rhs) {
+	return !lhs->GetTranslucent() && rhs->GetTranslucent();
 }
 
 } // luna

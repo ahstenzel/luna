@@ -49,6 +49,7 @@ public:
 	LUNA_API std::uint32_t GetOffsetY(std::int32_t animationFrame = -1) const;
 	LUNA_API std::int32_t GetOriginX() const;
 	LUNA_API std::int32_t GetOriginY() const;
+	LUNA_API std::uint8_t GetProperties() const;
 
 protected:
 	friend class ResourceFile;
@@ -72,6 +73,7 @@ private:
 	std::uint32_t m_frameHeight = 0;
 	std::int32_t m_originX = 0;
 	std::int32_t m_originY = 0;
+	std::uint8_t m_properties = 0;
 };
 
 /// <summary>

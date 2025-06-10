@@ -56,16 +56,16 @@ SpriteBatchShaderPipeline::SpriteBatchShaderPipeline() {
 	// Determine depth stencil format
 	if (SDL_GPUTextureSupportsFormat(
 		device,
-		SDL_GPU_TEXTUREFORMAT_D24_UNORM_S8_UINT,
-		SDL_GPU_TEXTURETYPE_2D,
-		SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET
-	)) { m_depthStencilFormat = SDL_GPU_TEXTUREFORMAT_D24_UNORM_S8_UINT; }
-	else if (SDL_GPUTextureSupportsFormat(
-		device,
 		SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT,
 		SDL_GPU_TEXTURETYPE_2D,
 		SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET
 	)) { m_depthStencilFormat = SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT; }
+	else if (SDL_GPUTextureSupportsFormat(
+		device,
+		SDL_GPU_TEXTUREFORMAT_D24_UNORM_S8_UINT,
+		SDL_GPU_TEXTURETYPE_2D,
+		SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET
+	)) { m_depthStencilFormat = SDL_GPU_TEXTUREFORMAT_D24_UNORM_S8_UINT; }
 	else { m_depthStencilFormat = SDL_GPU_TEXTUREFORMAT_D16_UNORM; }
 
 	// Build pipeline
@@ -103,7 +103,7 @@ SpriteBatchShaderPipeline::SpriteBatchShaderPipeline() {
 	createInfo.depth_stencil_state.back_stencil_state.pass_op = SDL_GPU_STENCILOP_KEEP;
 	createInfo.depth_stencil_state.back_stencil_state.depth_fail_op = SDL_GPU_STENCILOP_KEEP;
 	createInfo.depth_stencil_state.write_mask = 0xFF;
-	createInfo.depth_stencil_state.compare_op = SDL_GPU_COMPAREOP_LESS;
+	createInfo.depth_stencil_state.compare_op = SDL_GPU_COMPAREOP_GREATER;
 	createInfo.depth_stencil_state.enable_depth_test = true;
 	createInfo.depth_stencil_state.enable_depth_write = true;
 	createInfo.depth_stencil_state.enable_stencil_test = false;

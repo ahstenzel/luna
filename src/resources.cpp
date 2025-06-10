@@ -86,6 +86,7 @@ void ResourceTexture::Load(ResourceFile* file, const Buffer& block) {
 		m_animationYSpacing = assetData.get_uint32(44);
 		m_originX = assetData.get_int32(48);
 		m_originY = assetData.get_int32(52);
+		m_properties = assetData.get_uint8(56);
 
 		// Calculate size
 		std::uint32_t cols = (std::uint32_t)std::ceilf((float)m_animationFrameCount / m_animationFramesPerRow);
@@ -144,6 +145,10 @@ std::int32_t ResourceTexture::GetOriginX() const {
 
 std::int32_t ResourceTexture::GetOriginY() const {
 	return m_originY;
+}
+
+std::uint8_t ResourceTexture::GetProperties() const {
+	return m_properties;
 }
 
 bool ResourceSound::IsValid() const {

@@ -65,7 +65,6 @@ public:
 	LUNA_API Sprite& operator=(const Sprite& other);
 	LUNA_API Sprite& operator=(Sprite&& other) noexcept;
 	LUNA_API bool operator==(const Sprite& other) const;
-	LUNA_API bool operator<(const Sprite& other) const;
 
 protected:
 	bool Tick(float dt);
@@ -96,7 +95,15 @@ private:
 
 using SpriteList = std::vector<const Sprite*>;
 
-struct SpriteListComp {
+struct SpriteListTexturePageComp {
+	bool operator()(const Sprite* lhs, const Sprite* rhs);
+};
+
+struct SpriteListDepthComp {
+	bool operator()(const Sprite* lhs, const Sprite* rhs);
+};
+
+struct SpriteListTranslucentComp {
 	bool operator()(const Sprite* lhs, const Sprite* rhs);
 };
 
