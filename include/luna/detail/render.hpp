@@ -55,7 +55,8 @@ private:
 	void RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, SDL_FColor clearColor, SDL_GPUTexture* swapchainTexture, glm::mat4* cameraMatrix, float zNear, float zFar, SpriteList* spriteList, std::size_t spriteBegin, std::size_t spriteCount);
 	void SetTexturePage(SDL_GPUCommandBuffer* commandBuffer, const TexturePage* texturePage);
 
-	SpriteList m_spriteList;
+	SpriteList m_opaqueSpriteList;
+	SpriteList m_translucentSpriteList;
 
 	std::uint32_t m_lastSpriteBatchSize = 0;
 	TexturePageID m_lastTexturePageID = TEXTURE_PAGE_ID_NULL;

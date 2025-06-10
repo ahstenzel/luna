@@ -29,7 +29,8 @@ bool SpriteRenderer::IsValid() const {
 }
 
 void SpriteRenderer::PreDraw() {
-	m_spriteList.clear();
+	m_opaqueSpriteList.clear();
+	m_translucentSpriteList.clear();
 }
 
 void SpriteRenderer::Draw() {
@@ -42,12 +43,17 @@ void SpriteRenderer::Draw() {
 	// Stitch together multiple sprite lists
 
 	// Sort into batches
-	merge_sort(m_spriteList.begin(), m_spriteList.end(), SpriteListTexturePageComp());
-	merge_sort(m_spriteList.begin(), m_spriteList.end(), SpriteListDepthComp());
-	merge_sort(m_spriteList.begin(), m_spriteList.end(), SpriteListTranslucentComp());
+	merge_sort(m_opaqueSpriteList.begin(), m_opaqueSpriteList.end(), SpriteListTexturePageComp());
+	merge_sort(m_translucentSpriteList.begin(), m_translucentSpriteList.end(), SpriteListTexturePageComp());
+	merge_sort(m_translucentSpriteList.begin(), m_translucentSpriteList.end(), SpriteListDepthComp());
+
+	// Stitch together opaque and translucent sprite lists
+	SpriteList spriteList;
+	spriteList.insert(spriteList.end(), std::make_move_iterator(m_opaqueSpriteList.begin()), std::make_move_iterator(m_opaqueSpriteList.end()));
+	spriteList.insert(spriteList.end(), std::make_move_iterator(m_translucentSpriteList.begin()), std::make_move_iterator(m_translucentSpriteList.end()));
 
 	// Render batches
-	RenderSpriteList(Game::GetWindow(), &m_spriteList, ConvertToFColor(currentRoom->GetClearColor()));
+	RenderSpriteList(Game::GetWindow(), &spriteList, ConvertToFColor(currentRoom->GetClearColor()));
 }
 
 void SpriteRenderer::PostDraw() {}
@@ -67,7 +73,8 @@ void SpriteRenderer::DrawSprite(Sprite* sprite) {
 	}
 
 	// Add to draw queue
-	m_spriteList.push_back(sprite);
+	if (sprite->GetTranslucent()) { m_translucentSpriteList.push_back(sprite); }
+	else { m_opaqueSpriteList.push_back(sprite); }
 }
 
 void SpriteRenderer::RenderSpriteList(SDL_Window* window, SpriteList* spriteList, SDL_FColor clearColor) {

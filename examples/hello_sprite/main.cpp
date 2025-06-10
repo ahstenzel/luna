@@ -7,7 +7,7 @@ public:
 	ActorRavioli(float x, float y, std::int32_t depth = 0) {
 		// These textures are defined in the *.arc file to have a centered origin
 		sprRavioli1 = Sprite(ResourceManager::GetTextureID("ravioli1"), x, y, 0, 0.f, depth, 4.0f, 4.0f);
-		sprRavioli2 = Sprite(ResourceManager::GetTextureID("ravioli2"), x + 96.f, y, 0, 0.f, depth, 4.0f, 4.0f);
+		sprRavioli2 = Sprite(ResourceManager::GetTextureID("ravioli2"), x + 80.f, y, 0, 0.f, depth, 4.0f, 4.0f);
 		sprRavioli3 = Sprite(ResourceManager::GetTextureID("ravioli3"), x + 192.f, y, 0, 0.f, depth, 4.0f, 4.0f);
 		sprRavioli4_1 = Sprite(ResourceManager::GetTextureID("ravioli4"), x + 230.f, y, 0, 0.f, depth - 1, 4.0f, 4.0f);
 		sprRavioli4_2 = Sprite(ResourceManager::GetTextureID("ravioli4"), x + 154.f, y, 0, 0.f, depth + 1, 4.0f, 4.0f);
@@ -61,8 +61,8 @@ int main(int argc, char** argv) {
 
 	// Create initial room
 	RoomInit initFirstRoom = {};
-	//initFirstRoom.clearColor = { 0, 0, 85, 255 };
-	initFirstRoom.clearColor = LunaColorWhite;
+	initFirstRoom.clearColor = { 0, 0, 85, 255 };
+	//initFirstRoom.clearColor = LunaColorWhite;
 	initFirstRoom.pushFunc = firstRoomPushFunc;
 	RoomManager::PushRoom(initFirstRoom);
 	RoomManager::GetCurrentRoom()->CreateCamera();

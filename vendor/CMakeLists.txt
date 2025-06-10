@@ -43,6 +43,9 @@ add_subdirectory(json)
 
 # glm
 set(GLM_BUILD_TESTS OFF CACHE INTERNAL "")
+set(GLM_ENABLE_FAST_MATH ON CACHE INTERNAL "")
+set(GLM_ENABLE_SIMD_AVX2 ON CACHE INTERNAL "")
+set(GLM_ENABLE_SIMD_NEON ON CACHE INTERNAL "")
 add_subdirectory(glm)
 
 add_library(vendor INTERFACE)
@@ -55,7 +58,6 @@ target_link_libraries(vendor INTERFACE
 	SDL3::SDL3 
 	SDL3_ttf::SDL3_ttf
 	SDL3_image::SDL3_image
-	glm::glm
 )
 set_target_properties(
 	libaes 

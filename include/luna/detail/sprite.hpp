@@ -103,8 +103,5 @@ struct SpriteListDepthComp {
 	bool operator()(const Sprite* lhs, const Sprite* rhs);
 };
 
-struct SpriteListTranslucentComp {
-	bool operator()(const Sprite* lhs, const Sprite* rhs);
-};
 
 } // luna

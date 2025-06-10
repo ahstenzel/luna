@@ -344,8 +344,4 @@ bool SpriteListDepthComp::operator()(const Sprite* lhs, const Sprite* rhs) {
 	return lhs->GetDepth() < rhs->GetDepth();
 }
 
-bool SpriteListTranslucentComp::operator()(const Sprite* lhs, const Sprite* rhs) {
-	return !lhs->GetTranslucent() && rhs->GetTranslucent();
-}
-
 } // luna

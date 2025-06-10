@@ -3,6 +3,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
 include(luna_deploy_assets)
 include(luna_deploy_shared_libs)
 include(luna_include_dirs)
+include(luna_set_target_properties)
 
 # Add examples
 add_subdirectory(hello_sprite)

@@ -5,6 +5,7 @@ function(luna_include_dirs PROJECT)
 		"${PROJECT_SOURCE_DIR}/vendor/SDL/include"
 		"${PROJECT_SOURCE_DIR}/vendor/base64/include"
 		"${PROJECT_SOURCE_DIR}/vendor/json/include"
+		"${PROJECT_SOURCE_DIR}/vendor/glm"
 		"${LUNA_SDL_SHADERCROSS_DIR}/include"
 	)
 endfunction()
