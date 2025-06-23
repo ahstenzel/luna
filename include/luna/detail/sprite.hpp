@@ -2,6 +2,7 @@
 
 #include <luna/detail/common.hpp>
 #include <luna/detail/resources.hpp>
+#include <luna/detail/shapes.hpp>
 
 namespace luna {
 
@@ -62,6 +63,9 @@ public:
 	LUNA_API void SetOriginX(std::int32_t originX);
 	LUNA_API void SetOriginY(std::int32_t originY);
 
+	LUNA_API ShapeAABB GetShapeAABB() const;
+	LUNA_API ShapeCircle GetShapeCircle() const;
+
 	LUNA_API Sprite& operator=(const Sprite& other);
 	LUNA_API Sprite& operator=(Sprite&& other) noexcept;
 	LUNA_API bool operator==(const Sprite& other) const;
@@ -93,15 +97,7 @@ private:
 	std::int32_t m_depth = 0;
 };
 
-using SpriteList = std::vector<const Sprite*>;
-
-struct SpriteListTexturePageComp {
-	bool operator()(const Sprite* lhs, const Sprite* rhs);
-};
-
-struct SpriteListDepthComp {
-	bool operator()(const Sprite* lhs, const Sprite* rhs);
-};
+using SpriteList = std::vector<Sprite>;
 
 
 } // luna

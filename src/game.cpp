@@ -12,12 +12,17 @@ std::function<void(Renderer*)> Game::m_preDrawFunc = {};
 std::function<void(Renderer*)> Game::m_postDrawFunc = {};
 
 bool Game::m_enableGraphicsDebugging = false;
+bool Game::m_enableVsync = false;
+bool Game::m_enableHDR = false;
+bool Game::m_updateSwapchainParametersFlag = false;
 bool Game::m_quitFlag = false;
 unsigned int Game::m_windowW = 0;
 unsigned int Game::m_windowH = 0;
 unsigned int Game::m_ticksPerSecond = 0;
 SDL_Window* Game::m_sdlWindow = nullptr;
 SDL_GPUDevice* Game::m_sdlGPUDevice = nullptr;
+SDL_GPUPresentMode Game::m_sdlGPUPresentMode = SDL_GPU_PRESENTMODE_VSYNC;
+SDL_GPUSwapchainComposition Game::m_sdlGPUSwapchainComposition = SDL_GPU_SWAPCHAINCOMPOSITION_SDR;
 Renderer* Game::m_renderer = nullptr;
 
 bool Game::Init(GameInit* init) {
@@ -26,6 +31,8 @@ bool Game::Init(GameInit* init) {
 	m_windowW = init->windowW;
 	m_windowH = init->windowH;
 	m_enableGraphicsDebugging = init->enableGraphicsDebugging;
+	m_enableVsync = init->enableVsync;
+	m_enableHDR = init->enableHDR;
 	m_startFunc = init->startFunc;
 	m_endFunc = init->endFunc;
 	m_preTickFunc = init->preTickFunc;
@@ -73,27 +80,7 @@ bool Game::Init(GameInit* init) {
 	}
 
 	// Set render parameters
-	SDL_GPUPresentMode presentMode = SDL_GPU_PRESENTMODE_VSYNC;
-	if (SDL_WindowSupportsGPUPresentMode(
-		m_sdlGPUDevice,
-		m_sdlWindow,
-		SDL_GPU_PRESENTMODE_IMMEDIATE
-	)) {
-		presentMode = SDL_GPU_PRESENTMODE_IMMEDIATE;
-	}
-	else if (SDL_WindowSupportsGPUPresentMode(
-		m_sdlGPUDevice,
-		m_sdlWindow,
-		SDL_GPU_PRESENTMODE_MAILBOX
-	)) {
-		presentMode = SDL_GPU_PRESENTMODE_MAILBOX;
-	}
-	SDL_SetGPUSwapchainParameters(
-		m_sdlGPUDevice,
-		m_sdlWindow,
-		SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
-		presentMode
-	);
+	SetSwapchainParameters();
 
 	// Create shader pipelines
 	SDL_ShaderCross_Init();
@@ -149,6 +136,7 @@ int Game::Run() {
 		}
 
 		// Draw
+		if (m_updateSwapchainParametersFlag) { SetSwapchainParameters(); }
 		m_renderer->PreDraw();
 		m_preDrawFunc(m_renderer);
 		RoomManager::Draw(float(frameTime));
@@ -187,6 +175,63 @@ Renderer* Game::GetRenderer() {
 
 bool Game::GetGraphicsDebuggingEnabled() {
 	return m_enableGraphicsDebugging;
+}
+
+bool Game::GetVsyncEnabled() {
+	return m_enableVsync;
+}
+
+void Game::SetVsyncEnabled(bool enableVsync) {
+	if (enableVsync != m_enableVsync) { m_updateSwapchainParametersFlag = true; }
+	m_enableVsync = enableVsync;
+}
+
+bool Game::GetHDREnabled() {
+	return m_enableHDR;
+}
+
+void Game::SetHDREnabled(bool enableHDR) {
+	if (enableHDR != m_enableHDR) { m_updateSwapchainParametersFlag = true; }
+	m_enableHDR = enableHDR;
+}
+
+void Game::SetSwapchainParameters() {
+	// Choose present mode
+	SDL_GPUPresentMode presentMode = SDL_GPU_PRESENTMODE_VSYNC;
+	if (!m_enableVsync && SDL_WindowSupportsGPUPresentMode(
+		m_sdlGPUDevice,
+		m_sdlWindow,
+		SDL_GPU_PRESENTMODE_IMMEDIATE
+	)) {
+		presentMode = SDL_GPU_PRESENTMODE_IMMEDIATE;
+	}
+	else if (!m_enableVsync && SDL_WindowSupportsGPUPresentMode(
+		m_sdlGPUDevice,
+		m_sdlWindow,
+		SDL_GPU_PRESENTMODE_MAILBOX
+	)) {
+		presentMode = SDL_GPU_PRESENTMODE_MAILBOX;
+	}
+
+	// Choose swapchain format
+	SDL_GPUSwapchainComposition composition = SDL_GPU_SWAPCHAINCOMPOSITION_SDR;
+	if (!m_enableHDR && SDL_WindowSupportsGPUSwapchainComposition(
+		m_sdlGPUDevice,
+		m_sdlWindow,
+		SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084
+	)) {
+		composition = SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084;
+	}
+
+	// Set parameters
+	SDL_SetGPUSwapchainParameters(
+		m_sdlGPUDevice,
+		m_sdlWindow,
+		composition,
+		presentMode
+	);
+	m_sdlGPUPresentMode = presentMode;
+	m_sdlGPUSwapchainComposition = composition;
 }
 
 void Game::Cleanup() {

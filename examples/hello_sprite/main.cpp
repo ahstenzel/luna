@@ -4,13 +4,14 @@ using namespace luna;
 
 class ActorRavioli : public Actor {
 public:
-	ActorRavioli(float x, float y, std::int32_t depth = 0) {
+	ActorRavioli(float x, float y, std::int32_t depth = 0) :
+		m_depth(depth) {
 		// These textures are defined in the *.arc file to have a centered origin
-		sprRavioli1 = Sprite(ResourceManager::GetTextureID("ravioli1"), x, y, 0, 0.f, depth, 4.0f, 4.0f);
-		sprRavioli2 = Sprite(ResourceManager::GetTextureID("ravioli2"), x + 80.f, y, 0, 0.f, depth, 4.0f, 4.0f);
-		sprRavioli3 = Sprite(ResourceManager::GetTextureID("ravioli3"), x + 192.f, y, 0, 0.f, depth, 4.0f, 4.0f);
-		sprRavioli4_1 = Sprite(ResourceManager::GetTextureID("ravioli4"), x + 230.f, y, 0, 0.f, depth - 1, 4.0f, 4.0f);
-		sprRavioli4_2 = Sprite(ResourceManager::GetTextureID("ravioli4"), x + 154.f, y, 0, 0.f, depth + 1, 4.0f, 4.0f);
+		sprRavioli1 = Sprite(ResourceManager::GetTextureID("ravioli1"), x, y, 0, 0.f, m_depth, 4.0f, 4.0f);
+		sprRavioli2 = Sprite(ResourceManager::GetTextureID("ravioli2"), x + 80.f, y, 0, 0.f, m_depth, 4.0f, 4.0f);
+		sprRavioli3 = Sprite(ResourceManager::GetTextureID("ravioli3"), x + 192.f, y, 0, 0.f, m_depth, 4.0f, 4.0f);
+		sprRavioli4_1 = Sprite(ResourceManager::GetTextureID("ravioli4"), x + 230.f, y, 0, 0.f, m_depth - 1, 4.0f, 4.0f);
+		sprRavioli4_2 = Sprite(ResourceManager::GetTextureID("ravioli4"), x + 154.f, y, 0, 0.f, m_depth + 1, 4.0f, 4.0f);
 	}
 protected:
 	void Tick(float dt) override {
@@ -26,13 +27,18 @@ protected:
 	}
 
 	void Draw(float dt) override {
-		Game::GetRenderer()->DrawSprite(&sprRavioli1);
-		Game::GetRenderer()->DrawSprite(&sprRavioli2);
-		Game::GetRenderer()->DrawSprite(&sprRavioli3);
-		Game::GetRenderer()->DrawSprite(&sprRavioli4_1);
-		Game::GetRenderer()->DrawSprite(&sprRavioli4_2);
+		Game::GetRenderer()->DrawPrimitive(Primitive(ShapeAABB(64.f, 64.f, 128.f, 128.f), false, m_depth + 1, LunaColorGreen));
+
+		Game::GetRenderer()->DrawSprite(sprRavioli1);
+		Game::GetRenderer()->DrawSprite(sprRavioli2);
+		Game::GetRenderer()->DrawSprite(sprRavioli3);
+		Game::GetRenderer()->DrawSprite(sprRavioli4_1);
+		Game::GetRenderer()->DrawSprite(sprRavioli4_2);
+		
+		Game::GetRenderer()->DrawPrimitive(Primitive(ShapeAABB(0.f, 0.f, 64.f, 64.f), false, m_depth - 1, LunaColorRed));
 	}
 
+	std::int32_t m_depth;
 	Sprite sprRavioli1;
 	Sprite sprRavioli2;
 	Sprite sprRavioli3;
@@ -49,6 +55,7 @@ int main(int argc, char** argv) {
 	init.windowTitle = "Hello Sprite";
 	init.appName = "hello_sprite";
 	init.appIdentifier = "com.hello_sprite";
+	init.enableVsync = true;
 	init.rendererFactory = new SpriteRendererFactory;
 	if (!Game::Init(&init)) { return 1; }
 	delete init.rendererFactory;
@@ -62,7 +69,6 @@ int main(int argc, char** argv) {
 	// Create initial room
 	RoomInit initFirstRoom = {};
 	initFirstRoom.clearColor = { 0, 0, 85, 255 };
-	//initFirstRoom.clearColor = LunaColorWhite;
 	initFirstRoom.pushFunc = firstRoomPushFunc;
 	RoomManager::PushRoom(initFirstRoom);
 	RoomManager::GetCurrentRoom()->CreateCamera();

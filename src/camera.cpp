@@ -8,7 +8,9 @@ Camera::Camera(std::int32_t x, std::int32_t y, std::uint32_t width, std::uint32_
 	m_cameraW(width),
 	m_cameraH(height),
 	m_zNear(zNear),
-	m_zFar(zFar) {}
+	m_zFar(zFar) {
+	CalculateBoundingBox();
+}
 
 std::int32_t Camera::GetPositionX() const {
 	return m_cameraX;
@@ -51,37 +53,48 @@ std::int32_t Camera::GetBottomEdge() const {
 }
 
 bool Camera::PointOnCamera(float x, float y) const {
-	return (
-		x >= float(m_cameraX) && x < (float(m_cameraX) + float(m_cameraW)) &&
-		y >= float(m_cameraY) && y < (float(m_cameraY) + float(m_cameraH))
-	);
+	return PointInShape(x, y, m_bbox);
 }
 
-int Camera::RegionOnCamera(float left, float right, float top, float bottom) const {
-	int v = 0;
-	if (PointOnCamera(left, top)) { v++; }
-	if (PointOnCamera(right, top)) { v++; }
-	if (PointOnCamera(left, bottom)) { v++; }
-	if (PointOnCamera(right, bottom)) { v++; }
-	if (v == 0) { return 0; }
-	else if (v < 4) { return 1; }
-	else { return 2; }
+bool Camera::RegionOnCamera(const ShapeLine& shape) const {
+	return ShapeIntersects(shape, m_bbox);
+}
+
+bool Camera::RegionOnCamera(const ShapeAABB& shape) const {
+	return ShapeIntersects(shape, m_bbox);
+}
+
+bool Camera::RegionOnCamera(const ShapeCircle& shape) const {
+	return ShapeIntersects(shape, m_bbox);
+}
+
+bool Camera::RegionOnCamera(const AnyShape& shape, ShapeType type) const {
+	switch (type) {
+	case ShapeType::LineType: return ShapeIntersects(std::get<ShapeLine>(shape), m_bbox); break;
+	case ShapeType::AABBType: return ShapeIntersects(std::get<ShapeAABB>(shape), m_bbox); break;
+	case ShapeType::CircleType: return ShapeIntersects(std::get<ShapeCircle>(shape), m_bbox); break;
+	}
+	return false;
 }
 
 void Camera::SetPositionX(std::int32_t x) {
 	m_cameraX = x;
+	CalculateBoundingBox();
 }
 
 void Camera::SetPositionY(std::int32_t y) {
 	m_cameraY = y;
+	CalculateBoundingBox();
 }
 
 void Camera::SetWidth(std::uint32_t width) {
 	m_cameraW = width;
+	CalculateBoundingBox();
 }
 
 void Camera::SetHeight(std::uint32_t height) {
 	m_cameraH = height;
+	CalculateBoundingBox();
 }
 
 void Camera::SetNearPlane(std::int32_t zNear) {
@@ -93,18 +106,25 @@ void Camera::SetFarPlane(std::int32_t zFar) {
 }
 
 glm::mat4 Camera::ProjectionOrtho() const {
-	float left = (float)m_cameraX;
-	float right = (float)(m_cameraX + std::int32_t(m_cameraW));
-	float top = (float)m_cameraY;
-	float bottom = (float)(m_cameraY + std::int32_t(m_cameraH));
+	//float left = (float)m_cameraX;
+	//float right = (float)(m_cameraX + std::int32_t(m_cameraW));
+	//float top = (float)m_cameraY;
+	//float bottom = (float)(m_cameraY + std::int32_t(m_cameraH));
 	float zNear = (float)(m_zNear) - 1.0f;
 	float zFar = (float)(m_zFar) + 1.0f;
 	return glm::mat4(
-		{ 2.0f / (right - left), 0.f, 0.f, 0.f },
-		{ 0.f, 2.0f / (top - bottom), 0.f, 0.f },
+		{ 2.0f / (m_bbox.right - m_bbox.left), 0.f, 0.f, 0.f },
+		{ 0.f, 2.0f / (m_bbox.top - m_bbox.bottom), 0.f, 0.f },
 		{ 0.f, 0.f, -2.0f / (zFar - zNear), 0.f },
-		{ -(right + left) / (right - left), -(top + bottom) / (top - bottom), -(zFar + zNear) / (zFar - zNear), 1.f }
+		{ -(m_bbox.right + m_bbox.left) / (m_bbox.right - m_bbox.left), -(m_bbox.top + m_bbox.bottom) / (m_bbox.top - m_bbox.bottom), -(zFar + zNear) / (zFar - zNear), 1.f }
 	);
+}
+
+void Camera::CalculateBoundingBox() {
+	m_bbox.left = float(m_cameraX);
+	m_bbox.top = float(m_cameraY);
+	m_bbox.right = float(m_cameraX + std::int32_t(m_cameraW));
+	m_bbox.bottom = float(m_cameraY + std::int32_t(m_cameraH));
 }
 
 } // luna

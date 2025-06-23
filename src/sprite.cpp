@@ -235,6 +235,25 @@ void Sprite::SetOriginY(std::int32_t originY) {
 	m_originY = originY;
 }
 
+ShapeAABB Sprite::GetShapeAABB() const {
+	float xx = m_positionX - (m_originX * m_scaleX);
+	float yy = m_positionY - (m_originY * m_scaleY);
+	return ShapeAABB(
+		xx,
+		yy,
+		xx + (m_width * m_scaleX),
+		yy + (m_height * m_scaleY)
+	);
+}
+
+ShapeCircle Sprite::GetShapeCircle() const {
+	float dw = (m_width * m_scaleX) / 2;
+	float dh = (m_height * m_scaleY) / 2;
+	float cx = m_positionX - (m_originX * m_scaleX) + dw;
+	float cy = m_positionY - (m_originY * m_scaleY) + dh;
+	return ShapeCircle(cx, cy, std::sqrtf(dw * dw + dh * dh));
+}
+
 Sprite& Sprite::operator=(const Sprite& other) {
 	if (this == &other) { return *this; }
 	m_textureID = other.m_textureID;
@@ -334,14 +353,6 @@ void Sprite::CalculateUVs() {
 	m_textureH = (float)m_texture->GetHeight() / pageHeight;
 	m_textureU = (float)m_texture->GetOffsetX(currFrame) / pageWidth;
 	m_textureV = (float)m_texture->GetOffsetY(currFrame) / pageHeight;
-}
-
-bool SpriteListTexturePageComp::operator()(const Sprite* lhs, const Sprite* rhs) {
-	return lhs->GetTexturePageID() < rhs->GetTexturePageID();
-}
-
-bool SpriteListDepthComp::operator()(const Sprite* lhs, const Sprite* rhs) {
-	return lhs->GetDepth() < rhs->GetDepth();
 }
 
 } // luna

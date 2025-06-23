@@ -11,8 +11,10 @@
 #include <functional>
 #include <chrono>
 #include <filesystem>
+#include <variant>
 #include <vector>
 #include <stack>
+#include <queue>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -30,6 +32,8 @@
 #include <aes/aes.h>
 #include <libbase64.h>
 #include <glm/ext/matrix_float4x4.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
 // Luna includes
 #include <luna/detail/std/platform.hpp>

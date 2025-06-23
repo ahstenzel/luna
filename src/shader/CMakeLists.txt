@@ -1,9 +1,11 @@
 # Collect source files
 set(APP_SHADER_FRAG_SRC
 	"${PROJECT_SOURCE_DIR}/src/shader/SpriteBatch.frag.hlsl"
+	"${PROJECT_SOURCE_DIR}/src/shader/PrimitiveBatch.frag.hlsl"
 )
 set(APP_SHADER_VERT_SRC
 	"${PROJECT_SOURCE_DIR}/src/shader/SpriteBatch.vert.hlsl"
+	"${PROJECT_SOURCE_DIR}/src/shader/PrimitiveBatch.vert.hlsl"
 )
 set(APP_SHADER_SRC ${APP_SHADER_FRAG_SRC} ${APP_SHADER_VERT_SRC})
 

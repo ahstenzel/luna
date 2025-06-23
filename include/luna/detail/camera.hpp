@@ -1,6 +1,7 @@
 #pragma once
 
 #include <luna/detail/common.hpp>
+#include <luna/detail/shapes.hpp>
 
 namespace luna {
 
@@ -19,7 +20,10 @@ public:
 	LUNA_API std::int32_t GetTopEdge() const;
 	LUNA_API std::int32_t GetBottomEdge() const;
 	LUNA_API bool PointOnCamera(float x, float y) const;
-	LUNA_API int RegionOnCamera(float left, float right, float top, float bottom) const;
+	LUNA_API bool RegionOnCamera(const ShapeLine& shape) const;
+	LUNA_API bool RegionOnCamera(const ShapeAABB& shape) const;
+	LUNA_API bool RegionOnCamera(const ShapeCircle& shape) const;
+	LUNA_API bool RegionOnCamera(const AnyShape& shape, ShapeType type) const;
 
 	LUNA_API void SetPositionX(std::int32_t x);
 	LUNA_API void SetPositionY(std::int32_t y);
@@ -30,6 +34,8 @@ public:
 
 	LUNA_API glm::mat4 ProjectionOrtho() const;
 private:
+	void CalculateBoundingBox();
+
 	std::uint32_t m_viewportW = 0;
 	std::uint32_t m_viewportH = 0;
 	std::uint32_t m_viewportX = 0;
@@ -38,6 +44,8 @@ private:
 	std::int32_t m_cameraH = 0;
 	std::int32_t m_cameraX = 0;
 	std::int32_t m_cameraY = 0;
+	ShapeAABB m_bbox = {};
+	
 	std::int32_t m_zNear = 0;
 	std::int32_t m_zFar = 0;
 };

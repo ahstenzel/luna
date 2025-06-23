@@ -11,6 +11,8 @@ struct GameInit {
 	unsigned int windowW = 1366;
 	unsigned int windowH = 768;
 	bool enableGraphicsDebugging = false;
+	bool enableVsync = false;
+	bool enableHDR = false;
 	std::string windowTitle = "luna";
 	std::string appName = "luna";
 	std::string appVersion = "1.0.0";
@@ -38,8 +40,13 @@ public:
 	LUNA_API static SDL_GPUDevice* GetGPUDevice();
 	LUNA_API static Renderer* GetRenderer();
 	LUNA_API static bool GetGraphicsDebuggingEnabled();
+	LUNA_API static bool GetVsyncEnabled();
+	LUNA_API static void SetVsyncEnabled(bool enableVsync);
+	LUNA_API static bool GetHDREnabled();
+	LUNA_API static void SetHDREnabled(bool enableHDR);
 
 private:
+	static void SetSwapchainParameters();
 	static void Cleanup();
 
 	static std::function<void()> m_startFunc;
@@ -50,12 +57,17 @@ private:
 	static std::function<void(Renderer*)> m_postDrawFunc;
 
 	static bool m_enableGraphicsDebugging;
+	static bool m_enableVsync;
+	static bool m_enableHDR;
+	static bool m_updateSwapchainParametersFlag;
 	static bool m_quitFlag;
 	static unsigned int m_windowW;
 	static unsigned int m_windowH;
 	static unsigned int m_ticksPerSecond;
 	static SDL_Window* m_sdlWindow;
 	static SDL_GPUDevice* m_sdlGPUDevice;
+	static SDL_GPUPresentMode m_sdlGPUPresentMode;
+	static SDL_GPUSwapchainComposition m_sdlGPUSwapchainComposition;
 	static Renderer* m_renderer;
 };
 
