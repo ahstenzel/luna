@@ -14,7 +14,6 @@ public:
 
 protected:
 	SDL_GPUGraphicsPipeline* m_pipeline = nullptr;
-	//SDL_GPUTextureFormat m_depthStencilFormat = (SDL_GPUTextureFormat)0;
 };
 
 class SpriteBatchShaderPipeline : public ShaderPipeline {
@@ -34,7 +33,7 @@ private:
 
 class PrimitiveBatchShaderPipeline : public ShaderPipeline {
 public:
-	LUNA_API PrimitiveBatchShaderPipeline();
+	LUNA_API PrimitiveBatchShaderPipeline(bool wireframe = false);
 	LUNA_API ~PrimitiveBatchShaderPipeline();
 
 	LUNA_API SDL_GPUGraphicsPipeline* GetPipeline() const override;

@@ -8,6 +8,10 @@ VertexPos::VertexPos(float x, float y, float z) {
 	m_data[2] = z;
 }
 
+VertexPos VertexPos::xy() const {
+	return VertexPos(m_data[0], m_data[1]);
+}
+
 float VertexPos::operator[](std::size_t i) const {
 	return m_data[i];
 }
@@ -41,6 +45,14 @@ VertexPosColor::VertexPosColor(float x, float y, float z, float r, float g, floa
 	m_data[4] = g;
 	m_data[5] = b;
 	m_data[6] = a;
+}
+
+VertexPos VertexPosColor::xyz() const {
+	return VertexPos(m_data[0], m_data[1], m_data[2]);
+}
+
+VertexPos VertexPosColor::xy() const {
+	return VertexPos(m_data[0], m_data[1]);
 }
 
 float VertexPosColor::operator[](std::size_t i) const {

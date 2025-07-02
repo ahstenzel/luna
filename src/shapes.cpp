@@ -8,8 +8,14 @@ ShapeLine::ShapeLine(float _x1, float _y1, float _x2, float _y2) :
 	x2(_x2), 
 	y2(_y2) {}
 
+ShapeLine::ShapeLine(const VertexPos& _p1, const VertexPos& _p2) :
+	x1(_p1[0]),
+	y1(_p1[1]), 
+	x2(_p2[0]), 
+	y2(_p2[1]) {}
+
 float ShapeLine::Area() const {
-	return Distance(x1, y1, x2, y2);
+	return PointDistance(x1, y1, x2, y2);
 }
 
 bool ShapeLine::operator==(const ShapeLine& other) const {
@@ -26,6 +32,12 @@ ShapeAABB::ShapeAABB(float _left, float _top, float _right, float _bottom) :
 	top(_top),
 	right(_right),
 	bottom(_bottom) {}
+
+ShapeAABB::ShapeAABB(const VertexPos& _p1, const VertexPos& _p2) :
+	left(_p1[0]),
+	top(_p1[1]),
+	right(_p2[0]),
+	bottom(_p2[1]) { }
 
 float ShapeAABB::Area() const {
 	return (right - left) * (bottom - top);
@@ -45,8 +57,13 @@ ShapeCircle::ShapeCircle(float _x, float _y, float _radius) :
 	y(_y),
 	radius(_radius) {}
 
+ShapeCircle::ShapeCircle(const VertexPos& _center, float _radius) :
+	x(_center[0]),
+	y(_center[1]),
+	radius(_radius) {}
+
 float ShapeCircle::Area() const {
-	return radius * radius * SDL_PI_F;
+	return radius * radius * PI_F;
 }
 
 bool ShapeCircle::operator==(const ShapeCircle& other) const {
@@ -57,22 +74,62 @@ bool ShapeCircle::operator==(const ShapeCircle& other) const {
 		);
 }
 
-float Distance(float x1, float y1, float x2, float y2) {
+float PointDistance(float x1, float y1, float x2, float y2) {
 	float xx = (x2 - x1);
 	float yy = (y2 - y1);
 	return std::sqrtf(xx * xx + yy * yy);
 }
 
-float DistanceSqr(float x1, float y1, float x2, float y2) {
+float PointDistance(const VertexPos& p1, const VertexPos& p2) {
+	return PointDistance(p1[0], p1[1], p2[0], p2[1]);
+}
+
+float PointDistanceSqr(float x1, float y1, float x2, float y2) {
 	float xx = (x2 - x1);
 	float yy = (y2 - y1);
 	return (xx * xx + yy * yy);
 }
 
+float PointDistanceSqr(const VertexPos& p1, const VertexPos& p2) {
+	return PointDistanceSqr(p1[0], p1[1], p2[0], p2[1]);
+}
+
+VertexPos Midpoint(float x1, float y1, float x2, float y2) {
+	return VertexPos(
+		((x2 - x1) / 2.f) + x1,
+		((y2 - y1) / 2.f) + y1
+	);
+}
+
+VertexPos Midpoint(const VertexPos& p1, const VertexPos& p2) {
+	return Midpoint(p1[0], p1[1], p2[0], p2[1]);
+}
+
+float PointAngle(float x1, float y1, float x2, float y2) {
+	return SDL_atan2f(y2 - y1, x2 - x1);
+}
+
+float PointAngle(const VertexPos& p1, const VertexPos& p2) {
+	return PointAngle(p1[0], p1[1], p2[0], p2[1]);
+}
+
+VertexPos PerpendicularBisector(float x1, float y1, float x2, float y2, float length) {
+	float dir = PointAngle(x1, y1, x2, y2) + (PI_2_F);
+	VertexPos mid = Midpoint(x1, y1, x2, y2);
+	return VertexPos(
+		mid[0] + (length * SDL_sinf(dir)),
+		mid[1] + (length * SDL_cosf(dir))
+	);
+}
+
+VertexPos PerpendicularBisector(const VertexPos& p1, const VertexPos& p2, float length) {
+	return PerpendicularBisector(p1[0], p1[1], p2[0], p2[1], length);
+}
+
 template<>
 bool PointInShape(float x, float y, const ShapeLine& shape) {
-	float d1 = Distance(x, y, shape.x1, shape.y1);
-	float d2 = Distance(x, y, shape.x2, shape.y2);
+	float d1 = PointDistance(x, y, shape.x1, shape.y1);
+	float d2 = PointDistance(x, y, shape.x2, shape.y2);
 	return (d1 + d2) == shape.Area();
 }
 
@@ -124,7 +181,7 @@ bool ShapeIntersects(const ShapeLine& shape1, const ShapeCircle& shape2) {
 	float nx = shape1.x1 + (dot * (shape1.x2 - shape1.x1));
 	float ny = shape1.y1 + (dot * (shape1.y2 - shape1.y1));
 	if (!PointInShape(nx, ny, shape1)) { return false; }
-	float dist = DistanceSqr(nx, ny, shape2.x, shape2.y);
+	float dist = PointDistanceSqr(nx, ny, shape2.x, shape2.y);
 	return (dist <= (shape2.radius * shape2.radius));
 }
 
@@ -170,6 +227,14 @@ bool ShapeIntersects(const ShapeCircle& shape1, const ShapeCircle& shape2) {
 	return (d * d) <= (dx * dx + dy * dy);
 }
 
+Primitive::Primitive() :
+	m_shape(),
+	m_shapeType(ShapeType::Unknown),
+	m_outline(false),
+	m_depth(0),
+	m_blend(LunaColorWhite),
+	m_dirty(true) {}
+
 Primitive::Primitive(ShapeLine shape, bool outline, std::int32_t depth, SDL_Color blend) :
 	m_shape(shape),
 	m_shapeType(ShapeType::LineType),
@@ -209,6 +274,10 @@ Primitive::Primitive(Primitive&& primitive) noexcept :
 	m_depth(std::move(primitive.m_depth)),
 	m_blend(std::move(primitive.m_blend)),
 	m_dirty(std::move(primitive.m_dirty)) {}
+
+bool Primitive::IsWireframe() const {
+	return m_shapeType == ShapeType::LineType || m_outline;
+}
 
 AnyShape Primitive::GetShape() const {
 	return m_shape;
@@ -259,11 +328,6 @@ void Primitive::SetShape(ShapeAABB shape) {
 void Primitive::SetShape(ShapeCircle shape) {
 	m_shape = shape;
 	m_shapeType = ShapeType::CircleType;
-	m_dirty = true;
-}
-
-void Primitive::SetShapeType(ShapeType type) {
-	m_shapeType = type;
 	m_dirty = true;
 }
 
@@ -329,23 +393,119 @@ void Primitive::CalculateVertices() {
 	m_vertices.clear();
 	m_indices.clear();
 	SDL_FColor color = ConvertToFColor(m_blend);
+	float z = -float(m_depth);
 	switch (m_shapeType) {
-	case ShapeType::LineType: {} break;
-	case ShapeType::AABBType: {
-		float z = -float(m_depth);
-		ShapeAABB shapeAABB = std::get<ShapeAABB>(m_shape);
-		m_vertices.push_back(VertexPosColor(shapeAABB.left, shapeAABB.top,     z, color.r, color.g, color.b, color.a));
-		m_vertices.push_back(VertexPosColor(shapeAABB.left, shapeAABB.bottom,  z, color.r, color.g, color.b, color.a));
-		m_vertices.push_back(VertexPosColor(shapeAABB.right, shapeAABB.top,    z, color.r, color.g, color.b, color.a));
-		m_vertices.push_back(VertexPosColor(shapeAABB.right, shapeAABB.bottom, z, color.r, color.g, color.b, color.a));
+	case ShapeType::LineType: {
+		ShapeLine shapeLine = std::get<ShapeLine>(m_shape);
+		m_vertices.push_back(VertexPosColor(shapeLine.x1, shapeLine.y1, z, color.r, color.g, color.b, color.a));
+		m_vertices.push_back(VertexPosColor(shapeLine.x2, shapeLine.y2, z, color.r, color.g, color.b, color.a));
 		m_indices.push_back(0);
 		m_indices.push_back(1);
-		m_indices.push_back(2);
-		m_indices.push_back(3);
-		m_indices.push_back(2);
-		m_indices.push_back(1);
 	} break;
-	case ShapeType::CircleType: {} break;
+	case ShapeType::AABBType: {
+		ShapeAABB shapeAABB = std::get<ShapeAABB>(m_shape);
+		if (m_outline) {
+			m_vertices.push_back(VertexPosColor(shapeAABB.left, shapeAABB.top, z, color.r, color.g, color.b, color.a));
+			m_vertices.push_back(VertexPosColor(shapeAABB.left, shapeAABB.bottom, z, color.r, color.g, color.b, color.a));
+			m_vertices.push_back(VertexPosColor(shapeAABB.right, shapeAABB.bottom, z, color.r, color.g, color.b, color.a));
+			m_vertices.push_back(VertexPosColor(shapeAABB.right, shapeAABB.top, z, color.r, color.g, color.b, color.a));
+			m_indices.push_back(0);
+			m_indices.push_back(1);
+			m_indices.push_back(1);
+			m_indices.push_back(2);
+			m_indices.push_back(2);
+			m_indices.push_back(3);
+			m_indices.push_back(3);
+			m_indices.push_back(0);
+		}
+		else {
+			m_vertices.push_back(VertexPosColor(shapeAABB.left, shapeAABB.top, z, color.r, color.g, color.b, color.a));
+			m_vertices.push_back(VertexPosColor(shapeAABB.left, shapeAABB.bottom, z, color.r, color.g, color.b, color.a));
+			m_vertices.push_back(VertexPosColor(shapeAABB.right, shapeAABB.top, z, color.r, color.g, color.b, color.a));
+			m_vertices.push_back(VertexPosColor(shapeAABB.right, shapeAABB.bottom, z, color.r, color.g, color.b, color.a));
+			m_indices.push_back(0);
+			m_indices.push_back(1);
+			m_indices.push_back(2);
+			m_indices.push_back(3);
+			m_indices.push_back(2);
+			m_indices.push_back(1);
+		}
+	} break;
+	case ShapeType::CircleType: {
+		ShapeCircle shapeCircle = std::get<ShapeCircle>(m_shape);
+		VertexPos center(shapeCircle.x, shapeCircle.y);
+		if (m_outline) {
+			float min_angle = 1.0f / shapeCircle.radius;
+
+			// Push initial point
+			m_indices.push_back(0);
+			m_vertices.push_back(VertexPosColor(center[0] + shapeCircle.radius, center[1], z, color.r, color.g, color.b, color.a));
+
+			// Rotate around, pushing more points
+			float accum = 0.f;
+			while ((TAU_F - accum) > min_angle) {
+				accum += min_angle;
+				float dx = shapeCircle.radius * SDL_cosf(accum);
+				float dy = shapeCircle.radius * SDL_sinf(accum);
+				m_indices.push_back(m_vertices.size());
+				m_indices.push_back(m_vertices.size());
+				m_vertices.push_back(VertexPosColor(center[0] + dx, center[1] + dy, z, color.r, color.g, color.b, color.a));
+			}
+
+			// Connect back to first point
+			m_indices.push_back(0);
+		}
+		else {
+			std::queue<std::pair<std::size_t, std::size_t>> edges;
+
+			// Create equilateral triangle
+			float a = shapeCircle.radius / 2.f;
+			float b = (shapeCircle.radius * SDL_sqrtf(3.f)) / 2.f;
+			VertexPos p1(shapeCircle.x, shapeCircle.y - shapeCircle.radius);
+			VertexPos p2(shapeCircle.x - b, shapeCircle.y + a);
+			VertexPos p3(shapeCircle.x + b, shapeCircle.y + a);
+			m_vertices.push_back(VertexPosColor(p1[0], p1[1], z, color.r, color.g, color.b, color.a));
+			m_vertices.push_back(VertexPosColor(p2[0], p2[1], z, color.r, color.g, color.b, color.a));
+			m_vertices.push_back(VertexPosColor(p3[0], p3[1], z, color.r, color.g, color.b, color.a));
+			m_indices.push_back(0);
+			m_indices.push_back(1);
+			m_indices.push_back(2);
+			edges.push(std::make_pair(0, 1));
+			edges.push(std::make_pair(1, 2));
+			edges.push(std::make_pair(2, 0));
+
+			// Iterate on triangle edges
+			while (!edges.empty()) {
+				// Get midpoint of triangle side
+				auto& pair = edges.front();
+				VertexPos p1 = m_vertices[pair.first].xy();
+				VertexPos p2 = m_vertices[pair.second].xy();
+				VertexPos pm = Midpoint(p1, p2);
+
+				// Check for end condition
+				float dist = PointDistance(center, pm);
+				if ((shapeCircle.radius - dist) < 1.f) { break; }
+
+				// Project midpoint to circumference
+				float dir = PointAngle(center, pm);
+				float dx = shapeCircle.radius * SDL_cosf(dir);
+				float dy = shapeCircle.radius * SDL_sinf(dir);
+				VertexPos p3(center[0] + dx, center[1] + dy);
+
+				// Add new point to vertex list
+				std::size_t new_index = m_vertices.size();
+				m_vertices.push_back(VertexPosColor(p3[0], p3[1], z, color.r, color.g, color.b, color.a));
+				m_indices.push_back(pair.first);
+				m_indices.push_back(pair.second);
+				m_indices.push_back(new_index);
+
+				// Add two new edges to the queue
+				edges.push(std::make_pair(new_index, pair.first));
+				edges.push(std::make_pair(pair.second, new_index));
+				edges.pop();
+			}
+		}
+	} break;
 	}
 }
 

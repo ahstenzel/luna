@@ -10,13 +10,15 @@ namespace luna {
 SpriteRenderer::SpriteRenderer() {
 	// Build shader pipelines
 	m_spriteBatchPipeline = new SpriteBatchShaderPipeline();
-	m_primitiveBatchPipeline = new PrimitiveBatchShaderPipeline();
+	m_primitiveBatchPipeline = new PrimitiveBatchShaderPipeline(false);
+	m_primitiveLineBatchPipeline = new PrimitiveBatchShaderPipeline(true);
 }
 
 SpriteRenderer::~SpriteRenderer() {
 	SDL_GPUDevice* device = Game::GetGPUDevice();
 	delete m_spriteBatchPipeline;
 	delete m_primitiveBatchPipeline;
+	delete m_primitiveLineBatchPipeline;
 	SDL_ReleaseGPUSampler(device, m_sdlGPUSampler);
 	SDL_ReleaseGPUTexture(device, m_sdlGPUAtlasTexture);
 	SDL_ReleaseGPUTexture(device, m_sdlGPUDepthTexture);
@@ -30,8 +32,8 @@ SpriteRenderer::~SpriteRenderer() {
 
 bool SpriteRenderer::IsValid() const {
 	return (
-		m_spriteBatchPipeline && m_primitiveBatchPipeline && 
-		m_spriteBatchPipeline->IsValid() && m_primitiveBatchPipeline->IsValid()
+		m_spriteBatchPipeline && m_primitiveBatchPipeline && m_primitiveLineBatchPipeline &&
+		m_spriteBatchPipeline->IsValid() && m_primitiveBatchPipeline->IsValid() && m_primitiveLineBatchPipeline->IsValid()
 		);
 }
 
@@ -85,10 +87,10 @@ void SpriteRenderer::Draw() {
 
 	// Sort opaque & translucent renderables seperately
 	merge_sort(m_opaqueRenderables.begin(), m_opaqueRenderables.end(), CompRenderableSpriteTexturePage());
-	merge_sort(m_opaqueRenderables.begin(), m_opaqueRenderables.end(), CompRenderablePrimitiveShapeType());
+	merge_sort(m_opaqueRenderables.begin(), m_opaqueRenderables.end(), CompRenderablePrimitiveWireframe());
 	merge_sort(m_opaqueRenderables.begin(), m_opaqueRenderables.end(), CompRenderableType());
 	merge_sort(m_translucentRenderables.begin(), m_translucentRenderables.end(), CompRenderableSpriteTexturePage());
-	merge_sort(m_translucentRenderables.begin(), m_translucentRenderables.end(), CompRenderablePrimitiveShapeType());
+	merge_sort(m_translucentRenderables.begin(), m_translucentRenderables.end(), CompRenderablePrimitiveWireframe());
 	merge_sort(m_translucentRenderables.begin(), m_translucentRenderables.end(), CompRenderableType());
 	merge_sort(m_translucentRenderables.begin(), m_translucentRenderables.end(), CompRenderableDepth());
 
@@ -160,9 +162,13 @@ void SpriteRenderer::Draw() {
 
 		// Render batches one at a time
 		for (auto& batch : batches) {
+			SDL_assert(!batch.m_renderableList.empty());
 			switch (batch.m_renderableType) {
 			case RenderableType::SpriteType: RenderSpriteListBatch(commandBuffer, &cameraMatrix, batch.m_renderableList); break;
-			case RenderableType::PrimitiveType: RenderPrimitiveListBatch(commandBuffer, &cameraMatrix, batch.m_renderableList); break;
+			case RenderableType::PrimitiveType: 
+				auto primitive = batch.m_renderableList[0].GetPrimitive();
+				RenderPrimitiveListBatch(commandBuffer, &cameraMatrix, batch.m_renderableList, primitive->IsWireframe()); 
+			break;
 			}
 		}
 	}
@@ -280,7 +286,7 @@ bool SpriteRenderer::RenderableBatch::MatchRenderable(const Renderable& renderab
 			// Split if a new shape type needs to be drawn
 			Primitive* matchPrimitive = renderable.GetPrimitive();
 			Primitive* thisPrimitive = m_renderableList[0].GetPrimitive();
-			if (matchPrimitive->GetShapeType() != thisPrimitive->GetShapeType()) { return false; }
+			if (matchPrimitive->IsWireframe() != thisPrimitive->IsWireframe()) { return false; }
 		}
 		else { return false; }
 	}
@@ -460,7 +466,7 @@ void SpriteRenderer::SetTexturePage(SDL_GPUCommandBuffer* commandBuffer, const T
 	SDL_EndGPUCopyPass(copyPass);
 }
 
-void SpriteRenderer::RenderPrimitiveListBatch(SDL_GPUCommandBuffer* commandBuffer, glm::mat4* cameraMatrix, const RenderableList& primitives) {
+void SpriteRenderer::RenderPrimitiveListBatch(SDL_GPUCommandBuffer* commandBuffer, glm::mat4* cameraMatrix, const RenderableList& primitives, bool wireframe) {
 	SDL_GPUDevice* device = Game::GetGPUDevice();
 
 	// Build vertex & instance buffers
@@ -574,7 +580,8 @@ void SpriteRenderer::RenderPrimitiveListBatch(SDL_GPUCommandBuffer* commandBuffe
 		m_sdlRenderDepthStencilTargetInfo.load_op = SDL_GPU_LOADOP_LOAD;
 	}
 	SDL_GPURenderPass* renderPass = SDL_BeginGPURenderPass(commandBuffer, &m_sdlRenderColorTargetInfo, 1, &m_sdlRenderDepthStencilTargetInfo);
-	SDL_BindGPUGraphicsPipeline(renderPass, m_primitiveBatchPipeline->GetPipeline());
+	auto pipeline = (wireframe) ? m_primitiveLineBatchPipeline->GetPipeline() : m_primitiveBatchPipeline->GetPipeline();
+	SDL_BindGPUGraphicsPipeline(renderPass, pipeline);
 	SDL_BindGPUVertexBuffers(renderPass, 0, &vertexBufferBinding, 1);
 	SDL_BindGPUIndexBuffer(renderPass, &indexBufferBinding, SDL_GPU_INDEXELEMENTSIZE_16BIT);
 	SDL_PushGPUVertexUniformData(commandBuffer, 0, &(cameraMatrix[0][0]), sizeof(glm::mat4));
@@ -608,11 +615,11 @@ bool SpriteRenderer::CompRenderableSpriteTexturePage::operator()(const Renderabl
 	return t1 < t2;
 }
 
-bool SpriteRenderer::CompRenderablePrimitiveShapeType::operator()(const Renderable& lhs, const Renderable& rhs) {
-	ShapeType t1, t2;
-	if (lhs.m_renderableType == RenderableType::PrimitiveType) { t1 = lhs.m_renderer->m_primitives[lhs.m_renderableIndex].GetShapeType(); }
+bool SpriteRenderer::CompRenderablePrimitiveWireframe::operator()(const Renderable& lhs, const Renderable& rhs) {
+	bool t1, t2;
+	if (lhs.m_renderableType == RenderableType::PrimitiveType) { t1 = lhs.m_renderer->m_primitives[lhs.m_renderableIndex].IsWireframe(); }
 	else { return false; }
-	if (rhs.m_renderableType == RenderableType::PrimitiveType) { t2 = lhs.m_renderer->m_primitives[lhs.m_renderableIndex].GetShapeType(); }
+	if (rhs.m_renderableType == RenderableType::PrimitiveType) { t2 = lhs.m_renderer->m_primitives[lhs.m_renderableIndex].IsWireframe(); }
 	else { return true; }
 	return t1 < t2;
 }

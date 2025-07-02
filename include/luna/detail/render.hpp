@@ -122,28 +122,28 @@ private:
 		bool operator()(const Renderable& lhs, const Renderable& rhs);
 	};
 
-	struct CompRenderablePrimitiveShapeType {
+	struct CompRenderablePrimitiveWireframe {
 		bool operator()(const Renderable& lhs, const Renderable& rhs);
 	};
 	
 	void RenderSpriteListBatch(SDL_GPUCommandBuffer* commandBuffer, glm::mat4* cameraMatrix, const RenderableList& sprites);
 	void SetTexturePage(SDL_GPUCommandBuffer* commandBuffer, const TexturePage* texturePage);
-	void RenderPrimitiveListBatch(SDL_GPUCommandBuffer* commandBuffer, glm::mat4* cameraMatrix, const RenderableList& primitives);
+	void RenderPrimitiveListBatch(SDL_GPUCommandBuffer* commandBuffer, glm::mat4* cameraMatrix, const RenderableList& primitives, bool wireframe);
 
-	SpriteList m_sprites;
-	PrimitiveList m_primitives;
 	RenderableList m_opaqueRenderables;
 	RenderableList m_translucentRenderables;
 
-	std::size_t m_lastSpriteBatchCount = 0;
-	std::size_t m_lastPrimitiveVertexCount = 0;
-	std::size_t m_lastPrimitiveIndexCount = 0;
 	TexturePageID m_currentTexturePageID = TEXTURE_PAGE_ID_NULL;
-
+	SpriteList m_sprites;
+	std::size_t m_lastSpriteBatchCount = 0;
 	SpriteBatchShaderPipeline* m_spriteBatchPipeline = nullptr;
 	SDL_GPUTransferBuffer* m_sdlSpriteDataTransferBuffer = nullptr;
 	SDL_GPUBuffer* m_sdlSpriteDataBuffer = nullptr;
 
+	PrimitiveList m_primitives;
+	std::size_t m_lastPrimitiveVertexCount = 0;
+	std::size_t m_lastPrimitiveIndexCount = 0;
+	PrimitiveBatchShaderPipeline* m_primitiveLineBatchPipeline = nullptr;
 	PrimitiveBatchShaderPipeline* m_primitiveBatchPipeline = nullptr;
 	SDL_GPUTransferBuffer* m_sdlPrimitiveDataTransferBuffer = nullptr;
 	SDL_GPUBuffer* m_sdlPrimitiveDataVertexBuffer = nullptr;

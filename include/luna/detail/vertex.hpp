@@ -6,7 +6,9 @@ namespace luna {
 
 class VertexPos {
 public:
-	LUNA_API VertexPos(float x, float y, float z);
+	LUNA_API VertexPos(float x, float y, float z = 0.f);
+
+	VertexPos xy() const;
 
 	LUNA_API float operator[](std::size_t i) const;
 	LUNA_API float& operator[](std::size_t i);
@@ -21,6 +23,9 @@ private:
 class VertexPosColor {
 public:
 	LUNA_API VertexPosColor(float x, float y, float z, float r, float g, float b, float a);
+
+	VertexPos xyz() const;
+	VertexPos xy() const;
 
 	LUNA_API float operator[](std::size_t i) const;
 	LUNA_API float& operator[](std::size_t i);

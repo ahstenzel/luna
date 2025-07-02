@@ -127,7 +127,7 @@ bool SpriteBatchShaderPipeline::IsValid() const {
 	return (m_pipeline);
 }
 
-PrimitiveBatchShaderPipeline::PrimitiveBatchShaderPipeline() {
+PrimitiveBatchShaderPipeline::PrimitiveBatchShaderPipeline(bool wireframe) {
 	SDL_GPUDevice* device = Game::GetGPUDevice();
 	SDL_Window* window = Game::GetWindow();
 
@@ -154,7 +154,7 @@ PrimitiveBatchShaderPipeline::PrimitiveBatchShaderPipeline() {
 	SDL_GPUGraphicsPipelineCreateInfo createInfo{};
 	createInfo.vertex_shader = m_vertShader;
 	createInfo.fragment_shader = m_fragShader;
-	createInfo.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
+	createInfo.primitive_type = (wireframe) ? SDL_GPU_PRIMITIVETYPE_LINELIST : SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
 
 	createInfo.target_info = {};
 	createInfo.target_info.num_color_targets = 1;

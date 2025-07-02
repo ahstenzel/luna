@@ -120,4 +120,33 @@ constexpr SDL_Color LunaColorPurple = { 85, 0, 255, 255 };
 constexpr SDL_Color LunaColorPink = { 255, 170, 255, 255 };
 constexpr SDL_Color LunaColorBrown = { 100, 50, 0, 255 };
 
+constexpr double PHI_D = 1.6180339887498949025257388711906969547271728515625;
+constexpr float PHI_F = 1.61803400516510009765625f;
+constexpr double SQRT2_D = 1.4142135623730951454746218587388284504413604736328125;
+constexpr float SQRT2_F = 1.41421353816986083984375f;
+
+#ifdef SDL_PI_D
+constexpr double PI_D = SDL_PI_D;
+#else
+constexpr double PI_D = 3.141592653589793115997963468544185161590576171875;
+#endif
+
+#ifdef SDL_PI_F
+constexpr float PI_F = SDL_PI_F;
+#else
+constexpr float PI_F = 3.1415927410125732421875f;
+#endif
+
+constexpr double PI_2_D = PI_D / 2.0;
+constexpr float PI_2_F = PI_F / 2.0f;
+constexpr double TAU_D = 2.0 * PI_D;
+constexpr float TAU_F = 2.0f * PI_F;
+
+/*
+constexpr double PI_2_D = 1.5707963267948965579989817342720925807952880859375;
+constexpr float PI_2_F = 1.57079637050628662109375f;
+constexpr double TAU_D = 6.28318530717958623199592693708837032318115234375;
+constexpr float TAU_F = 6.283185482025146484375f;
+*/
+
 } // luna
